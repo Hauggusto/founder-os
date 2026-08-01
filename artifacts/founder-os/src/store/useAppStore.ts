@@ -1,0 +1,481 @@
+import { create } from 'zustand';
+import { seedData } from './seed';
+
+const STORAGE_KEY = 'founder-os-data';
+
+export type ModuleType = 'metric' | 'project' | 'financial_account' | 'task' | 'note' | 'link' | 'habit' | 'goal';
+export type ModuleStatus = 'active' | 'paused' | 'archived' | 'done';
+
+export interface Module {
+  id: string;
+  type: ModuleType;
+  title: string;
+  category: string;
+  subcategory?: string;
+  color?: string;
+  status: ModuleStatus;
+  value?: number | string;
+  description?: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  // Project fields
+  projectName?: string;
+  progress?: number;
+  tags?: string[];
+  // Task fields
+  dueDate?: string;
+  priority?: 'high' | 'medium' | 'low';
+  done?: boolean;
+  // Metric fields
+  unit?: string;
+  trend?: 'up' | 'down' | 'stable';
+  change?: number;
+  // Financial account fields
+  balance?: number;
+  currency?: string;
+  accountType?: string;
+  // Note fields
+  content?: string;
+  // Link fields
+  url?: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  parentId?: string;
+  order: number;
+}
+
+export interface WeeklyEntry {
+  week: string;
+  revenue: number;
+  expenses: number;
+  label?: string;
+}
+
+export interface HabitEntry {
+  id: string;
+  title: string;
+  done: boolean;
+  streak: number;
+  category: string;
+  order: number;
+}
+
+export interface AgendaItem {
+  id: string;
+  title: string;
+  time: string;
+  type: 'meeting' | 'task' | 'reminder';
+  done: boolean;
+}
+
+export interface LifeArea {
+  id: string;
+  name: string;
+  score: number;
+  color: string;
+}
+
+export interface RiskItem {
+  id: string;
+  title: string;
+  severity: 'high' | 'medium' | 'low';
+  category: string;
+}
+
+export interface AppData {
+  modules: Module[];
+  categories: Category[];
+  weeklyData: WeeklyEntry[];
+  quickCaptures: { id: string; text: string; createdAt: string }[];
+  weekFocus: string;
+  priorities: { id: string; text: string; done: boolean; order: number }[];
+  
+  habits: HabitEntry[];
+  agenda: AgendaItem[];
+  lifeAreas: LifeArea[];
+  risks: RiskItem[];
+  nextActions: { id: string; text: string; done: boolean; project?: string }[];
+  weekSummary: string;
+  energyLevel: number;
+  focusLevel: number;
+  disciplineLevel: number;
+  clarityLevel: number;
+  
+  version: '1.0';
+}
+
+interface AppStore extends AppData {
+  isAddModalOpen: boolean;
+  editingModule: Module | null;
+  editingModuleType?: ModuleType;
+  sidebarCollapsed: boolean;
+  
+  // Module actions
+  addModule: (module: Omit<Module, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateModule: (id: string, updates: Partial<Module>) => void;
+  deleteModule: (id: string) => void;
+  duplicateModule: (id: string) => void;
+  reorderModules: (ids: string[]) => void;
+  
+  // Category actions
+  addCategory: (cat: Omit<Category, 'id'>) => void;
+  
+  // Quick capture actions
+  addQuickCapture: (text: string) => void;
+  
+  // Priority actions
+  togglePriority: (id: string) => void;
+  addPriority: (text: string) => void;
+  reorderPriorities: (ids: string[]) => void;
+  
+  // Week focus
+  setWeekFocus: (focus: string) => void;
+  
+  // Modal actions
+  openAddModal: (type?: ModuleType, editing?: Module) => void;
+  closeAddModal: () => void;
+  
+  // New actions
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  toggleHabit: (id: string) => void;
+  addHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
+  addAgendaItem: (item: Omit<AgendaItem, 'id'>) => void;
+  toggleAgendaItem: (id: string) => void;
+  addRisk: (risk: Omit<RiskItem, 'id'>) => void;
+  addNextAction: (text: string, project?: string) => void;
+  toggleNextAction: (id: string) => void;
+  setLifeAreaScore: (id: string, score: number) => void;
+  setEnergyLevel: (n: number) => void;
+  setFocusLevel: (n: number) => void;
+  setDisciplineLevel: (n: number) => void;
+  setClarityLevel: (n: number) => void;
+  setWeekSummary: (text: string) => void;
+
+  // Data management
+  exportData: () => string;
+  importData: (json: string) => boolean;
+  saveToStorage: () => void;
+}
+
+// Load from localStorage or use seed
+const loadInitialData = (): AppData => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { 
+        ...seedData, 
+        ...parsed,
+        // Fallbacks for new fields
+        habits: parsed.habits || seedData.habits,
+        agenda: parsed.agenda || seedData.agenda,
+        lifeAreas: parsed.lifeAreas || seedData.lifeAreas,
+        risks: parsed.risks || seedData.risks,
+        nextActions: parsed.nextActions || seedData.nextActions,
+        weekSummary: parsed.weekSummary || seedData.weekSummary,
+        energyLevel: parsed.energyLevel ?? seedData.energyLevel,
+        focusLevel: parsed.focusLevel ?? seedData.focusLevel,
+        disciplineLevel: parsed.disciplineLevel ?? seedData.disciplineLevel,
+        clarityLevel: parsed.clarityLevel ?? seedData.clarityLevel,
+      };
+    }
+  } catch (err) {
+    console.error('Failed to load from localStorage:', err);
+  }
+  return seedData;
+};
+
+export const useAppStore = create<AppStore>((set, get) => ({
+  ...loadInitialData(),
+  isAddModalOpen: false,
+  editingModule: null,
+  editingModuleType: undefined,
+  sidebarCollapsed: false,
+
+  saveToStorage: () => {
+    const state = get();
+    const data: AppData = {
+      modules: state.modules,
+      categories: state.categories,
+      weeklyData: state.weeklyData,
+      quickCaptures: state.quickCaptures,
+      weekFocus: state.weekFocus,
+      priorities: state.priorities,
+      
+      habits: state.habits,
+      agenda: state.agenda,
+      lifeAreas: state.lifeAreas,
+      risks: state.risks,
+      nextActions: state.nextActions,
+      weekSummary: state.weekSummary,
+      energyLevel: state.energyLevel,
+      focusLevel: state.focusLevel,
+      disciplineLevel: state.disciplineLevel,
+      clarityLevel: state.clarityLevel,
+      
+      version: '1.0',
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  },
+
+  addModule: (moduleData) => {
+    const newModule: Module = {
+      ...moduleData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      order: get().modules.length,
+    };
+    set({ modules: [...get().modules, newModule] });
+    get().saveToStorage();
+  },
+
+  updateModule: (id, updates) => {
+    set({
+      modules: get().modules.map((m) =>
+        m.id === id ? { ...m, ...updates, updatedAt: new Date().toISOString() } : m
+      ),
+    });
+    get().saveToStorage();
+  },
+
+  deleteModule: (id) => {
+    set({ modules: get().modules.filter((m) => m.id !== id) });
+    get().saveToStorage();
+  },
+
+  duplicateModule: (id) => {
+    const original = get().modules.find((m) => m.id === id);
+    if (!original) return;
+    
+    const duplicate: Module = {
+      ...original,
+      id: Date.now().toString(),
+      title: `${original.title} (Cópia)`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      order: get().modules.length,
+    };
+    set({ modules: [...get().modules, duplicate] });
+    get().saveToStorage();
+  },
+
+  reorderModules: (ids) => {
+    const modules = get().modules;
+    const reordered = ids.map((id, index) => {
+      const module = modules.find((m) => m.id === id);
+      return module ? { ...module, order: index } : null;
+    }).filter(Boolean) as Module[];
+    
+    set({ modules: reordered });
+    get().saveToStorage();
+  },
+
+  addCategory: (cat) => {
+    const newCat: Category = {
+      ...cat,
+      id: `cat-${Date.now()}`,
+    };
+    set({ categories: [...get().categories, newCat] });
+    get().saveToStorage();
+  },
+
+  addQuickCapture: (text) => {
+    const newCapture = {
+      id: `qc-${Date.now()}`,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    set({ quickCaptures: [newCapture, ...get().quickCaptures] });
+    get().saveToStorage();
+  },
+
+  togglePriority: (id) => {
+    set({
+      priorities: get().priorities.map((p) =>
+        p.id === id ? { ...p, done: !p.done } : p
+      ),
+    });
+    get().saveToStorage();
+  },
+
+  addPriority: (text) => {
+    const newPriority = {
+      id: `p-${Date.now()}`,
+      text,
+      done: false,
+      order: get().priorities.length,
+    };
+    set({ priorities: [...get().priorities, newPriority] });
+    get().saveToStorage();
+  },
+
+  reorderPriorities: (ids) => {
+    const priorities = get().priorities;
+    const reordered = ids.map((id, index) => {
+      const priority = priorities.find((p) => p.id === id);
+      return priority ? { ...priority, order: index } : null;
+    }).filter(Boolean) as { id: string; text: string; done: boolean; order: number }[];
+    
+    set({ priorities: reordered });
+    get().saveToStorage();
+  },
+
+  setWeekFocus: (focus) => {
+    set({ weekFocus: focus });
+    get().saveToStorage();
+  },
+
+  openAddModal: (type, editing) => {
+    set({ 
+      isAddModalOpen: true, 
+      editingModule: editing || null,
+      editingModuleType: type 
+    });
+  },
+
+  closeAddModal: () => {
+    set({ isAddModalOpen: false, editingModule: null, editingModuleType: undefined });
+  },
+
+  setSidebarCollapsed: (collapsed) => {
+    set({ sidebarCollapsed: collapsed });
+  },
+
+  toggleHabit: (id) => {
+    set({
+      habits: get().habits.map((h) => {
+        if (h.id === id) {
+          const newDone = !h.done;
+          return { ...h, done: newDone, streak: newDone ? h.streak + 1 : Math.max(0, h.streak - 1) };
+        }
+        return h;
+      })
+    });
+    get().saveToStorage();
+  },
+
+  addHabitEntry: (habit) => {
+    const newHabit = {
+      ...habit,
+      id: `h-${Date.now()}`
+    };
+    set({ habits: [...get().habits, newHabit] });
+    get().saveToStorage();
+  },
+
+  addAgendaItem: (item) => {
+    const newItem = {
+      ...item,
+      id: `ag-${Date.now()}`
+    };
+    // Keep it sorted by time if desired, but here we just append or sort on render
+    set({ agenda: [...get().agenda, newItem] });
+    get().saveToStorage();
+  },
+
+  toggleAgendaItem: (id) => {
+    set({
+      agenda: get().agenda.map((a) => a.id === id ? { ...a, done: !a.done } : a)
+    });
+    get().saveToStorage();
+  },
+
+  addRisk: (risk) => {
+    const newRisk = {
+      ...risk,
+      id: `r-${Date.now()}`
+    };
+    set({ risks: [...get().risks, newRisk] });
+    get().saveToStorage();
+  },
+
+  addNextAction: (text, project) => {
+    const newAction = {
+      id: `na-${Date.now()}`,
+      text,
+      done: false,
+      project
+    };
+    set({ nextActions: [...get().nextActions, newAction] });
+    get().saveToStorage();
+  },
+
+  toggleNextAction: (id) => {
+    set({
+      nextActions: get().nextActions.map((n) => n.id === id ? { ...n, done: !n.done } : n)
+    });
+    get().saveToStorage();
+  },
+
+  setLifeAreaScore: (id, score) => {
+    set({
+      lifeAreas: get().lifeAreas.map((l) => l.id === id ? { ...l, score } : l)
+    });
+    get().saveToStorage();
+  },
+
+  setEnergyLevel: (n) => { set({ energyLevel: n }); get().saveToStorage(); },
+  setFocusLevel: (n) => { set({ focusLevel: n }); get().saveToStorage(); },
+  setDisciplineLevel: (n) => { set({ disciplineLevel: n }); get().saveToStorage(); },
+  setClarityLevel: (n) => { set({ clarityLevel: n }); get().saveToStorage(); },
+  
+  setWeekSummary: (text) => { set({ weekSummary: text }); get().saveToStorage(); },
+
+  exportData: () => {
+    const state = get();
+    const data: AppData = {
+      modules: state.modules,
+      categories: state.categories,
+      weeklyData: state.weeklyData,
+      quickCaptures: state.quickCaptures,
+      weekFocus: state.weekFocus,
+      priorities: state.priorities,
+      habits: state.habits,
+      agenda: state.agenda,
+      lifeAreas: state.lifeAreas,
+      risks: state.risks,
+      nextActions: state.nextActions,
+      weekSummary: state.weekSummary,
+      energyLevel: state.energyLevel,
+      focusLevel: state.focusLevel,
+      disciplineLevel: state.disciplineLevel,
+      clarityLevel: state.clarityLevel,
+      version: '1.0',
+    };
+    return JSON.stringify(data, null, 2);
+  },
+
+  importData: (json) => {
+    try {
+      const parsed = JSON.parse(json) as AppData;
+      set({
+        modules: parsed.modules || [],
+        categories: parsed.categories || [],
+        weeklyData: parsed.weeklyData || [],
+        quickCaptures: parsed.quickCaptures || [],
+        weekFocus: parsed.weekFocus || '',
+        priorities: parsed.priorities || [],
+        habits: parsed.habits || [],
+        agenda: parsed.agenda || [],
+        lifeAreas: parsed.lifeAreas || [],
+        risks: parsed.risks || [],
+        nextActions: parsed.nextActions || [],
+        weekSummary: parsed.weekSummary || '',
+        energyLevel: parsed.energyLevel ?? 50,
+        focusLevel: parsed.focusLevel ?? 50,
+        disciplineLevel: parsed.disciplineLevel ?? 50,
+        clarityLevel: parsed.clarityLevel ?? 50,
+      });
+      get().saveToStorage();
+      return true;
+    } catch (err) {
+      console.error('Failed to import data:', err);
+      return false;
+    }
+  },
+}));

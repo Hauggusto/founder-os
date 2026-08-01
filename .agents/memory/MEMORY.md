@@ -1,0 +1,1 @@
+- [Founder OS architecture](founder-os.md) — cockpit dashboard: react-vite, zustand + localStorage, no backend, recharts for charts
