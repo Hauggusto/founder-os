@@ -16,21 +16,31 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     });
 
     async function initializeSession() {
+      const query = new URLSearchParams(window.location.search);
+      const authorizationCode = query.get('code');
       const hash = new URLSearchParams(window.location.hash.slice(1));
       const accessToken = hash.get('access_token');
       const refreshToken = hash.get('refresh_token');
+      let callbackHandled = false;
+
+      if (authorizationCode) {
+        const { error } = await supabase!.auth.exchangeCodeForSession(authorizationCode);
+        callbackHandled = !error;
+      }
 
       // Some OAuth redirects return an implicit-flow session in the URL hash.
       // Persist it explicitly before checking the current session.
-      if (accessToken && refreshToken) {
+      if (!callbackHandled && accessToken && refreshToken) {
         const { error } = await supabase!.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
 
-        if (!error) {
-          window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
-        }
+        callbackHandled = !error;
+      }
+
+      if (callbackHandled) {
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
 
       const { data } = await supabase!.auth.getSession();
