@@ -27,7 +27,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { DataManager } from './DataManager';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const navGroups = [
   {
@@ -87,18 +87,44 @@ function ProfileMark({ photo }: { photo: string }) { return photo ? <img src={ph
 export function Sidebar() {
   const [location] = useLocation();
   const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem('founder-os-profile-photo') || '');
-  const { openAddModal, sidebarCollapsed: collapsed, setSidebarCollapsed, modules, transactions } = useAppStore();
+  const { openAddModal, sidebarCollapsed: collapsed, setSidebarCollapsed, sidebarWidth, setSidebarWidth, modules, transactions } = useAppStore();
+  const [resizing, setResizing] = useState(false);
   const primaryCash = transactions.filter((transaction) => transaction.type === 'income').reduce((sum, transaction) => sum + transaction.amount, 0) - transactions.filter((transaction) => transaction.type === 'expense').reduce((sum, transaction) => sum + transaction.amount, 0);
   const floorAlertActive = primaryCash < 1000;
   const uploadProfile = (file?: File) => { if (!file) return; const reader = new FileReader(); reader.onload = () => { const value = String(reader.result); setProfilePhoto(value); localStorage.setItem('founder-os-profile-photo', value); }; reader.readAsDataURL(file); };
 
+  useEffect(() => {
+    if (!resizing) return;
+    const move = (event: PointerEvent) => setSidebarWidth(event.clientX);
+    const stop = () => setResizing(false);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop, { once: true });
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [resizing, setSidebarWidth]);
+
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 60 : 220 }}
+      animate={{ width: collapsed ? 60 : sidebarWidth }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       className="fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-sidebar-border bg-[#0B0F14] shadow-[8px_0_30px_rgba(0,0,0,0.18)]"
     >
+      {!collapsed && <div
+        role="separator"
+        aria-label="Redimensionar menu lateral"
+        aria-orientation="vertical"
+        title="Arraste para ajustar a largura do menu"
+        onPointerDown={(event) => { event.preventDefault(); setResizing(true); }}
+        className={`absolute right-[-5px] top-0 z-[60] h-full w-[10px] cursor-col-resize transition-colors ${resizing ? 'bg-primary/30' : 'hover:bg-primary/20'}`}
+      />}
+
       {/* Logo */}
       <div className="h-48 flex items-center justify-center px-4">
         <AnimatePresence mode="wait">

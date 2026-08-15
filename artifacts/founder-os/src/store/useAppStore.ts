@@ -155,6 +155,7 @@ interface AppStore extends AppData {
   editingModule: Module | null;
   editingModuleType?: ModuleType;
   sidebarCollapsed: boolean;
+  sidebarWidth: number;
   
   // Module actions
   addModule: (module: Omit<Module, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -184,6 +185,7 @@ interface AppStore extends AppData {
   
   // New actions
   setSidebarCollapsed: (collapsed: boolean) => void;
+  setSidebarWidth: (width: number) => void;
   toggleHabit: (id: string) => void;
   addHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
   addAgendaItem: (item: Omit<AgendaItem, 'id'>) => void;
@@ -253,6 +255,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   editingModule: null,
   editingModuleType: undefined,
   sidebarCollapsed: false,
+  sidebarWidth: Number(localStorage.getItem('founder-os-sidebar-width')) || 220,
 
   saveToStorage: () => {
     const state = get();
@@ -412,6 +415,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setSidebarCollapsed: (collapsed) => {
     set({ sidebarCollapsed: collapsed });
+  },
+
+  setSidebarWidth: (width) => {
+    const nextWidth = Math.min(420, Math.max(180, Math.round(width)));
+    localStorage.setItem('founder-os-sidebar-width', String(nextWidth));
+    set({ sidebarWidth: nextWidth });
   },
 
   toggleHabit: (id) => {
