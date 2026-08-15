@@ -208,6 +208,8 @@ interface AppStore extends AppData {
   toggleHabit: (id: string) => void;
   setHabitCheck: (id: string, date: string, status: IdentityStatus | null) => void;
   addHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
+  updateHabitEntry: (id: string, updates: Partial<HabitEntry>) => void;
+  deleteHabitEntry: (id: string) => void;
   addAgendaItem: (item: Omit<AgendaItem, 'id'>) => void;
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
@@ -477,6 +479,16 @@ export const useAppStore = create<AppStore>((set, get) => ({
       id: `h-${Date.now()}`
     };
     set({ habits: [...get().habits, newHabit] });
+    get().saveToStorage();
+  },
+
+  updateHabitEntry: (id, updates) => {
+    set({ habits: get().habits.map((habit) => habit.id === id ? { ...habit, ...updates } : habit) });
+    get().saveToStorage();
+  },
+
+  deleteHabitEntry: (id) => {
+    set({ habits: get().habits.filter((habit) => habit.id !== id) });
     get().saveToStorage();
   },
 
