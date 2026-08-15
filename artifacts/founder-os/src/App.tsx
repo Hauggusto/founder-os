@@ -19,6 +19,7 @@ import Agents from '@/pages/Agents';
 import { AgentAnalytics } from '@/components/agents/AgentAnalytics';
 import FinancialAccount from '@/pages/FinancialAccount';
 import Placeholder from '@/pages/Placeholder';
+import Analysis from '@/pages/Analysis';
 import Learning from '@/pages/Learning';
 import Opportunities from '@/pages/Opportunities';
 import { AuthGate } from '@/components/auth/AuthGate';
@@ -53,7 +54,7 @@ function Router() {
         </Route>
         <Route path="/recursos" component={Resources} />
         <Route path="/analises">
-          <Placeholder title="Análises" description="Dashboards, métricas consolidadas e tendências." />
+          <Analysis />
         </Route>
         
         <Route path="/canais">
