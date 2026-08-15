@@ -9,9 +9,42 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
-    supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); });
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
-    return () => data.subscription.unsubscribe();
+
+    let mounted = true;
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (mounted) setSession(next);
+    });
+
+    async function initializeSession() {
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      const accessToken = hash.get('access_token');
+      const refreshToken = hash.get('refresh_token');
+
+      // Some OAuth redirects return an implicit-flow session in the URL hash.
+      // Persist it explicitly before checking the current session.
+      if (accessToken && refreshToken) {
+        const { error } = await supabase!.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (!error) {
+          window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
+        }
+      }
+
+      const { data } = await supabase!.auth.getSession();
+      if (mounted) {
+        setSession(data.session);
+        setLoading(false);
+      }
+    }
+
+    void initializeSession();
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   if (!isSupabaseConfigured) {
