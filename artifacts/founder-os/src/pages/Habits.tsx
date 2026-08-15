@@ -415,8 +415,8 @@ export default function Habits() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {categoryData.map((category) => {
           const items = habits.filter((habit) => (habit.category || "Rotina") === category.name);
-          return <article key={category.name} className="rounded-2xl border border-cyan-400/15 bg-card/70 p-4 transition hover:border-cyan-400/30 hover:bg-card/90">
-            <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-medium uppercase tracking-[.18em] text-cyan-200/75">Categoria</p><h3 className="mt-1 text-base font-semibold text-foreground/90">{category.name}</h3></div><span className="rounded-full border border-cyan-400/20 bg-cyan-400/[.04] px-2.5 py-1 text-xs font-medium text-cyan-300">{category.execução}%</span></div>
+          return <article key={category.name} className="rounded-2xl border border-white/[.08] bg-card/70 p-4 transition hover:border-cyan-400/25 hover:bg-card/90">
+            <div className="mb-2 flex items-start justify-between gap-3"><div><p className="text-[10px] font-normal uppercase tracking-[.16em] text-cyan-200/60">Categoria</p><h3 className="mt-0.5 text-base font-medium text-foreground/85">{category.name}</h3></div><span className="rounded-full border border-white/[.08] bg-white/[.025] px-2.5 py-1 text-xs font-normal text-cyan-300/85">{category.execução}%</span></div>
             <div className="mb-3 h-1 overflow-hidden rounded-full bg-white/[.06]"><div className="h-full rounded-full bg-cyan-400/70 transition-all" style={{ width: `${category.execução}%` }} /></div>
             <div className="space-y-1.5">{items.map((habit) => <button key={habit.id} type="button" onClick={() => editHabit(habit)} className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground/75 transition hover:bg-white/[.04] hover:text-cyan-200"><span className="truncate">{habit.title}</span><span className="ml-2 text-[10px] text-muted-foreground/45">{habit.streak}d</span></button>)}</div>
           </article>;
@@ -471,7 +471,7 @@ export default function Habits() {
                   <tr key={`category-${category}`}>
                     <td
                       colSpan={days.length + 1}
-                      className="border-b border-white/[.06] bg-cyan-400/[.025] px-5 pb-3 pt-5 text-[11px] font-medium uppercase tracking-[.2em] text-cyan-200/80"
+                      className="border-b border-white/[.05] bg-background/20 px-5 pb-2 pt-4 text-[11px] font-medium uppercase tracking-[.2em] text-cyan-200/75"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
