@@ -1,96 +1,10 @@
+import { Link } from 'wouter';
+import { ArrowRight, FolderKanban, Plus } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { MoreVertical, Copy, Archive, Trash, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export function ProjectsBlock() {
-  const { modules, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
-  
-  const projects = modules
-    .filter(m => m.type === 'project' && (m.status === 'active' || m.status === 'paused'))
-    .sort((a, b) => a.order - b.order);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/30';
-      case 'paused':
-        return 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  return (
-    <div className="bg-card border border-card-border rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-          Projetos Ativos
-        </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => openAddModal('project')}
-          className="text-xs text-primary hover:text-primary/90 h-8 px-2"
-        >
-          + Novo Projeto
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {projects.map((project) => (
-          <div
-            key={project.id}
-            className="bg-[#14171F] border border-[#ffffff0a] rounded-lg p-4 flex items-center justify-between group"
-          >
-            <div className="flex-1 min-w-0 pr-4">
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="font-semibold text-sm text-foreground truncate">
-                  {project.title}
-                </h4>
-                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border ${getStatusColor(project.status)}`}>
-                  {project.status === 'active' ? 'Ativo' : 'Pausado'}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3 w-full">
-                <Progress value={project.progress || 0} className="h-1.5 flex-1 bg-[#ffffff10] [&>div]:bg-[#00C9FF]" />
-                <span className="text-xs font-medium text-muted-foreground w-8 text-right">
-                  {project.progress || 0}%
-                </span>
-              </div>
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40 bg-card border-card-border">
-                <DropdownMenuItem onClick={() => openAddModal('project', project)}>
-                  <Edit className="w-4 h-4 mr-2" /> Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => duplicateModule(project.id)}>
-                  <Copy className="w-4 h-4 mr-2" /> Duplicar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => updateModule(project.id, { status: 'archived' })}>
-                  <Archive className="w-4 h-4 mr-2" /> Arquivar
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive focus:bg-destructive/10" onClick={() => deleteModule(project.id)}>
-                  <Trash className="w-4 h-4 mr-2" /> Excluir
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const { modules, openAddModal } = useAppStore();
+  const projects = modules.filter((module) => module.type === 'project' && (module.status === 'active' || module.status === 'paused')).sort((a, b) => a.order - b.order).slice(0, 6);
+  return <section className="overflow-hidden rounded-xl border border-[#00c9ff35] bg-[#07101a]/80 shadow-[0_0_22px_#00c9ff0b]"><div className="flex items-center justify-between border-b border-[#ffffff0a] px-5 py-4"><div className="flex items-center gap-2.5"><FolderKanban className="h-4 w-4 text-[#38BDF8]" style={{ filter: 'drop-shadow(0 0 5px #38BDF8)' }} /><h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-foreground">Projetos ativos</h3></div><Button variant="ghost" size="sm" onClick={() => openAddModal('project')} className="h-7 gap-1 px-2 text-xs text-primary"><Plus className="h-3.5 w-3.5" /> Novo</Button></div><div className="space-y-1 p-3">{projects.map((project) => { const progress = project.progress || 0; return <div key={project.id} className="rounded-lg border border-white/[0.06] bg-black/10 px-3 py-3 transition hover:border-primary/30"><div className="flex items-center gap-2.5"><div className="min-w-0 flex-1"><p className="truncate text-xs font-medium text-foreground">{project.title}</p><p className="mt-1 text-[10px] text-muted-foreground">{project.phase || (project.status === 'paused' ? 'Pausado' : 'Em andamento')}</p></div><span className="text-xs font-semibold text-foreground">{progress}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#163342]"><div className="h-full rounded-full bg-[#22B8F0] shadow-[0_0_8px_rgba(34,184,240,.65)]" style={{ width: `${progress}%` }} /></div><p className="mt-1 truncate text-[10px] text-muted-foreground">{project.nextAction || 'Definir próxima ação'}</p></div>})}{projects.length === 0 && <p className="p-4 text-xs text-muted-foreground">Nenhum projeto ativo.</p>}</div><Link href="/projetos" className="flex items-center justify-center gap-1.5 border-t border-[#ffffff0a] px-5 py-3 text-xs font-medium text-primary transition-colors hover:bg-primary/[0.04]">Ver todos os projetos <ArrowRight className="h-3.5 w-3.5" /></Link></section>;
 }

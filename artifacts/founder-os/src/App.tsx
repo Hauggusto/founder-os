@@ -8,7 +8,17 @@ import { AddModuleModal } from '@/components/modules/AddModuleModal';
 import Overview from '@/pages/Overview';
 import Financial from '@/pages/Financial';
 import Projects from '@/pages/Projects';
+import Identity from '@/pages/Identity';
+import AlertRisk from '@/pages/AlertRisk';
+import Resources from '@/pages/Resources';
+import { ProductivityPanel } from '@/components/commercial/ProductivityPanel';
+import { ProductivityGauge } from '@/components/commercial/ProductivityGauge';
+import Commercial from '@/pages/Commercial';
+import Agents from '@/pages/Agents';
+import { AgentAnalytics } from '@/components/agents/AgentAnalytics';
+import FinancialAccount from '@/pages/FinancialAccount';
 import Placeholder from '@/pages/Placeholder';
+import Opportunities from '@/pages/Opportunities';
 
 const queryClient = new QueryClient();
 
@@ -18,29 +28,31 @@ function Router() {
       <Switch>
         <Route path="/" component={Overview} />
         <Route path="/financeiro" component={Financial} />
+        <Route path="/produtividade">
+          <div className="mx-auto w-full max-w-[1500px] space-y-6"><header className="rounded-2xl border border-[#10B98144] bg-gradient-to-r from-[#061510] via-card to-[#10141a] p-6"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-400">ROTINA / PERFORMANCE</p><h1 className="mt-2 text-3xl font-bold">Produtividade diária</h1><p className="mt-1 text-sm text-muted-foreground">Registre o que você fez hoje e acompanhe sua evolução durante a semana.</p></header><ProductivityGauge /><ProductivityPanel /></div>
+        </Route>
+        <Route path="/financeiro/conta/:id" component={FinancialAccount} />
         <Route path="/projetos" component={Projects} />
         
         <Route path="/comercial">
-          <Placeholder title="Comercial" description="Pipeline de vendas e contratos em andamento." />
+          <Commercial />
+          <div className="mx-auto mt-6 w-full max-w-[1500px]"><ProductivityPanel /></div>
+        </Route>
+        <Route path="/oportunidades">
+          <Opportunities />
         </Route>
         <Route path="/habitos">
           <Placeholder title="Hábitos" description="Rastreamento e evolução dos seus hábitos diários." />
         </Route>
-        <Route path="/identidade">
-          <Placeholder
-            title="Identidade"
-            description="Seu espaço para definir missão, valores e visão do seu trabalho como fundador."
-          />
-        </Route>
+        <Route path="/alertas-risco" component={AlertRisk} />
+        <Route path="/identidade" component={Identity} />
         <Route path="/aprendizado">
           <Placeholder title="Aprendizado" description="Livros, cursos e insights em progresso." />
         </Route>
         <Route path="/relacoes">
           <Placeholder title="Relações" description="Pessoas importantes, relacionamentos e rede de contatos." />
         </Route>
-        <Route path="/recursos">
-          <Placeholder title="Recursos" description="Ferramentas, subscriptions e ativos em uso." />
-        </Route>
+        <Route path="/recursos" component={Resources} />
         <Route path="/analises">
           <Placeholder title="Análises" description="Dashboards, métricas consolidadas e tendências." />
         </Route>
@@ -52,10 +64,8 @@ function Router() {
           />
         </Route>
         <Route path="/agentes">
-          <Placeholder
-            title="Agentes"
-            description="Configure agentes automáticos para acelerar suas operações."
-          />
+          <Agents />
+          <div className="mx-auto mt-6 w-full max-w-[1500px]"><AgentAnalytics /></div>
         </Route>
         <Route path="/biblioteca">
           <Placeholder

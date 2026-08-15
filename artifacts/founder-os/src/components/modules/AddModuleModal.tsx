@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { ImagePlus, X } from 'lucide-react';
 
 const MODULE_TYPES: { value: ModuleType; label: string }[] = [
   { value: 'metric', label: 'Métrica' },
@@ -53,6 +54,10 @@ export function AddModuleModal() {
   const [value, setValue] = useState('');
   const [description, setDescription] = useState('');
   const [progress, setProgress] = useState(0);
+  const [thumbnail, setThumbnail] = useState('');
+  const [thumbnailError, setThumbnailError] = useState('');
+  const [phase, setPhase] = useState('');
+  const [nextAction, setNextAction] = useState('');
   const [tags, setTags] = useState('');
   const [url, setUrl] = useState('');
   const [unit, setUnit] = useState('');
@@ -71,6 +76,10 @@ export function AddModuleModal() {
       setValue(editingModule.value?.toString() || '');
       setDescription(editingModule.description || '');
       setProgress(editingModule.progress || 0);
+      setThumbnail(editingModule.thumbnail || '');
+      setThumbnailError('');
+      setPhase(editingModule.phase || '');
+      setNextAction(editingModule.nextAction || '');
       setTags(editingModule.tags?.join(', ') || '');
       setUrl(editingModule.url || '');
       setUnit(editingModule.unit || '');
@@ -86,12 +95,34 @@ export function AddModuleModal() {
       setValue('');
       setDescription('');
       setProgress(0);
+      setThumbnail('');
+      setThumbnailError('');
+      setPhase('');
+      setNextAction('');
       setTags('');
       setUrl('');
       setUnit('');
       setAccountType('');
     }
   }, [editingModule, editingModuleType, isAddModalOpen]);
+
+  const handleThumbnailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setThumbnailError('Escolha um arquivo de imagem.');
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setThumbnailError('A imagem deve ter no máximo 3 MB.');
+      return;
+    }
+
+    setThumbnailError('');
+    const reader = new FileReader();
+    reader.onload = () => setThumbnail(typeof reader.result === 'string' ? reader.result : '');
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -110,7 +141,14 @@ export function AddModuleModal() {
     if (type === 'project') {
       moduleData.projectName = title;
       moduleData.progress = progress;
+      moduleData.thumbnail = thumbnail || undefined;
+      moduleData.phase = phase || undefined;
+      moduleData.nextAction = nextAction || undefined;
       if (tags) moduleData.tags = tags.split(',').map(t => t.trim());
+    }
+
+    if (type === 'financial_account') {
+      moduleData.thumbnail = thumbnail || undefined;
     }
 
     if (type === 'metric') {
@@ -268,8 +306,34 @@ export function AddModuleModal() {
           </div>
 
           {/* Type-specific fields */}
-          {type === 'project' && (
+          {(type === 'project' || type === 'financial_account') && (
             <>
+              <div className="space-y-2">
+                <Label htmlFor="project-thumbnail">Imagem do cartão / conta</Label>
+                {thumbnail ? (
+                  <div className="group relative overflow-hidden rounded-lg border border-card-border bg-background">
+                    <img src={thumbnail} alt="Prévia da capa do projeto" className="aspect-video w-full object-cover" />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => setThumbnail('')}
+                      className="absolute right-2 top-2 h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                      aria-label="Remover imagem"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label htmlFor="project-thumbnail" className="flex aspect-[2.2/1] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-input bg-background text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                    <ImagePlus className="h-6 w-6" />
+                    <span className="text-xs">Clique para enviar a imagem do cartão ou conta</span>
+                    <span className="text-[10px] opacity-70">JPG, PNG ou WebP</span>
+                  </label>
+                )}
+                <input id="project-thumbnail" type="file" accept="image/*" onChange={handleThumbnailChange} className="sr-only" />
+                {thumbnailError && <p className="text-xs text-destructive">{thumbnailError}</p>}
+              </div>
               <div className="space-y-2">
                 <Label>Progresso: {progress}%</Label>
                 <Slider
@@ -288,6 +352,20 @@ export function AddModuleModal() {
                   placeholder="Ex: MVP, B2B, Q2"
                   className="bg-background border-input"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Fase atual</Label>
+                  <Input value={phase} onChange={(e) => setPhase(e.target.value)} className="bg-background border-input" placeholder="Construção, Validação..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Próxima ação</Label>
+                  <Input value={nextAction} onChange={(e) => setNextAction(e.target.value)} className="bg-background border-input" placeholder="Definir próximo passo" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Link do canal / projeto</Label>
+                <Input type="url" value={url} onChange={(e) => setUrl(e.target.value)} className="bg-background border-input" placeholder="https://youtube.com/..." />
               </div>
             </>
           )}

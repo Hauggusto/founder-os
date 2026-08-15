@@ -1,126 +1,93 @@
 import { useState } from 'react';
-import { useAppStore } from '@/store/useAppStore';
+import { useLocation } from 'wouter';
+import { BarChart2, Bot, FolderKanban, GitBranch, ListTodo, Search, type LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Plus, Target, CheckSquare, Search, Lightbulb } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAppStore } from '@/store/useAppStore';
+
+type QuickAction = {
+  label: string;
+  icon: LucideIcon;
+  color: string;
+  glow: string;
+  onClick: () => void;
+};
 
 export function BottomBar() {
-  const { sidebarCollapsed, openAddModal, addHabitEntry, addQuickCapture } = useAppStore();
+  const [, navigate] = useLocation();
+  const { sidebarCollapsed, openAddModal, addQuickCapture } = useAppStore();
   const [captureText, setCaptureText] = useState('');
-  const [isHabitModalOpen, setIsHabitModalOpen] = useState(false);
-  
-  // Local state for New Habit Modal
-  const [habitTitle, setHabitTitle] = useState('');
-  const [habitCategory, setHabitCategory] = useState('Saúde');
 
-  const handleCaptureSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && captureText.trim()) {
+  const handleCaptureSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && captureText.trim()) {
       addQuickCapture(captureText.trim());
       setCaptureText('');
     }
   };
 
-  const handleAddHabit = () => {
-    if (habitTitle.trim()) {
-      addHabitEntry({
-        title: habitTitle,
-        category: habitCategory,
-        done: false,
-        streak: 0,
-        order: 99
-      });
-      setHabitTitle('');
-      setIsHabitModalOpen(false);
-    }
-  };
+  const actions: QuickAction[] = [
+    { label: 'Nova Tarefa', icon: ListTodo, color: '#00C9FF', glow: 'rgba(0,201,255,0.16)', onClick: () => openAddModal('task') },
+    { label: 'Novo Projeto', icon: FolderKanban, color: '#38BDF8', glow: 'rgba(56,189,248,0.16)', onClick: () => openAddModal('project') },
+    { label: 'Novo Agente', icon: Bot, color: '#22D3EE', glow: 'rgba(34,211,238,0.16)', onClick: () => navigate('/agentes') },
+    { label: 'Novo Fluxo', icon: GitBranch, color: '#2DD4BF', glow: 'rgba(45,212,191,0.16)', onClick: () => navigate('/canais') },
+    { label: 'Relatório Semanal', icon: BarChart2, color: '#A855F7', glow: 'rgba(168,85,247,0.16)', onClick: () => navigate('/analises') },
+  ];
 
   return (
-    <>
-      <motion.div 
-        animate={{ left: sidebarCollapsed ? 60 : 220 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="fixed bottom-0 right-0 h-[52px] bg-[#0D0F14] border-t border-[#ffffff10] flex items-center px-4 gap-4 z-40"
-      >
-        <div className="flex-1 max-w-2xl flex items-center gap-2 bg-[#1A1D24] px-3 py-1.5 rounded-md border border-[#ffffff0a] focus-within:border-[#ffffff20] transition-colors">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <input 
-            type="text" 
-            placeholder="Capture uma ideia, tarefa ou observação..." 
-            className="bg-transparent border-none outline-none text-sm text-foreground w-full placeholder:text-muted-foreground/60"
+    <motion.div
+      animate={{ left: sidebarCollapsed ? 60 : 220 }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className="fixed bottom-0 right-0 z-40 border-t border-[#00C9FF]/20 bg-[#090C12]/95 px-4 py-3 shadow-[0_-8px_30px_rgba(0,201,255,0.06)] backdrop-blur-xl md:px-6"
+    >
+      <div className="mx-auto w-full max-w-[1180px]">
+        <div className="mb-2 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+            <h2 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground/80">Ações rápidas</h2>
+          </div>
+          <div className="hidden w-full max-w-[280px] items-center gap-2 rounded-md border border-[#ffffff10] bg-[#11151D] px-2.5 py-1.5 focus-within:border-primary/40 md:flex">
+            <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Captura rápida..."
+              className="w-full border-none bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/60"
+              value={captureText}
+              onChange={(event) => setCaptureText(event.target.value)}
+              onKeyDown={handleCaptureSubmit}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {actions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.label}
+                type="button"
+                onClick={action.onClick}
+                className="group relative flex h-[76px] min-w-[112px] flex-1 flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-[#ffffff12] bg-[#0E141C] px-3 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20"
+                style={{ ['--action-color' as string]: action.color, ['--action-glow' as string]: action.glow }}
+              >
+                <span className="absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100" style={{ background: `radial-gradient(circle at 50% 0%, ${action.glow}, transparent 65%)` }} />
+                <Icon className="relative h-6 w-6 transition-transform duration-200 group-hover:scale-110" style={{ color: 'var(--action-color)', filter: 'drop-shadow(0 0 6px var(--action-color))' }} />
+                <span className="relative whitespace-nowrap text-[11px] font-medium text-foreground/80 group-hover:text-foreground">{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-2 flex items-center gap-2 rounded-md border border-[#ffffff10] bg-[#11151D] px-2.5 py-1.5 md:hidden">
+          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Captura rápida..."
+            className="w-full border-none bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/60"
             value={captureText}
-            onChange={(e) => setCaptureText(e.target.value)}
+            onChange={(event) => setCaptureText(event.target.value)}
             onKeyDown={handleCaptureSubmit}
           />
         </div>
-
-        <div className="flex items-center gap-2 ml-auto">
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => openAddModal('project')}>
-            <Plus className="w-3 h-3 mr-1" />
-            Novo Projeto
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => openAddModal('note')}>
-            <Lightbulb className="w-3 h-3 mr-1" />
-            Nova Ideia
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => setIsHabitModalOpen(true)}>
-            <CheckSquare className="w-3 h-3 mr-1" />
-            Novo Hábito
-          </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground" onClick={() => openAddModal('goal')}>
-            <Target className="w-3 h-3 mr-1" />
-            Nova Meta
-          </Button>
-        </div>
-      </motion.div>
-
-      {/* Local Modal for New Habit */}
-      <Dialog open={isHabitModalOpen} onOpenChange={setIsHabitModalOpen}>
-        <DialogContent className="bg-card border-card-border sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Novo Hábito Diário</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nome do Hábito</Label>
-              <Input 
-                id="name" 
-                placeholder="Ex: Leitura 30min" 
-                value={habitTitle}
-                onChange={(e) => setHabitTitle(e.target.value)}
-                className="bg-background border-input"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="category">Categoria</Label>
-              <Select value={habitCategory} onValueChange={setHabitCategory}>
-                <SelectTrigger className="bg-background border-input">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Saúde">Saúde</SelectItem>
-                  <SelectItem value="Aprendizado">Aprendizado</SelectItem>
-                  <SelectItem value="Operações">Operações</SelectItem>
-                  <SelectItem value="Espiritualidade">Espiritualidade</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsHabitModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleAddHabit} className="bg-primary text-primary-foreground hover:bg-primary/90">Salvar Hábito</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      </div>
+    </motion.div>
   );
 }

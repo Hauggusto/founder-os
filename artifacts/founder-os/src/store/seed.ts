@@ -1,5 +1,29 @@
 import type { AppData } from './useAppStore';
 
+const identitySeedItems = [
+  { id: 'identity-1', title: 'Cumprir minha palavra', order: 0 },
+  { id: 'identity-2', title: 'Construir patrimônio', order: 1 },
+  { id: 'identity-3', title: 'Aumentar minha distribuição', order: 2 },
+  { id: 'identity-4', title: 'Fechar ciclos importantes', order: 3 },
+  { id: 'identity-5', title: 'Fortalecer meus sistemas', order: 4 },
+  { id: 'identity-distribution-evolution', title: 'Entrar em contato com processo de evolução real', order: 5 },
+];
+
+const identitySeedDay = (offset: number) => {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - offset);
+  return date.toISOString().slice(0, 10);
+};
+
+const identitySeedChecks = Array.from({ length: 28 }, (_, dayOffset) =>
+  identitySeedItems.map((item, itemIndex) => {
+    const pattern = (dayOffset * 2 + itemIndex) % 9;
+    const status = pattern === 0 || pattern === 1 ? 'missed' : pattern === 2 || pattern === 3 ? 'partial' : 'done';
+    return { id: `${item.id}-${identitySeedDay(dayOffset)}`, itemId: item.id, date: identitySeedDay(dayOffset), status } as const;
+  })
+).flat();
+
 export const seedData: AppData = {
   modules: [
     // Projects
@@ -10,6 +34,8 @@ export const seedData: AppData = {
       category: 'Produtos',
       status: 'active',
       projectName: 'Soul Krieg',
+      phase: 'Construção',
+      nextAction: 'Gravar episódios',
       progress: 65,
       tags: ['Gaming', 'Lançamento Q2'],
       order: 0,
@@ -23,6 +49,8 @@ export const seedData: AppData = {
       category: 'Produtos',
       status: 'active',
       projectName: 'Solar Machine',
+      phase: 'Validação',
+      nextAction: 'Validar MVP',
       progress: 40,
       tags: ['Hardware', 'B2B'],
       order: 1,
@@ -36,6 +64,8 @@ export const seedData: AppData = {
       category: 'Produtos',
       status: 'paused',
       projectName: 'Burry',
+      phase: 'Construção',
+      nextAction: 'Conteúdo novo',
       progress: 20,
       tags: ['SaaS', 'Pausado'],
       order: 2,
@@ -49,6 +79,8 @@ export const seedData: AppData = {
       category: 'Produtos',
       status: 'active',
       projectName: '21GO',
+      phase: 'Operação',
+      nextAction: 'SEO + Conteúdo',
       progress: 80,
       tags: ['Marketplace', 'Fase Final'],
       order: 3,
@@ -103,7 +135,7 @@ export const seedData: AppData = {
       title: 'Conta PJ',
       category: 'Financeiro',
       status: 'active',
-      balance: 32000,
+      balance: 300,
       currency: 'BRL',
       accountType: 'Corrente',
       order: 7,
@@ -150,6 +182,17 @@ export const seedData: AppData = {
     { week: '2024-W28', revenue: 21300, expenses: 12800, label: 'Sem 28' },
     { week: '2024-W29', revenue: 19700, expenses: 10200, label: 'Sem 29' },
   ],
+  transactions: [
+    { id: 'tx-1', description: 'Recebimento Solar Machine', amount: 9800, type: 'income', category: 'Vendas', account: 'Conta PJ', status: 'paid', date: '2024-06-07T10:24:00' },
+    { id: 'tx-2', description: 'Recebimento Soul Krieg', amount: 5200, type: 'income', category: 'Projetos', account: 'Conta PJ', status: 'paid', date: '2024-06-06T14:10:00' },
+    { id: 'tx-3', description: 'Consultoria estratégica', amount: 2800, type: 'income', category: 'Serviços', account: 'Conta PF', status: 'paid', date: '2024-06-05T09:15:00' },
+    { id: 'tx-4', description: 'Folha e prestadores', amount: 6400, type: 'expense', category: 'Pessoas', account: 'Conta PJ', status: 'paid', date: '2024-06-07T08:20:00' },
+    { id: 'tx-5', description: 'Ferramentas e assinaturas', amount: 890, type: 'expense', category: 'Operação', account: 'Conta PJ', status: 'paid', date: '2024-06-06T11:30:00' },
+    { id: 'tx-6', description: 'Mídia e distribuição', amount: 1250, type: 'expense', category: 'Marketing', account: 'Conta PJ', status: 'pending', date: '2024-06-05T16:45:00' },
+    { id: 'tx-7', description: 'Impostos do mês', amount: 740, type: 'expense', category: 'Impostos', account: 'Conta PJ', status: 'paid', date: '2024-06-04T10:05:00' },
+    { id: 'tx-8', description: 'Reembolso de viagem', amount: 320, type: 'expense', category: 'Deslocamento', account: 'Conta PF', status: 'refunded', date: '2024-06-03T13:40:00' },
+  ],
+  financialSummary: {},
   quickCaptures: [
     {
       id: 'qc-1',
@@ -193,6 +236,8 @@ export const seedData: AppData = {
     { id: 'r-2', title: 'Equipe Soul Krieg desmotivada', severity: 'medium', category: 'Pessoas' },
     { id: 'r-3', title: 'Burry perdendo janela de mercado', severity: 'low', category: 'Estratégia' },
   ],
+  identityItems: identitySeedItems,
+  identityChecks: identitySeedChecks,
   nextActions: [
     { id: 'na-1', text: 'Enviar proposta revisada — Solar Machine', done: false, project: 'Solar Machine' },
     { id: 'na-2', text: 'Contratar dev sênior para Soul Krieg', done: false, project: 'Soul Krieg' },

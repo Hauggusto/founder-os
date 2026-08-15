@@ -3,7 +3,7 @@ import { useAppStore, type ModuleStatus } from '@/store/useAppStore';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Plus, MoreVertical } from 'lucide-react';
+import { ExternalLink, Link2, MoreVertical, Plus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,11 +14,27 @@ import {
 export default function Projects() {
   const { modules, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | 'all'>('all');
+  const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
+  const [dragOverProjectId, setDragOverProjectId] = useState<string | null>(null);
+  const { reorderModules } = useAppStore();
 
   const projects = modules
     .filter(m => m.type === 'project')
     .filter(m => filterStatus === 'all' || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
+
+  const moveProject = (targetId: string) => {
+    if (!draggedProjectId || draggedProjectId === targetId) return;
+    const ids = projects.map((project) => project.id);
+    const from = ids.indexOf(draggedProjectId);
+    const to = ids.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    ids.splice(from, 1);
+    ids.splice(to, 0, draggedProjectId);
+    reorderModules(ids);
+    setDraggedProjectId(null);
+    setDragOverProjectId(null);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,6 +93,7 @@ export default function Projects() {
           </Button>
         ))}
       </div>
+      <p className="mb-4 text-xs text-muted-foreground">Arraste qualquer card para reorganizar a ordem dos projetos.</p>
 
       {projects.length === 0 ? (
         <div className="bg-card border border-card-border rounded-lg p-12 text-center">
@@ -92,50 +109,46 @@ export default function Projects() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {projects.map((project) => (
             <div
               key={project.id}
-              className="bg-card border border-card-border rounded-lg p-5 hover:scale-[1.01] transition-transform duration-200"
+              className="cursor-grab overflow-hidden bg-card border border-card-border rounded-lg transition-transform duration-200 hover:scale-[1.01] active:cursor-grabbing active:scale-[0.99]"
               data-testid={`project-card-${project.id}`}
+              draggable
+              onDragStart={() => setDraggedProjectId(project.id)}
+              onDragOver={(event) => { event.preventDefault(); setDragOverProjectId(project.id); }}
+              onDragLeave={() => setDragOverProjectId(null)}
+              onDrop={(event) => { event.preventDefault(); moveProject(project.id); }}
+              onDragEnd={() => { setDraggedProjectId(null); setDragOverProjectId(null); }}
+              style={{ borderColor: dragOverProjectId === project.id ? '#00C9FF99' : undefined, boxShadow: dragOverProjectId === project.id ? '0 0 18px #00C9FF33' : undefined }}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-lg mb-2">
-                    {project.title}
-                  </h3>
+              {project.thumbnail ? (
+                    <img
+                      src={project.thumbnail}
+                      alt={`Thumbnail do projeto ${project.title}`}
+                      className="aspect-video w-full border-b border-[#ffffff0a] object-cover"
+                    />
+                  ) : (
+                    <div className="flex aspect-video w-full items-center justify-center border-b border-dashed border-[#ffffff15] bg-background text-[11px] text-muted-foreground">
+                      Sem thumbnail
+                    </div>
+                  )}
+              <div className="p-5">
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-semibold text-foreground text-lg">
+                      {project.title}
+                    </h3>
+                    <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">Grupo: {project.category || 'Sem grupo'}</p>
                   <Badge
                     variant="outline"
                     className={`text-xs ${getStatusColor(project.status)}`}
                   >
                     {getStatusLabel(project.status)}
                   </Badge>
+                  </div>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-popover border-popover-border">
-                    <DropdownMenuItem onClick={() => openAddModal('project', project)}>
-                      Editar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => duplicateModule(project.id)}>
-                      Duplicar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateModule(project.id, { status: 'archived' })}>
-                      Arquivar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => deleteModule(project.id)}
-                      className="text-destructive"
-                    >
-                      Excluir
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
 
               <div className="space-y-3">
                 <div>
@@ -166,6 +179,14 @@ export default function Projects() {
                     ))}
                   </div>
                 )}
+              </div>
+              <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-3">
+                {project.url ? <a href={project.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"><Link2 className="h-3.5 w-3.5" /> Abrir canal <ExternalLink className="h-3 w-3" /></a> : <button onClick={() => openAddModal('project', project)} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"><Link2 className="h-3.5 w-3.5" /> Adicionar link</button>}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-popover border-popover-border"><DropdownMenuItem onClick={() => openAddModal('project', project)}>Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateModule(project.id)}>Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => updateModule(project.id, { status: 'archived' })}>Arquivar</DropdownMenuItem><DropdownMenuItem onClick={() => deleteModule(project.id)} className="text-destructive">Excluir</DropdownMenuItem></DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               </div>
             </div>
           ))}

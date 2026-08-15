@@ -17,7 +17,7 @@ export function Layout({ children }: LayoutProps) {
       <motion.main
         animate={{ marginLeft: sidebarCollapsed ? 60 : 220 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="min-h-screen pb-16 p-6"
+        className="min-h-screen pb-40 p-6"
       >
         {children}
       </motion.main>

@@ -5,6 +5,7 @@ const STORAGE_KEY = 'founder-os-data';
 
 export type ModuleType = 'metric' | 'project' | 'financial_account' | 'task' | 'note' | 'link' | 'habit' | 'goal';
 export type ModuleStatus = 'active' | 'paused' | 'archived' | 'done';
+export type IdentityStatus = 'done' | 'partial' | 'missed';
 
 export interface Module {
   id: string;
@@ -21,6 +22,9 @@ export interface Module {
   updatedAt: string;
   // Project fields
   projectName?: string;
+  thumbnail?: string;
+  phase?: string;
+  nextAction?: string;
   progress?: number;
   tags?: string[];
   // Task fields
@@ -55,6 +59,23 @@ export interface WeeklyEntry {
   label?: string;
 }
 
+export interface FinancialTransaction {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'income' | 'expense';
+  category: string;
+  account: string;
+  status: 'paid' | 'pending' | 'refunded';
+  date: string;
+}
+
+export interface FinancialSummaryOverrides {
+  revenue?: number;
+  expenses?: number;
+  balance?: number;
+}
+
 export interface HabitEntry {
   id: string;
   title: string;
@@ -84,12 +105,31 @@ export interface RiskItem {
   title: string;
   severity: 'high' | 'medium' | 'low';
   category: string;
+  score?: number;
+  description?: string;
+  factors?: string[];
+  action?: string;
+}
+
+export interface IdentityItem {
+  id: string;
+  title: string;
+  order: number;
+}
+
+export interface IdentityCheck {
+  id: string;
+  itemId: string;
+  date: string;
+  status: IdentityStatus;
 }
 
 export interface AppData {
   modules: Module[];
   categories: Category[];
   weeklyData: WeeklyEntry[];
+  transactions: FinancialTransaction[];
+  financialSummary: FinancialSummaryOverrides;
   quickCaptures: { id: string; text: string; createdAt: string }[];
   weekFocus: string;
   priorities: { id: string; text: string; done: boolean; order: number }[];
@@ -98,6 +138,8 @@ export interface AppData {
   agenda: AgendaItem[];
   lifeAreas: LifeArea[];
   risks: RiskItem[];
+  identityItems: IdentityItem[];
+  identityChecks: IdentityCheck[];
   nextActions: { id: string; text: string; done: boolean; project?: string }[];
   weekSummary: string;
   energyLevel: number;
@@ -134,6 +176,7 @@ interface AppStore extends AppData {
   
   // Week focus
   setWeekFocus: (focus: string) => void;
+  setFinancialSummary: (summary: Partial<FinancialSummaryOverrides>) => void;
   
   // Modal actions
   openAddModal: (type?: ModuleType, editing?: Module) => void;
@@ -154,6 +197,10 @@ interface AppStore extends AppData {
   setDisciplineLevel: (n: number) => void;
   setClarityLevel: (n: number) => void;
   setWeekSummary: (text: string) => void;
+  addIdentityItem: (title: string) => void;
+  updateIdentityItem: (id: string, title: string) => void;
+  deleteIdentityItem: (id: string) => void;
+  setIdentityCheck: (itemId: string, date: string, status: IdentityStatus | null) => void;
 
   // Data management
   exportData: () => string;
@@ -170,11 +217,22 @@ const loadInitialData = (): AppData => {
       return { 
         ...seedData, 
         ...parsed,
+        // Keep the primary cash account aligned with the current psychological-floor scenario.
+        modules: (parsed.modules || seedData.modules).map((module: Module) => module.id === '8' && module.type === 'financial_account' && module.balance === 32000 ? { ...module, balance: 300 } : module),
         // Fallbacks for new fields
+        transactions: parsed.transactions || seedData.transactions,
+        financialSummary: parsed.financialSummary || seedData.financialSummary,
         habits: parsed.habits || seedData.habits,
         agenda: parsed.agenda || seedData.agenda,
         lifeAreas: parsed.lifeAreas || seedData.lifeAreas,
         risks: parsed.risks || seedData.risks,
+        identityItems: (() => {
+          const items = parsed.identityItems || seedData.identityItems;
+          return items.some((item: IdentityItem) => item.title === 'Entrar em contato com processo de evolução real')
+            ? items
+            : [...items, { id: 'identity-distribution-evolution', title: 'Entrar em contato com processo de evolução real', order: items.length }];
+        })(),
+        identityChecks: parsed.identityChecks || seedData.identityChecks,
         nextActions: parsed.nextActions || seedData.nextActions,
         weekSummary: parsed.weekSummary || seedData.weekSummary,
         energyLevel: parsed.energyLevel ?? seedData.energyLevel,
@@ -202,6 +260,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       modules: state.modules,
       categories: state.categories,
       weeklyData: state.weeklyData,
+      transactions: state.transactions,
+      financialSummary: state.financialSummary,
       quickCaptures: state.quickCaptures,
       weekFocus: state.weekFocus,
       priorities: state.priorities,
@@ -210,6 +270,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       agenda: state.agenda,
       lifeAreas: state.lifeAreas,
       risks: state.risks,
+      identityItems: state.identityItems,
+      identityChecks: state.identityChecks,
       nextActions: state.nextActions,
       weekSummary: state.weekSummary,
       energyLevel: state.energyLevel,
@@ -271,7 +333,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       return module ? { ...module, order: index } : null;
     }).filter(Boolean) as Module[];
     
-    set({ modules: reordered });
+    const remaining = modules.filter((module) => !ids.includes(module.id));
+    set({ modules: [...reordered, ...remaining] });
     get().saveToStorage();
   },
 
@@ -327,6 +390,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setWeekFocus: (focus) => {
     set({ weekFocus: focus });
+    get().saveToStorage();
+  },
+
+  setFinancialSummary: (summary) => {
+    set({ financialSummary: { ...get().financialSummary, ...summary } });
     get().saveToStorage();
   },
 
@@ -426,12 +494,43 @@ export const useAppStore = create<AppStore>((set, get) => ({
   
   setWeekSummary: (text) => { set({ weekSummary: text }); get().saveToStorage(); },
 
+  addIdentityItem: (title) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    set({ identityItems: [...get().identityItems, { id: `identity-${Date.now()}`, title: trimmed, order: get().identityItems.length }] });
+    get().saveToStorage();
+  },
+
+  updateIdentityItem: (id, title) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    set({ identityItems: get().identityItems.map((item) => item.id === id ? { ...item, title: trimmed } : item) });
+    get().saveToStorage();
+  },
+
+  deleteIdentityItem: (id) => {
+    set({
+      identityItems: get().identityItems.filter((item) => item.id !== id),
+      identityChecks: get().identityChecks.filter((check) => check.itemId !== id),
+    });
+    get().saveToStorage();
+  },
+
+  setIdentityCheck: (itemId, date, status) => {
+    const checks = get().identityChecks.filter((check) => !(check.itemId === itemId && check.date === date));
+    if (status) checks.push({ id: `${itemId}-${date}`, itemId, date, status });
+    set({ identityChecks: checks });
+    get().saveToStorage();
+  },
+
   exportData: () => {
     const state = get();
     const data: AppData = {
       modules: state.modules,
       categories: state.categories,
       weeklyData: state.weeklyData,
+      transactions: state.transactions,
+      financialSummary: state.financialSummary,
       quickCaptures: state.quickCaptures,
       weekFocus: state.weekFocus,
       priorities: state.priorities,
@@ -439,6 +538,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       agenda: state.agenda,
       lifeAreas: state.lifeAreas,
       risks: state.risks,
+      identityItems: state.identityItems,
+      identityChecks: state.identityChecks,
       nextActions: state.nextActions,
       weekSummary: state.weekSummary,
       energyLevel: state.energyLevel,
@@ -457,6 +558,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
         modules: parsed.modules || [],
         categories: parsed.categories || [],
         weeklyData: parsed.weeklyData || [],
+        transactions: parsed.transactions || [],
+        financialSummary: parsed.financialSummary || {},
         quickCaptures: parsed.quickCaptures || [],
         weekFocus: parsed.weekFocus || '',
         priorities: parsed.priorities || [],
@@ -464,6 +567,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
         agenda: parsed.agenda || [],
         lifeAreas: parsed.lifeAreas || [],
         risks: parsed.risks || [],
+        identityItems: parsed.identityItems || [],
+        identityChecks: parsed.identityChecks || [],
         nextActions: parsed.nextActions || [],
         weekSummary: parsed.weekSummary || '',
         energyLevel: parsed.energyLevel ?? 50,
