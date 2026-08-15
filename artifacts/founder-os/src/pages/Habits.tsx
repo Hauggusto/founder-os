@@ -443,7 +443,7 @@ export default function Habits() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse">
             <thead>
-              <tr className="border-b border-border/50 text-xs text-muted-foreground">
+              <tr className="border-b border-white/[.06] text-xs text-muted-foreground">
                 <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left">
                   Tarefa / hábito
                 </th>
@@ -461,7 +461,7 @@ export default function Habits() {
                   <tr key={`category-${category}`}>
                     <td
                       colSpan={days.length + 1}
-                      className="border-b border-cyan-400/15 bg-background/30 px-5 pb-3 pt-6 text-[11px] font-medium uppercase tracking-[.24em] text-cyan-300"
+                      className="border-b border-white/[.06] bg-cyan-400/[.025] px-5 pb-3 pt-5 text-[11px] font-medium uppercase tracking-[.2em] text-cyan-200/80"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -469,7 +469,7 @@ export default function Habits() {
                           <button
                             type="button"
                             onClick={() => renameCategory(category)}
-                            className="text-[10px] normal-case tracking-normal text-muted-foreground/70 hover:text-cyan-300"
+                            className="rounded-md px-1.5 py-0.5 text-[10px] normal-case tracking-normal text-muted-foreground/50 transition hover:bg-white/[.05] hover:text-cyan-300"
                           >
                             Editar
                           </button>
@@ -481,7 +481,7 @@ export default function Habits() {
                               addingCategory === category ? null : category,
                             )
                           }
-                          className="inline-flex items-center gap-1 rounded-md border border-cyan-400/30 px-2 py-1 text-[10px] font-semibold normal-case tracking-normal text-cyan-300"
+                          className="inline-flex items-center gap-1 rounded-md border border-cyan-400/20 bg-cyan-400/[.03] px-2 py-1 text-[10px] font-medium normal-case tracking-normal text-cyan-300/80 transition hover:border-cyan-400/50 hover:bg-cyan-400/[.08]"
                         >
                           <Plus className="h-3 w-3" />
                           Adicionar
@@ -513,9 +513,9 @@ export default function Habits() {
                   {entries.map((habit) => (
                     <tr
                       key={habit.id}
-                      className="border-b border-border/20 last:border-0"
+                      className="border-b border-white/[.045] transition-colors hover:bg-white/[.018] last:border-0"
                     >
-                      <td className="sticky left-0 bg-card px-5 py-5">
+                      <td className="sticky left-0 bg-card/95 px-5 py-5">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0 flex-1">
                             <button type="button" onClick={() => editHabit(habit)} className="block text-left text-sm font-normal text-foreground/80 hover:text-cyan-300">
@@ -536,7 +536,7 @@ export default function Habits() {
                         </div>
                       </td>
                       {days.map((date) => (
-                        <td key={keyOf(date)} className="px-2 py-5 text-center">
+                        <td key={keyOf(date)} className="border-l border-white/[.035] px-2 py-5 text-center">
                           <HabitCell
                             habit={habit}
                             date={date}
