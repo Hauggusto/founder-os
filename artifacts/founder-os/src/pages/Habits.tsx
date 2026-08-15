@@ -422,7 +422,7 @@ export default function Habits() {
           </article>;
         })}
       </section>
-      <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/70">
+      <section className="overflow-hidden rounded-2xl bg-card/35">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 p-5">
           <div className="flex items-center gap-3">
             <ClipboardCheck className="h-5 w-5 text-cyan-400" />
@@ -471,7 +471,7 @@ export default function Habits() {
                   <tr key={`category-${category}`}>
                     <td
                       colSpan={days.length + 1}
-                      className="border-b border-white/[.05] bg-background/20 px-5 pb-2 pt-4 text-[11px] font-medium uppercase tracking-[.2em] text-cyan-200/75"
+                      className="border-x border-t border-cyan-400/20 bg-background/20 px-5 pb-2 pt-4 text-[11px] font-medium uppercase tracking-[.2em] text-cyan-200/75"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -520,10 +520,10 @@ export default function Habits() {
                       )}
                     </td>
                   </tr>
-                  {entries.map((habit) => (
+                  {entries.map((habit, index) => (
                     <tr
                       key={habit.id}
-                      className="border-b border-white/[.045] transition-colors hover:bg-white/[.018] last:border-0"
+                      className={`border-x border-white/[.045] transition-colors hover:bg-white/[.018] ${index === entries.length - 1 ? 'border-b border-cyan-400/20' : 'border-b'}`}
                     >
                       <td className="sticky left-0 bg-card/95 px-5 py-5">
                         <div className="flex items-center gap-2">
