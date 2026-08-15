@@ -125,6 +125,23 @@ export interface IdentityCheck {
   status: IdentityStatus;
 }
 
+export interface LearningCard {
+  id: string;
+  title: string;
+  category: 'Curso' | 'Faculdade' | 'Livro' | 'Atualização' | 'IA' | 'Outro';
+  description: string;
+  progress: number;
+  color: string;
+}
+
+const defaultLearningCards: LearningCard[] = [
+  { id: 'learning-english', title: 'Curso de Inglês', category: 'Curso', description: 'Conversação, vocabulário e compreensão.', progress: 15, color: '#22D3EE' },
+  { id: 'learning-college', title: 'Faculdade', category: 'Faculdade', description: 'Disciplinas, trabalhos e provas em andamento.', progress: 30, color: '#8B5CF6' },
+  { id: 'learning-santander', title: 'Curso Santander', category: 'Atualização', description: 'Atualização profissional e novas competências.', progress: 10, color: '#EF4444' },
+  { id: 'learning-ai', title: 'Inteligência Artificial', category: 'IA', description: 'Ferramentas, automações e aplicações práticas.', progress: 20, color: '#10B981' },
+  { id: 'learning-books', title: 'Livros para ler', category: 'Livro', description: 'Organizar leituras que fortalecem sua visão e repertório.', progress: 0, color: '#F97316' },
+];
+
 export interface AppData {
   modules: Module[];
   categories: Category[];
@@ -141,6 +158,7 @@ export interface AppData {
   risks: RiskItem[];
   identityItems: IdentityItem[];
   identityChecks: IdentityCheck[];
+  learningCards: LearningCard[];
   nextActions: { id: string; text: string; done: boolean; project?: string }[];
   weekSummary: string;
   energyLevel: number;
@@ -205,6 +223,7 @@ interface AppStore extends AppData {
   updateIdentityItem: (id: string, title: string) => void;
   deleteIdentityItem: (id: string) => void;
   setIdentityCheck: (itemId: string, date: string, status: IdentityStatus | null) => void;
+  addLearningCard: (card: Omit<LearningCard, 'id'>) => void;
 
   // Data management
   exportData: () => string;
@@ -237,6 +256,7 @@ const loadInitialData = (): AppData => {
             : [...items, { id: 'identity-distribution-evolution', title: 'Entrar em contato com processo de evolução real', order: items.length }];
         })(),
         identityChecks: parsed.identityChecks || seedData.identityChecks,
+        learningCards: parsed.learningCards || defaultLearningCards,
         nextActions: parsed.nextActions || seedData.nextActions,
         weekSummary: parsed.weekSummary || seedData.weekSummary,
         energyLevel: parsed.energyLevel ?? seedData.energyLevel,
@@ -248,11 +268,12 @@ const loadInitialData = (): AppData => {
   } catch (err) {
     console.error('Failed to load from localStorage:', err);
   }
-  return seedData;
+  return { ...seedData, learningCards: defaultLearningCards } as AppData;
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
   ...loadInitialData(),
+  learningCards: (loadInitialData() as AppData & { learningCards?: LearningCard[] }).learningCards || defaultLearningCards,
   isAddModalOpen: false,
   editingModule: null,
   editingModuleType: undefined,
@@ -277,6 +298,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       risks: state.risks,
       identityItems: state.identityItems,
       identityChecks: state.identityChecks,
+      learningCards: state.learningCards,
       nextActions: state.nextActions,
       weekSummary: state.weekSummary,
       energyLevel: state.energyLevel,
@@ -545,6 +567,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
+  addLearningCard: (card) => {
+    set({ learningCards: [...get().learningCards, { ...card, id: `learning-${Date.now()}` }] });
+    get().saveToStorage();
+  },
+
   exportData: () => {
     const state = get();
     const data: AppData = {
@@ -562,6 +589,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       risks: state.risks,
       identityItems: state.identityItems,
       identityChecks: state.identityChecks,
+      learningCards: state.learningCards,
       nextActions: state.nextActions,
       weekSummary: state.weekSummary,
       energyLevel: state.energyLevel,
@@ -591,6 +619,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         risks: parsed.risks || [],
         identityItems: parsed.identityItems || [],
         identityChecks: parsed.identityChecks || [],
+        learningCards: parsed.learningCards || defaultLearningCards,
         nextActions: parsed.nextActions || [],
         weekSummary: parsed.weekSummary || '',
         energyLevel: parsed.energyLevel ?? 50,

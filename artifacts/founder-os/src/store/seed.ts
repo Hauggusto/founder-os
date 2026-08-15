@@ -238,6 +238,7 @@ export const seedData: AppData = {
   ],
   identityItems: identitySeedItems,
   identityChecks: identitySeedChecks,
+  learningCards: [],
   nextActions: [
     { id: 'na-1', text: 'Enviar proposta revisada — Solar Machine', done: false, project: 'Solar Machine' },
     { id: 'na-2', text: 'Contratar dev sênior para Soul Krieg', done: false, project: 'Soul Krieg' },

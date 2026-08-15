@@ -19,6 +19,7 @@ import Agents from '@/pages/Agents';
 import { AgentAnalytics } from '@/components/agents/AgentAnalytics';
 import FinancialAccount from '@/pages/FinancialAccount';
 import Placeholder from '@/pages/Placeholder';
+import Learning from '@/pages/Learning';
 import Opportunities from '@/pages/Opportunities';
 import { AuthGate } from '@/components/auth/AuthGate';
 
@@ -46,9 +47,7 @@ function Router() {
         <Route path="/habitos" component={Habits} />
         <Route path="/alertas-risco" component={AlertRisk} />
         <Route path="/identidade" component={Identity} />
-        <Route path="/aprendizado">
-          <Placeholder title="Aprendizado" description="Livros, cursos e insights em progresso." />
-        </Route>
+        <Route path="/aprendizado" component={Learning} />
         <Route path="/relacoes">
           <Placeholder title="Relações" description="Pessoas importantes, relacionamentos e rede de contatos." />
         </Route>
