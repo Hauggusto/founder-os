@@ -3,7 +3,7 @@ import { useAppStore, type ModuleStatus } from '@/store/useAppStore';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Link2, MoreVertical, Plus } from 'lucide-react';
+import { ExternalLink, Link2, MoreVertical, Plus, Upload, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,11 +12,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function Projects() {
-  const { modules, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
+  const { modules, addModule, updateModule, duplicateModule, deleteModule } = useAppStore();
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | 'all'>('all');
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
   const [dragOverProjectId, setDragOverProjectId] = useState<string | null>(null);
+  const [projectEditor, setProjectEditor] = useState<ReturnType<typeof emptyProjectForm> | null>(null);
   const { reorderModules } = useAppStore();
+
+  const openProjectEditor = (project?: typeof modules[number]) => setProjectEditor(project ? { id: project.id, title: project.title, category: project.category || '', status: project.status, progress: project.progress || 0, phase: project.phase || '', nextAction: project.nextAction || '', description: project.description || '', tags: (project.tags || []).join(', '), url: project.url || '', thumbnail: project.thumbnail || '' } : emptyProjectForm());
+  const saveProject = () => {
+    if (!projectEditor?.title.trim()) return;
+    const payload = { type: 'project' as const, title: projectEditor.title.trim(), category: projectEditor.category.trim() || 'Sem grupo', status: projectEditor.status, progress: projectEditor.progress, phase: projectEditor.phase.trim(), nextAction: projectEditor.nextAction.trim(), description: projectEditor.description.trim(), tags: projectEditor.tags.split(',').map((tag) => tag.trim()).filter(Boolean), url: projectEditor.url.trim(), thumbnail: projectEditor.thumbnail, order: projectEditor.id ? modules.find((item) => item.id === projectEditor.id)?.order || 0 : modules.filter((item) => item.type === 'project').length };
+    if (projectEditor.id) updateModule(projectEditor.id, payload); else addModule(payload);
+    setProjectEditor(null);
+  };
 
   const projects = modules
     .filter(m => m.type === 'project')
@@ -71,7 +80,7 @@ export default function Projects() {
           </p>
         </div>
         <Button
-          onClick={() => openAddModal('project')}
+          onClick={() => openProjectEditor()}
           className="bg-primary hover:bg-primary/90"
           data-testid="button-new-project"
         >
@@ -101,7 +110,7 @@ export default function Projects() {
             Nenhum projeto encontrado.
           </p>
           <Button
-            onClick={() => openAddModal('project')}
+            onClick={() => openProjectEditor()}
             className="bg-primary hover:bg-primary/90"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -181,10 +190,10 @@ export default function Projects() {
                 )}
               </div>
               <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-3">
-                {project.url ? <a href={project.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"><Link2 className="h-3.5 w-3.5" /> Abrir canal <ExternalLink className="h-3 w-3" /></a> : <button onClick={() => openAddModal('project', project)} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"><Link2 className="h-3.5 w-3.5" /> Adicionar link</button>}
+                {project.url ? <a href={project.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"><Link2 className="h-3.5 w-3.5" /> Abrir canal <ExternalLink className="h-3 w-3" /></a> : <button onClick={() => openProjectEditor(project)} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"><Link2 className="h-3.5 w-3.5" /> Adicionar link</button>}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-popover border-popover-border"><DropdownMenuItem onClick={() => openAddModal('project', project)}>Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateModule(project.id)}>Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => updateModule(project.id, { status: 'archived' })}>Arquivar</DropdownMenuItem><DropdownMenuItem onClick={() => deleteModule(project.id)} className="text-destructive">Excluir</DropdownMenuItem></DropdownMenuContent>
+                  <DropdownMenuContent align="end" className="bg-popover border-popover-border"><DropdownMenuItem onClick={() => openProjectEditor(project)}>Editar</DropdownMenuItem><DropdownMenuItem onClick={() => duplicateModule(project.id)}>Duplicar</DropdownMenuItem><DropdownMenuItem onClick={() => updateModule(project.id, { status: 'archived' })}>Arquivar</DropdownMenuItem><DropdownMenuItem onClick={() => deleteModule(project.id)} className="text-destructive">Excluir</DropdownMenuItem></DropdownMenuContent>
                 </DropdownMenu>
               </div>
               </div>
@@ -192,6 +201,17 @@ export default function Projects() {
           ))}
         </div>
       )}
+      {projectEditor && <ProjectEditor form={projectEditor} setForm={setProjectEditor} onClose={() => setProjectEditor(null)} onSave={saveProject} />}
     </div>
   );
 }
+
+function emptyProjectForm() { return { id: '', title: '', category: '', status: 'active' as ModuleStatus, progress: 0, phase: '', nextAction: '', description: '', tags: '', url: '', thumbnail: '' }; }
+
+function ProjectEditor({ form, setForm, onClose, onSave }: { form: ReturnType<typeof emptyProjectForm>; setForm: (form: ReturnType<typeof emptyProjectForm>) => void; onClose: () => void; onSave: () => void }) {
+  const update = (key: keyof ReturnType<typeof emptyProjectForm>, value: string | number) => setForm({ ...form, [key]: value });
+  const upload = (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => update('thumbnail', String(reader.result)); reader.readAsDataURL(file); };
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"><div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-primary/30 bg-card p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">PROJETOS</p><h2 className="mt-1 text-xl font-bold">{form.id ? 'Editar projeto' : 'Novo projeto'}</h2><p className="text-xs text-muted-foreground">Cadastro exclusivo desta área.</p></div><button onClick={onClose} className="rounded-lg p-2 text-muted-foreground hover:bg-muted"><X className="h-5 w-5" /></button></div><div className="grid gap-4 md:grid-cols-2"><Field label="Nome do projeto *"><input autoFocus value={form.title} onChange={(e) => update('title', e.target.value)} placeholder="Ex.: Soul Krieg" /></Field><Field label="Grupo / categoria"><input value={form.category} onChange={(e) => update('category', e.target.value)} placeholder="Ex.: Canais, Produto, Cliente" /></Field><Field label="Status"><select value={form.status} onChange={(e) => update('status', e.target.value)}><option value="active">Ativo</option><option value="paused">Pausado</option><option value="done">Concluído</option><option value="archived">Arquivado</option></select></Field><Field label={`Progresso: ${form.progress}%`}><input type="range" min="0" max="100" value={form.progress} onChange={(e) => update('progress', Number(e.target.value))} className="mt-3 w-full accent-primary" /></Field><Field label="Fase atual"><input value={form.phase} onChange={(e) => update('phase', e.target.value)} placeholder="Ex.: Construção" /></Field><Field label="Próxima ação"><input value={form.nextAction} onChange={(e) => update('nextAction', e.target.value)} placeholder="Ex.: Publicar novo conteúdo" /></Field><Field label="Link do canal / projeto"><input value={form.url} onChange={(e) => update('url', e.target.value)} placeholder="https://..." /></Field><Field label="Tags separadas por vírgula"><input value={form.tags} onChange={(e) => update('tags', e.target.value)} placeholder="Gaming, Lançamento Q2" /></Field><div className="md:col-span-2"><Field label="Descrição"><textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={3} placeholder="Objetivo e contexto do projeto" /></Field></div><div className="md:col-span-2"><label className="block text-xs font-medium text-muted-foreground">Thumbnail horizontal</label><label className="mt-2 flex min-h-36 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-primary/40 bg-background/50 text-xs text-muted-foreground hover:border-primary">{form.thumbnail ? <img src={form.thumbnail} alt="Preview" className="h-36 w-full object-cover" /> : <span className="flex items-center gap-2"><Upload className="h-4 w-4" /> Enviar imagem do projeto</span>}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} className="hidden" /></label></div></div><div className="mt-6 flex justify-end gap-2"><button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm">Cancelar</button><button onClick={onSave} disabled={!form.title.trim()} className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">Salvar projeto</button></div></div></div>;
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-xs font-medium text-muted-foreground">{label}<div className="mt-2">{children}</div></label>; }
