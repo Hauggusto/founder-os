@@ -9,6 +9,7 @@ import Overview from '@/pages/Overview';
 import Financial from '@/pages/Financial';
 import Projects from '@/pages/Projects';
 import Identity from '@/pages/Identity';
+import Habits from '@/pages/Habits';
 import AlertRisk from '@/pages/AlertRisk';
 import Resources from '@/pages/Resources';
 import { ProductivityPanel } from '@/components/commercial/ProductivityPanel';
@@ -42,9 +43,7 @@ function Router() {
         <Route path="/oportunidades">
           <Opportunities />
         </Route>
-        <Route path="/habitos">
-          <Placeholder title="Hábitos" description="Rastreamento e evolução dos seus hábitos diários." />
-        </Route>
+        <Route path="/habitos" component={Habits} />
         <Route path="/alertas-risco" component={AlertRisk} />
         <Route path="/identidade" component={Identity} />
         <Route path="/aprendizado">

@@ -83,6 +83,7 @@ export interface HabitEntry {
   streak: number;
   category: string;
   order: number;
+  checks?: Record<string, IdentityStatus>;
 }
 
 export interface AgendaItem {
@@ -187,6 +188,7 @@ interface AppStore extends AppData {
   setSidebarCollapsed: (collapsed: boolean) => void;
   setSidebarWidth: (width: number) => void;
   toggleHabit: (id: string) => void;
+  setHabitCheck: (id: string, date: string, status: IdentityStatus | null) => void;
   addHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
   addAgendaItem: (item: Omit<AgendaItem, 'id'>) => void;
   toggleAgendaItem: (id: string) => void;
@@ -433,6 +435,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
         return h;
       })
     });
+    get().saveToStorage();
+  },
+
+  setHabitCheck: (id, date, status) => {
+    set({ habits: get().habits.map((habit) => {
+      if (habit.id !== id) return habit;
+      const checks = { ...(habit.checks || {}) };
+      if (status) checks[date] = status;
+      else delete checks[date];
+      return { ...habit, checks, done: date === new Date().toISOString().slice(0, 10) ? status === 'done' : habit.done };
+    }) });
     get().saveToStorage();
   },
 
