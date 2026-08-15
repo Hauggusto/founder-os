@@ -202,3 +202,5 @@ Este sistema não é para gerenciar uma empresa — é para gerenciar **você co
 # Founder OS
 
 Founder OS dashboard application.
+
+Deployment is managed through Vercel and GitHub.
