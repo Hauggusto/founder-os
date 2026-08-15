@@ -8,6 +8,15 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (window.location.hostname === 'founder-os-up-go-on.vercel.app') {
+      const destination = new URL('https://founder-os-seven-rouge.vercel.app');
+      destination.pathname = window.location.pathname;
+      destination.search = window.location.search;
+      destination.hash = window.location.hash;
+      window.location.replace(destination.toString());
+      return;
+    }
+
     if (!supabase) { setLoading(false); return; }
 
     let mounted = true;
