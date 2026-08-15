@@ -19,6 +19,7 @@ import { AgentAnalytics } from '@/components/agents/AgentAnalytics';
 import FinancialAccount from '@/pages/FinancialAccount';
 import Placeholder from '@/pages/Placeholder';
 import Opportunities from '@/pages/Opportunities';
+import { AuthGate } from '@/components/auth/AuthGate';
 
 const queryClient = new QueryClient();
 
@@ -84,9 +85,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
+        <AuthGate><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter></AuthGate>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
