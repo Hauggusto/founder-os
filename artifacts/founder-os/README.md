@@ -199,3 +199,6 @@ Este sistema não é para gerenciar uma empresa — é para gerenciar **você co
 ---
 
 **Feito para founders que operam no ritmo do caos, mas pensam em sistemas.**
+# Founder OS
+
+Founder OS dashboard application.
