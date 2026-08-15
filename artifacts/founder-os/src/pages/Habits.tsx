@@ -412,6 +412,16 @@ export default function Habits() {
           </LineChart>
         </ResponsiveContainer>
       </Chart>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {categoryData.map((category) => {
+          const items = habits.filter((habit) => (habit.category || "Rotina") === category.name);
+          return <article key={category.name} className="rounded-2xl border border-cyan-400/15 bg-card/70 p-4 transition hover:border-cyan-400/30 hover:bg-card/90">
+            <div className="mb-3 flex items-start justify-between gap-3"><div><p className="text-[11px] font-medium uppercase tracking-[.18em] text-cyan-200/75">Categoria</p><h3 className="mt-1 text-base font-semibold text-foreground/90">{category.name}</h3></div><span className="rounded-full border border-cyan-400/20 bg-cyan-400/[.04] px-2.5 py-1 text-xs font-medium text-cyan-300">{category.execução}%</span></div>
+            <div className="mb-3 h-1 overflow-hidden rounded-full bg-white/[.06]"><div className="h-full rounded-full bg-cyan-400/70 transition-all" style={{ width: `${category.execução}%` }} /></div>
+            <div className="space-y-1.5">{items.map((habit) => <button key={habit.id} type="button" onClick={() => editHabit(habit)} className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground/75 transition hover:bg-white/[.04] hover:text-cyan-200"><span className="truncate">{habit.title}</span><span className="ml-2 text-[10px] text-muted-foreground/45">{habit.streak}d</span></button>)}</div>
+          </article>;
+        })}
+      </section>
       <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/70">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 p-5">
           <div className="flex items-center gap-3">
