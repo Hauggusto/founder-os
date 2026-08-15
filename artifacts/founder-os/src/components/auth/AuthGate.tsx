@@ -6,6 +6,7 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [callbackError, setCallbackError] = useState('');
 
   useEffect(() => {
     if (window.location.hostname === 'founder-os-up-go-on.vercel.app') {
@@ -35,6 +36,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       if (authorizationCode) {
         const { error } = await supabase!.auth.exchangeCodeForSession(authorizationCode);
         callbackHandled = !error;
+        if (error && mounted) setCallbackError(error.message);
       }
 
       // Some OAuth redirects return an implicit-flow session in the URL hash.
@@ -46,6 +48,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
         });
 
         callbackHandled = !error;
+        if (error && mounted) setCallbackError(error.message);
       }
 
       if (callbackHandled) {
@@ -70,6 +73,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     return <AuthMessage title="Autenticação ainda não configurada" body="Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY nas variáveis da Vercel e no ambiente local." />;
   }
   if (loading) return <AuthMessage title="Verificando sua sessão" body="Aguarde um instante..." />;
+  if (callbackError) return <AuthMessage title="Não foi possível concluir o login" body={callbackError} />;
   if (!session) return <LoginScreen />;
   return <>{children}</>;
 }
