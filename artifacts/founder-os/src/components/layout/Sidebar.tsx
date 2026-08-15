@@ -37,16 +37,21 @@ const navGroups = [
       { path: '/financeiro', label: 'Financeiro', icon: DollarSign },
       { path: '/projetos', label: 'Projetos', icon: FolderKanban },
       { path: '/comercial', label: 'Comercial', icon: TrendingUp },
-      { path: '/produtividade', label: 'Produtividade', icon: Activity },
       { path: '/oportunidades', label: 'Oportunidades', icon: MailSearch },
-      { path: '/habitos', label: 'Hábitos', icon: CheckSquare },
       { path: '/alertas-risco', label: 'Alertas / Risco', icon: AlertTriangle },
+    ]
+  },
+  {
+    label: 'Execução',
+    items: [
+      { path: '/habitos', label: 'Hábitos', icon: CheckSquare },
+      { path: '/produtividade', label: 'Produtividade', icon: Activity },
+      { path: '/identidade', label: 'Identidade', icon: Sparkles },
     ]
   },
   {
     label: 'Vida',
     items: [
-      { path: '/identidade', label: 'Identidade', icon: Sparkles },
       { path: '/aprendizado', label: 'Aprendizado', icon: BookOpen },
       { path: '/relacoes', label: 'Relações', icon: Users },
       { path: '/recursos', label: 'Recursos', icon: Package },
