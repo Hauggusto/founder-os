@@ -865,3 +865,22 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     min-width: 82px;
   }
 }
+
+@media (max-width: 767px) {
+  /* The calendar must keep its seven weekday columns on narrow screens. */
+  .mobile-main .calendar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: .25rem !important;
+  }
+
+  .mobile-main .calendar-grid > * {
+    min-width: 0;
+  }
+
+  .mobile-main .calendar-grid button {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 0;
+  }
+}
