@@ -884,3 +884,49 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     padding-inline: 0;
   }
 }
+
+@media (max-width: 767px) {
+  /* Show the complete mobile shortcut menu without horizontal clipping. */
+  .mobile-nav {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .4rem;
+    overflow: visible;
+    min-height: 0;
+  }
+
+  .mobile-nav > a {
+    min-width: 0;
+    width: 100%;
+    flex: none;
+  }
+
+  .mobile-nav-item {
+    min-width: 0;
+    width: 100%;
+    min-height: 50px;
+    box-sizing: border-box;
+  }
+
+  .mobile-nav-item small {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .3rem;
+  }
+
+  .mobile-nav-item {
+    min-height: 48px;
+    padding-inline: .2rem;
+  }
+
+  .mobile-nav-item small {
+    font-size: .56rem;
+  }
+}
