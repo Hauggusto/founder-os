@@ -679,3 +679,189 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     inset: -1px;
   }
 }
+
+
+/* Founder OS — mobile refinement */
+@media (max-width: 767px) {
+  html, body, #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    min-width: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .mobile-nav {
+    position: sticky;
+    top: 0;
+    min-height: 64px;
+    align-items: stretch;
+    gap: .4rem;
+    padding: .5rem .65rem;
+    padding-top: max(.5rem, env(safe-area-inset-top));
+  }
+
+  .mobile-nav > a {
+    flex: 1 0 66px;
+    min-width: 66px;
+    text-decoration: none;
+  }
+
+  .mobile-nav-item {
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+    padding: .45rem .35rem;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+  }
+
+  .mobile-main {
+    width: 100%;
+    box-sizing: border-box;
+    padding: .85rem .75rem 15.5rem !important;
+  }
+
+  .mobile-main > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mobile-main .flex:not(.mobile-nav):not(.mobile-nav-item) {
+    min-width: 0;
+  }
+
+  .mobile-main [class*="rounded-"] {
+    max-width: 100%;
+  }
+
+  .mobile-main button,
+  .mobile-main a {
+    touch-action: manipulation;
+  }
+
+  .mobile-main input,
+  .mobile-main textarea,
+  .mobile-main select {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .mobile-main .grid {
+    gap: .75rem;
+  }
+
+  .mobile-main .gap-6 {
+    gap: 1rem;
+  }
+
+  .mobile-main .p-6 {
+    padding: 1rem;
+  }
+
+  .mobile-main .p-5 {
+    padding: .9rem;
+  }
+
+  .mobile-main .text-3xl {
+    font-size: 1.55rem;
+    line-height: 1.15;
+  }
+
+  .mobile-main .text-2xl {
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .mobile-main .text-xl {
+    font-size: 1.15rem;
+  }
+
+  .mobile-main .flex-wrap {
+    row-gap: .65rem;
+  }
+
+  .mobile-main .overflow-x-auto {
+    width: 100%;
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-main table {
+    min-width: 600px;
+  }
+
+  .mobile-main .recharts-responsive-container {
+    width: 100% !important;
+    min-height: 210px;
+  }
+
+  /* Keep the quick actions usable without covering the page. */
+  body > #root > div > div.fixed.bottom-0 {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: .65rem .65rem calc(.65rem + env(safe-area-inset-bottom));
+  }
+
+  body > #root > div > div.fixed.bottom-0 > div {
+    max-width: none;
+  }
+
+  body > #root > div > div.fixed.bottom-0 .mb-2 {
+    margin-bottom: .45rem;
+  }
+
+  body > #root > div > div.fixed.bottom-0 .flex.gap-3 {
+    gap: .5rem;
+    padding-bottom: .1rem;
+  }
+
+  body > #root > div > div.fixed.bottom-0 button {
+    min-width: 92px;
+    height: 62px;
+    gap: .35rem;
+    padding: .35rem .4rem;
+  }
+
+  body > #root > div > div.fixed.bottom-0 button svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  body > #root > div > div.fixed.bottom-0 button span:last-child {
+    font-size: .62rem;
+  }
+
+  body > #root > div > div.fixed.bottom-0 .mt-2 {
+    margin-top: .45rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-main {
+    padding-inline: .6rem !important;
+  }
+
+  .mobile-nav {
+    gap: .25rem;
+    padding-inline: .45rem;
+  }
+
+  .mobile-nav-item {
+    min-width: 58px;
+    min-height: 50px;
+  }
+
+  .mobile-nav-item small {
+    font-size: .57rem;
+  }
+
+  body > #root > div > div.fixed.bottom-0 button {
+    min-width: 82px;
+  }
+}
