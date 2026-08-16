@@ -1051,3 +1051,12 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
   from { opacity: 0; transform: translateX(16px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+@media (max-width: 767px) {
+  /* The desktop sidebar rule hides all asides; keep the mobile drawer visible. */
+  .mobile-menu-layer .mobile-drawer {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
