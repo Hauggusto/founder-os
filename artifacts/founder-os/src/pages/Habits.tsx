@@ -477,9 +477,11 @@ export default function Habits() {
       <section className="overflow-hidden rounded-2xl border border-white/[.08] bg-card/45 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/15 bg-cyan-400/[.025] p-5">
           <div className="flex items-center gap-3">
-            <ClipboardCheck className="h-5 w-5 text-cyan-400" />
+            <ClipboardCheck className="h-5 w-5 text-lime-400" />
             <div>
-              <h2 className="font-semibold">Grade de execução</h2>
+              <h2 className="font-semibold uppercase tracking-[.12em]">
+                Weekly habit tracker
+              </h2>
               <p className="text-xs text-muted-foreground">
                 Verde: feito · laranja: parcial · vermelho: não executado
               </p>
@@ -522,6 +524,9 @@ export default function Habits() {
                     </span>
                   </th>
                 ))}
+                <th className="border-l border-lime-400/15 px-3 py-3 text-right text-[10px] font-medium uppercase tracking-wide text-lime-300/70">
+                  Semana %
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -530,7 +535,7 @@ export default function Habits() {
                   <>
                     <tr key={`category-${category}`}>
                       <td
-                        colSpan={days.length + 1}
+                        colSpan={days.length + 2}
                         className={`border-x border-t px-5 pb-2 pt-4 text-sm font-normal text-foreground/80 ${categoryIndex % 3 === 0 ? "border-cyan-400/35 bg-cyan-400/[.035]" : categoryIndex % 3 === 1 ? "border-violet-400/30 bg-violet-400/[.03]" : "border-emerald-400/30 bg-emerald-400/[.025]"}`}
                       >
                         <div className="flex items-center justify-between">
@@ -620,6 +625,18 @@ export default function Habits() {
                             />
                           </td>
                         ))}
+                        <td className="border-l border-lime-400/10 px-3 py-4 text-right text-xs font-semibold text-lime-300/80">
+                          {Math.round(
+                            (days.reduce(
+                              (sum, date) =>
+                                sum + statusScore(habit.checks?.[keyOf(date)]),
+                              0,
+                            ) /
+                              days.length) *
+                              100,
+                          )}
+                          %
+                        </td>
                       </tr>
                     ))}
                   </>
