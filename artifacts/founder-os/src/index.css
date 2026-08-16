@@ -1060,3 +1060,18 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     opacity: 1 !important;
   }
 }
+
+@media (max-width: 767px) {
+  .mobile-nav-only-menu {
+    display: flex !important;
+    justify-content: flex-end;
+    min-height: 0;
+    padding: .5rem .65rem;
+  }
+
+  .mobile-nav-only-menu .mobile-menu-trigger {
+    width: 74px;
+    min-width: 74px;
+    flex: 0 0 74px;
+  }
+}
