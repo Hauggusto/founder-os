@@ -1,20 +1,402 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Check, CircleX, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Check, CircleX, Plus, Trash2 } from "lucide-react";
 
-type Activity = { id: string; text: string; area: string; quantity: number; date: string; status: 'pending' | 'executed' | 'failed' };
-const KEY = 'founder-os-daily-productivity';
+type Activity = {
+  id: string;
+  text: string;
+  area: string;
+  quantity: number;
+  date: string;
+  status: "pending" | "executed" | "failed";
+};
+const KEY = "founder-os-daily-productivity";
 
 export function ProductivityPanel() {
-  const [activities, setActivities] = useState<Activity[]>(() => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } });
-  const [text, setText] = useState(''); const [area, setArea] = useState('Produtividade'); const [quantity, setQuantity] = useState('1'); const [status, setStatus] = useState<Activity['status']>('pending');
-  useEffect(() => { localStorage.setItem(KEY, JSON.stringify(activities)); window.dispatchEvent(new CustomEvent('founder-productivity-updated')); }, [activities]);
+  const [activities, setActivities] = useState<Activity[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const [text, setText] = useState("");
+  const [area, setArea] = useState("Produtividade");
+  const [quantity, setQuantity] = useState("1");
+  const [status, setStatus] = useState<Activity["status"]>("pending");
+  const [timelinePeriod, setTimelinePeriod] = useState<
+    "weekly" | "monthly" | "annual"
+  >("weekly");
+  useEffect(() => {
+    localStorage.setItem(KEY, JSON.stringify(activities));
+    window.dispatchEvent(new CustomEvent("founder-productivity-updated"));
+  }, [activities]);
   const today = new Date().toISOString().slice(0, 10);
-  const executed = activities.filter((item) => item.status === 'executed').reduce((sum, item) => sum + item.quantity, 0); const failed = activities.filter((item) => item.status === 'failed').reduce((sum, item) => sum + item.quantity, 0); const pending = activities.filter((item) => item.status === 'pending').reduce((sum, item) => sum + item.quantity, 0); const score = executed + failed ? Math.round(executed / (executed + failed) * 100) : 0;
-  const chartData = useMemo(() => Array.from({ length: 7 }, (_, index) => { const date = new Date(); date.setDate(date.getDate() - (6 - index)); const key = date.toISOString().slice(0, 10); return { name: date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), executadas: activities.filter((item) => item.date === key && item.status === 'executed').reduce((sum, item) => sum + item.quantity, 0), nãoConseguidas: activities.filter((item) => item.date === key && item.status === 'failed').reduce((sum, item) => sum + item.quantity, 0) }; }), [activities]);
-  const addActivity = () => { if (!text.trim()) return; setActivities([...activities, { id: `activity-${Date.now()}`, text: text.trim(), area: area.trim() || 'Produtividade', quantity: Math.max(1, Number(quantity) || 1), date: today, status }]); setText(''); setQuantity('1'); setStatus('pending'); };
-  const cycleStatus = (id: string) => setActivities((current) => current.map((item) => item.id === id ? { ...item, status: item.status === 'pending' ? 'executed' : item.status === 'executed' ? 'failed' : 'pending' } : item));
-  return <section className="rounded-2xl border border-[#10B98144] bg-[#061510]/70 p-5 shadow-[0_0_24px_#10b9810b]"><div className="mb-5 flex flex-wrap items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-emerald-400">PRODUTIVIDADE DIÁRIA</p><h2 className="mt-1 text-xl font-semibold">O que eu fiz hoje?</h2><p className="text-xs text-muted-foreground">Registre o que foi executado e também o que não conseguiu realizar.</p></div><div className="grid grid-cols-3 gap-2 text-center"><Metric label="Execução" value={`${score}%`} color="#10B981" /><Metric label="Feitas" value={executed} color="#00C9FF" /><Metric label="Não feitas" value={failed} color="#F97316" /></div></div><div className="grid gap-5 lg:grid-cols-[1fr_340px]"><div><div className="mb-3 space-y-2">{activities.filter((item) => item.date === today).map((activity) => <div key={activity.id} className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-black/20 p-3"><span className={`flex h-7 w-7 items-center justify-center rounded-full ${activity.status === 'executed' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-orange-500/15 text-orange-300'}`}>{activity.status === 'executed' ? <Check className="h-3.5 w-3.5" /> : <CircleX className="h-3.5 w-3.5" />}</span><span className="min-w-0 flex-1 text-xs"><span className="block">{activity.text}</span><small className="text-[10px] text-muted-foreground">{activity.area} · {activity.quantity}x · {activity.status === 'executed' ? 'Executado' : 'Não consegui executar'}</small></span><button onClick={() => setActivities(activities.filter((item) => item.id !== activity.id))} className="text-muted-foreground hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button></div>)}{!activities.filter((item) => item.date === today).length && <p className="rounded-lg border border-dashed border-white/10 p-6 text-center text-xs text-muted-foreground">Registre sua primeira atividade de hoje.</p>}</div><div className="grid gap-2 sm:grid-cols-[1fr_140px_80px_170px_auto]"><input value={text} onChange={(event) => setText(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && addActivity()} placeholder="O que você fez ou não conseguiu fazer?" className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-emerald-400" /><input value={area} onChange={(event) => setArea(event.target.value)} placeholder="Área" className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-emerald-400" /><input type="number" min="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-emerald-400" /><select value={status} onChange={(event) => setStatus(event.target.value as Activity['status'])} className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none"><option value="executed">Consegui executar</option><option value="failed">Não consegui executar</option></select><button onClick={addActivity} className={`inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-xs font-medium text-black ${status === 'executed' ? 'bg-emerald-500' : 'bg-orange-400'}`}><Plus className="h-3.5 w-3.5" /> Registrar</button></div></div><div className="h-64 rounded-xl border border-white/[0.07] bg-black/20 p-3"><p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">Execução x não execução · últimos 7 dias</p><ResponsiveContainer width="100%" height="90%"><BarChart data={chartData}><CartesianGrid stroke="rgba(148,163,184,.08)" vertical={false} /><XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 10 }} /><YAxis allowDecimals={false} tick={{ fill: '#94a3b8', fontSize: 10 }} /><Tooltip contentStyle={{ background: '#061510', border: '1px solid #10b98155', borderRadius: 8 }} /><Legend wrapperStyle={{ fontSize: 10 }} /><Bar dataKey="executadas" name="Executadas" fill="#10B981" radius={[4, 4, 0, 0]} /><Bar dataKey="nãoConseguidas" name="Não realizadas" fill="#F97316" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></div></section>;
+  const executed = activities
+    .filter((item) => item.status === "executed")
+    .reduce((sum, item) => sum + item.quantity, 0);
+  const failed = activities
+    .filter((item) => item.status === "failed")
+    .reduce((sum, item) => sum + item.quantity, 0);
+  const pending = activities
+    .filter((item) => item.status === "pending")
+    .reduce((sum, item) => sum + item.quantity, 0);
+  const score =
+    executed + failed ? Math.round((executed / (executed + failed)) * 100) : 0;
+  const chartData = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - index));
+        const key = date.toISOString().slice(0, 10);
+        return {
+          name: date
+            .toLocaleDateString("pt-BR", { weekday: "short" })
+            .replace(".", ""),
+          executadas: activities
+            .filter((item) => item.date === key && item.status === "executed")
+            .reduce((sum, item) => sum + item.quantity, 0),
+          nãoConseguidas: activities
+            .filter((item) => item.date === key && item.status === "failed")
+            .reduce((sum, item) => sum + item.quantity, 0),
+        };
+      }),
+    [activities],
+  );
+  const timelineRows = useMemo(
+    () =>
+      [...new Set(activities.map((item) => item.area || "Produtividade"))].map(
+        (name) => {
+          const items = activities.filter(
+            (item) => (item.area || "Produtividade") === name,
+          );
+          const total = items.reduce((sum, item) => sum + item.quantity, 0);
+          const done = items
+            .filter((item) => item.status === "executed")
+            .reduce((sum, item) => sum + item.quantity, 0);
+          return {
+            name,
+            percent: total ? Math.round((done / total) * 100) : 0,
+            status: items.some((item) => item.status === "pending")
+              ? "Em andamento"
+              : "Concluído",
+          };
+        },
+      ),
+    [activities],
+  );
+  const addActivity = () => {
+    if (!text.trim()) return;
+    setActivities([
+      ...activities,
+      {
+        id: `activity-${Date.now()}`,
+        text: text.trim(),
+        area: area.trim() || "Produtividade",
+        quantity: Math.max(1, Number(quantity) || 1),
+        date: today,
+        status,
+      },
+    ]);
+    setText("");
+    setQuantity("1");
+    setStatus("pending");
+  };
+  const cycleStatus = (id: string) =>
+    setActivities((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status:
+                item.status === "pending"
+                  ? "executed"
+                  : item.status === "executed"
+                    ? "failed"
+                    : "pending",
+            }
+          : item,
+      ),
+    );
+  return (
+    <section className="rounded-2xl border border-[#10B98144] bg-[#061510]/70 p-5 shadow-[0_0_24px_#10b9810b]">
+      <ProductivityTimeline
+        rows={timelineRows}
+        period={timelinePeriod}
+        setPeriod={setTimelinePeriod}
+      />
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-emerald-400">
+            PRODUTIVIDADE DIÁRIA
+          </p>
+          <h2 className="mt-1 text-xl font-semibold">O que eu fiz hoje?</h2>
+          <p className="text-xs text-muted-foreground">
+            Registre o que foi executado e também o que não conseguiu realizar.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <Metric label="Execução" value={`${score}%`} color="#10B981" />
+          <Metric label="Feitas" value={executed} color="#00C9FF" />
+          <Metric label="Não feitas" value={failed} color="#F97316" />
+        </div>
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+        <div>
+          <div className="mb-3 space-y-2">
+            {activities
+              .filter((item) => item.date === today)
+              .map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-center gap-3 rounded-lg border border-white/[0.07] bg-black/20 p-3"
+                >
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-full ${activity.status === "executed" ? "bg-emerald-500/15 text-emerald-400" : "bg-orange-500/15 text-orange-300"}`}
+                  >
+                    {activity.status === "executed" ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <CircleX className="h-3.5 w-3.5" />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1 text-xs">
+                    <span className="block">{activity.text}</span>
+                    <small className="text-[10px] text-muted-foreground">
+                      {activity.area} · {activity.quantity}x ·{" "}
+                      {activity.status === "executed"
+                        ? "Executado"
+                        : "Não consegui executar"}
+                    </small>
+                  </span>
+                  <button
+                    onClick={() =>
+                      setActivities(
+                        activities.filter((item) => item.id !== activity.id),
+                      )
+                    }
+                    className="text-muted-foreground hover:text-red-400"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            {!activities.filter((item) => item.date === today).length && (
+              <p className="rounded-lg border border-dashed border-white/10 p-6 text-center text-xs text-muted-foreground">
+                Registre sua primeira atividade de hoje.
+              </p>
+            )}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-[1fr_140px_80px_170px_auto]">
+            <input
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => event.key === "Enter" && addActivity()}
+              placeholder="O que você fez ou não conseguiu fazer?"
+              className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-emerald-400"
+            />
+            <input
+              value={area}
+              onChange={(event) => setArea(event.target.value)}
+              placeholder="Área"
+              className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-emerald-400"
+            />
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none focus:border-emerald-400"
+            />
+            <select
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as Activity["status"])
+              }
+              className="rounded-md border border-border bg-background px-3 py-2 text-xs outline-none"
+            >
+              <option value="executed">Consegui executar</option>
+              <option value="failed">Não consegui executar</option>
+            </select>
+            <button
+              onClick={addActivity}
+              className={`inline-flex items-center justify-center gap-1 rounded-md px-3 py-2 text-xs font-medium text-black ${status === "executed" ? "bg-emerald-500" : "bg-orange-400"}`}
+            >
+              <Plus className="h-3.5 w-3.5" /> Registrar
+            </button>
+          </div>
+        </div>
+        <div className="h-64 rounded-xl border border-white/[0.07] bg-black/20 p-3">
+          <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            Execução x não execução · últimos 7 dias
+          </p>
+          <ResponsiveContainer width="100%" height="90%">
+            <BarChart data={chartData}>
+              <CartesianGrid stroke="rgba(148,163,184,.08)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fill: "#94a3b8", fontSize: 10 }}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#061510",
+                  border: "1px solid #10b98155",
+                  borderRadius: 8,
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Bar
+                dataKey="executadas"
+                name="Executadas"
+                fill="#10B981"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="nãoConseguidas"
+                name="Não realizadas"
+                fill="#F97316"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </section>
+  );
 }
 
-function Metric({ label, value, color }: { label: string; value: string | number; color: string }) { return <div className="rounded-lg border px-3 py-2" style={{ borderColor: `${color}55`, background: `${color}0d` }}><p className="text-lg font-bold" style={{ color }}>{value}</p><p className="text-[9px] text-muted-foreground">{label}</p></div>; }
+function ProductivityTimeline({
+  rows,
+  period,
+  setPeriod,
+}: {
+  rows: { name: string; percent: number; status: string }[];
+  period: "weekly" | "monthly" | "annual";
+  setPeriod: (period: "weekly" | "monthly" | "annual") => void;
+}) {
+  const labels =
+    period === "weekly"
+      ? [
+          "28 JUL - 03 AGO",
+          "04 AGO - 10 AGO",
+          "11 AGO - 17 AGO",
+          "18 AGO - 24 AGO",
+          "25 AGO - 31 AGO",
+        ]
+      : period === "monthly"
+        ? ["MAI", "JUN", "JUL", "AGO"]
+        : ["2023", "2024", "2025", "2026"];
+  return (
+    <section className="mb-6 rounded-2xl border border-cyan-400/15 bg-[#06101a]/80 p-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-cyan-300">
+            LINHA DO TEMPO GERAL
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Evolução das áreas registradas na produtividade.
+          </p>
+        </div>
+        <div className="flex overflow-hidden rounded-lg border border-cyan-400/20 bg-background/40 p-0.5">
+          {(
+            [
+              ["weekly", "SEMANAL"],
+              ["monthly", "MENSAL"],
+              ["annual", "ANUAL"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setPeriod(value)}
+              className={`px-3 py-1.5 text-[10px] font-medium transition ${period === value ? "rounded-md bg-cyan-400/15 text-cyan-200" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <div className="min-w-[620px]">
+          <div className="mb-2 grid grid-cols-[150px_1fr_48px] gap-3 text-[9px] text-muted-foreground">
+            <span>ÁREA</span>
+            <div className="grid grid-cols-5 text-center">
+              {labels.map((label) => (
+                <span key={label}>{label}</span>
+              ))}
+            </div>
+            <span className="text-right">TOTAL</span>
+          </div>
+          <div className="space-y-2">
+            {rows.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-white/10 p-4 text-center text-xs text-muted-foreground">
+                Registre atividades para preencher a linha do tempo.
+              </p>
+            ) : (
+              rows.map((row, index) => (
+                <div
+                  key={row.name}
+                  className="grid grid-cols-[150px_1fr_48px] items-center gap-3 rounded-lg border border-white/[.06] bg-black/20 px-3 py-2.5"
+                >
+                  <span className="truncate text-xs text-foreground/80">
+                    {row.name}
+                  </span>
+                  <div className="relative h-2 overflow-hidden rounded-full bg-white/[.06]">
+                    <div
+                      className={`h-full rounded-full ${index % 3 === 0 ? "bg-cyan-400" : index % 3 === 1 ? "bg-violet-400" : "bg-emerald-400"}`}
+                      style={{ width: `${Math.max(row.percent, 3)}%` }}
+                    />
+                  </div>
+                  <span className="text-right text-xs font-semibold text-cyan-200">
+                    {row.percent}%
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-5 text-[10px] text-muted-foreground">
+            <span>
+              <i className="mr-1 inline-block h-2 w-5 rounded-full bg-cyan-400" />
+              Em andamento
+            </span>
+            <span>
+              <i className="mr-1 inline-block h-2 w-5 rounded-full bg-emerald-400" />
+              Concluído
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  color: string;
+}) {
+  return (
+    <div
+      className="rounded-lg border px-3 py-2"
+      style={{ borderColor: `${color}55`, background: `${color}0d` }}
+    >
+      <p className="text-lg font-bold" style={{ color }}>
+        {value}
+      </p>
+      <p className="text-[9px] text-muted-foreground">{label}</p>
+    </div>
+  );
+}
