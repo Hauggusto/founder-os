@@ -29,8 +29,10 @@ import {
 
 type Period = "week" | "fortnight" | "month" | "previousMonth";
 const keyOf = (date: Date) => date.toISOString().slice(0, 10);
-const dayLabel = (date: Date) => ['D', '2ª', '3ª', '4ª', '5ª', '6ª', 'S'][date.getDay()];
-const dateLabel = (date: Date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+const dayLabel = (date: Date) =>
+  ["D", "2ª", "3ª", "4ª", "5ª", "6ª", "S"][date.getDay()];
+const dateLabel = (date: Date) =>
+  `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`;
 const shortDay = (date: Date) =>
   ["D", "2ª", "3ª", "4ª", "5ª", "6ª", "S"][date.getDay()];
 const statusScore = (status?: IdentityStatus) =>
@@ -126,15 +128,7 @@ export default function Habits() {
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
-  >(() => {
-    try {
-      return JSON.parse(
-        localStorage.getItem("founder-os-one-off-habit-tasks") || "[]",
-      );
-    } catch {
-      return [];
-    }
-  });
+  >([]);
   const days = useMemo(() => periodDays(period), [period]);
   const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
   const filtered = habits.filter(
@@ -191,26 +185,8 @@ export default function Habits() {
       done: boolean;
       completedAt?: string | null;
     }[],
-  ) => {
-    setOneOffTasks(tasks);
-    localStorage.setItem(
-      "founder-os-one-off-habit-tasks",
-      JSON.stringify(tasks),
-    );
-  };
-  const addOneOff = () => {
-    if (!oneOffTitle.trim()) return;
-    saveOneOff([
-      ...oneOffTasks,
-      {
-        id: `task-${Date.now()}`,
-        title: oneOffTitle.trim(),
-        done: false,
-        completedAt: null,
-      },
-    ]);
-    setOneOffTitle("");
-  };
+  ) => setOneOffTasks(tasks);
+  const addOneOff = () => undefined;
   const renameCategory = (category: string) => {
     const name = window.prompt("Editar nome da categoria", category);
     if (name?.trim() && name.trim() !== category)
@@ -240,30 +216,15 @@ export default function Habits() {
           100,
       )
     : 0;
-  const allMetricDays = habits.length * days.length + oneOffTasks.length;
-  const metricPoints =
-    habits.reduce(
-      (sum, h) =>
-        sum + days.reduce((inner, d) => inner + statusScore(h.checks?.[keyOf(d)]), 0),
-      0,
-    ) + oneOffTasks.filter((task) => task.done && days.some((day) => keyOf(day) === task.completedAt)).length;
-  const combinedScore = allMetricDays
-    ? Math.round((metricPoints / allMetricDays) * 100)
-    : score;
   const dailyData = days.map((day) => {
     const values = habits
       .map((h) => h.checks?.[keyOf(day)])
       .filter(Boolean) as IdentityStatus[];
-    const oneOffDone = oneOffTasks.filter(
-      (task) => task.done && task.completedAt === keyOf(day),
-    ).length;
-    const totalItems = habits.length + oneOffTasks.length;
     return {
       name: dateLabel(day),
-      execução: totalItems
+      execução: values.length
         ? Math.round(
-            ((values.reduce((s, v) => s + statusScore(v), 0) + oneOffDone) /
-              totalItems) *
+            (values.reduce((s, v) => s + statusScore(v), 0) / values.length) *
               100,
           )
         : 0,
@@ -326,7 +287,7 @@ export default function Habits() {
           </div>
           <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/5 px-5 py-3 text-right">
             <p className="text-xs text-muted-foreground">Execução no período</p>
-            <p className="text-2xl font-bold text-cyan-300">{combinedScore}%</p>
+            <p className="text-2xl font-bold text-cyan-300">{score}%</p>
           </div>
         </div>
       </header>
@@ -443,7 +404,11 @@ export default function Habits() {
           <LineChart data={categoryEvolution}>
             <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
             <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10 }} />
-            <YAxis domain={[0, 100]} tickFormatter={(value) => `${value}%`} tick={{ fill: "#94a3b8", fontSize: 10 }} />
+            <YAxis
+              domain={[0, 100]}
+              tickFormatter={(value) => `${value}%`}
+              tick={{ fill: "#94a3b8", fontSize: 10 }}
+            />
             <Tooltip contentStyle={tip} />
             <Line
               dataKey={categories[0]}
@@ -468,12 +433,45 @@ export default function Habits() {
       </Chart>
       <section className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
         {categoryData.map((category) => {
-          const items = habits.filter((habit) => (habit.category || "Rotina") === category.name);
-          return <article key={category.name} className="rounded-2xl border border-white/[.08] bg-card/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:border-cyan-400/25 hover:bg-card/95">
-            <div className="mb-4 flex items-center justify-between gap-3"><h3 className="text-base font-medium text-foreground/90">{category.name}</h3><span className="rounded-full border border-white/[.08] bg-white/[.025] px-2.5 py-1 text-xs font-normal text-cyan-300/85">{category.execução}%</span></div>
-            <div className="mb-4 h-1 overflow-hidden rounded-full bg-white/[.06]"><div className="h-full rounded-full bg-cyan-400/70 transition-all" style={{ width: `${category.execução}%` }} /></div>
-            <div className="space-y-2">{items.map((habit) => <button key={habit.id} type="button" onClick={() => editHabit(habit)} className="flex w-full items-center justify-between rounded-xl border border-white/[.06] bg-background/45 px-3 py-3 text-left text-xs text-muted-foreground/80 transition hover:border-cyan-400/20 hover:bg-cyan-400/[.04] hover:text-cyan-200"><span className="truncate">{habit.title}</span><span className="ml-2 rounded-md bg-white/[.04] px-1.5 py-0.5 text-[10px] text-muted-foreground/50">{habit.streak}d</span></button>)}</div>
-          </article>;
+          const items = habits.filter(
+            (habit) => (habit.category || "Rotina") === category.name,
+          );
+          return (
+            <article
+              key={category.name}
+              className="rounded-2xl border border-white/[.08] bg-card/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:border-cyan-400/25 hover:bg-card/95"
+            >
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-base font-medium text-foreground/90">
+                  {category.name}
+                </h3>
+                <span className="rounded-full border border-white/[.08] bg-white/[.025] px-2.5 py-1 text-xs font-normal text-cyan-300/85">
+                  {category.execução}%
+                </span>
+              </div>
+              <div className="mb-4 h-1 overflow-hidden rounded-full bg-white/[.06]">
+                <div
+                  className="h-full rounded-full bg-cyan-400/70 transition-all"
+                  style={{ width: `${category.execução}%` }}
+                />
+              </div>
+              <div className="space-y-2">
+                {items.map((habit) => (
+                  <button
+                    key={habit.id}
+                    type="button"
+                    onClick={() => editHabit(habit)}
+                    className="flex w-full items-center justify-between rounded-xl border border-white/[.06] bg-background/45 px-3 py-3 text-left text-xs text-muted-foreground/80 transition hover:border-cyan-400/20 hover:bg-cyan-400/[.04] hover:text-cyan-200"
+                  >
+                    <span className="truncate">{habit.title}</span>
+                    <span className="ml-2 rounded-md bg-white/[.04] px-1.5 py-0.5 text-[10px] text-muted-foreground/50">
+                      {habit.streak}d
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </article>
+          );
         })}
       </section>
       <section className="overflow-hidden rounded-2xl bg-card/35">
@@ -512,9 +510,16 @@ export default function Habits() {
                   Tarefa / hábito
                 </th>
                 {days.map((date) => (
-                  <th key={keyOf(date)} className="border-l border-border/20 px-3 py-3 text-center">
-                    <span className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">{dayLabel(date)}</span>
-                    <span className="mt-1 block text-[10px] font-normal text-muted-foreground/60">{dateLabel(date)}</span>
+                  <th
+                    key={keyOf(date)}
+                    className="border-l border-border/20 px-3 py-3 text-center"
+                  >
+                    <span className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                      {dayLabel(date)}
+                    </span>
+                    <span className="mt-1 block text-[10px] font-normal text-muted-foreground/60">
+                      {dateLabel(date)}
+                    </span>
                   </th>
                 ))}
               </tr>
@@ -528,7 +533,13 @@ export default function Habits() {
                       className="border-x border-t border-cyan-400/20 bg-background/20 px-5 pb-2 pt-4 text-sm font-normal text-foreground/80"
                     >
                       <div className="flex items-center justify-between">
-                        <button type="button" onClick={() => renameCategory(category)} className="text-left text-sm font-normal text-foreground/80 transition hover:text-cyan-300">{category}</button>
+                        <button
+                          type="button"
+                          onClick={() => renameCategory(category)}
+                          className="text-left text-sm font-normal text-foreground/80 transition hover:text-cyan-300"
+                        >
+                          {category}
+                        </button>
                         <button
                           type="button"
                           onClick={() =>
@@ -568,12 +579,16 @@ export default function Habits() {
                   {entries.map((habit, index) => (
                     <tr
                       key={habit.id}
-                      className={`border-x border-white/[.045] transition-colors hover:bg-white/[.018] ${index === entries.length - 1 ? 'border-b border-cyan-400/20' : 'border-b'}`}
+                      className={`border-x border-white/[.045] transition-colors hover:bg-white/[.018] ${index === entries.length - 1 ? "border-b border-cyan-400/20" : "border-b"}`}
                     >
                       <td className="sticky left-0 bg-card/95 px-5 py-5">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0 flex-1">
-                            <button type="button" onClick={() => editHabit(habit)} className="block text-left text-sm font-normal text-foreground/80 hover:text-cyan-300">
+                            <button
+                              type="button"
+                              onClick={() => editHabit(habit)}
+                              className="block text-left text-sm font-normal text-foreground/80 hover:text-cyan-300"
+                            >
                               {habit.title}
                             </button>
                             <p className="mt-1 text-[11px] text-muted-foreground/60">
@@ -591,7 +606,10 @@ export default function Habits() {
                         </div>
                       </td>
                       {days.map((date) => (
-                        <td key={keyOf(date)} className="border-l border-white/[.035] px-2 py-5 text-center">
+                        <td
+                          key={keyOf(date)}
+                          className="border-l border-white/[.035] px-2 py-5 text-center"
+                        >
                           <HabitCell
                             habit={habit}
                             date={date}
@@ -609,88 +627,92 @@ export default function Habits() {
           </table>
         </div>
       </section>
-      <section className="rounded-2xl border border-white/[.08] bg-card/60 p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="font-semibold">Lista de tarefas avulsas</h2>
-            <p className="text-xs text-muted-foreground">
-              Para ações que não precisam ser repetidas todos os dias.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={oneOffTitle}
-              onChange={(e) => setOneOffTitle(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addOneOff()}
-              placeholder="Ex.: renovar documento"
-              className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-cyan-400"
-            />
-            <button
-              onClick={addOneOff}
-              className="inline-flex h-9 items-center gap-1 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950"
-            >
-              <Plus className="h-4 w-4" />
-              Adicionar
-            </button>
-          </div>
-        </div>
-        <div className="space-y-2">
-          {oneOffTasks.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-white/[.1] px-4 py-5 text-center text-xs text-muted-foreground">
-              Nenhuma tarefa avulsa adicionada.
-            </p>
-          ) : (
-            oneOffTasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-background/35 px-3 py-3"
+      {false && (
+        <section className="rounded-2xl border border-white/[.08] bg-card/60 p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Lista de tarefas avulsas</h2>
+              <p className="text-xs text-muted-foreground">
+                Para ações que não precisam ser repetidas todos os dias.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={oneOffTitle}
+                onChange={(e) => setOneOffTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addOneOff()}
+                placeholder="Ex.: renovar documento"
+                className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-cyan-400"
+              />
+              <button
+                onClick={addOneOff}
+                className="inline-flex h-9 items-center gap-1 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950"
               >
-                <button
-                  type="button"
-                  onClick={() =>
-                    saveOneOff(
-                      oneOffTasks.map((item) =>
-                        item.id === task.id
-                          ? {
-                              ...item,
-                              done: !item.done,
-                              completedAt: item.done
-                                ? null
-                                : keyOf(new Date()),
-                            }
-                          : item,
-                      ),
-                    )
-                  }
-                  className={`flex h-5 w-5 items-center justify-center rounded-md border ${task.done ? "border-emerald-400/60 bg-emerald-400/20 text-emerald-300" : "border-cyan-400/30"}`}
+                <Plus className="h-4 w-4" />
+                Adicionar
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {oneOffTasks.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/[.1] px-4 py-5 text-center text-xs text-muted-foreground">
+                Nenhuma tarefa avulsa adicionada.
+              </p>
+            ) : (
+              oneOffTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-background/35 px-3 py-3"
                 >
-                  {task.done && <Check className="h-3.5 w-3.5" />}
-                </button>
-                <span
-                  className={`flex-1 text-sm ${task.done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
-                >
-                  {task.title}
-                  <small className="ml-2 text-[10px] text-muted-foreground/60">
-                    {task.done && task.completedAt
-                      ? `executada em ${dateLabel(new Date(`${task.completedAt}T12:00:00`))}`
-                      : "pendente"}
-                  </small>
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    saveOneOff(oneOffTasks.filter((item) => item.id !== task.id))
-                  }
-                  className="text-muted-foreground/50 hover:text-red-400"
-                  title="Excluir tarefa"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      saveOneOff(
+                        oneOffTasks.map((item) =>
+                          item.id === task.id
+                            ? {
+                                ...item,
+                                done: !item.done,
+                                completedAt: item.done
+                                  ? null
+                                  : keyOf(new Date()),
+                              }
+                            : item,
+                        ),
+                      )
+                    }
+                    className={`flex h-5 w-5 items-center justify-center rounded-md border ${task.done ? "border-emerald-400/60 bg-emerald-400/20 text-emerald-300" : "border-cyan-400/30"}`}
+                  >
+                    {task.done && <Check className="h-3.5 w-3.5" />}
+                  </button>
+                  <span
+                    className={`flex-1 text-sm ${task.done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
+                  >
+                    {task.title}
+                    <small className="ml-2 text-[10px] text-muted-foreground/60">
+                      {task.done && task.completedAt
+                        ? `executada em ${dateLabel(new Date(`${task.completedAt}T12:00:00`))}`
+                        : "pendente"}
+                    </small>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      saveOneOff(
+                        oneOffTasks.filter((item) => item.id !== task.id),
+                      )
+                    }
+                    className="text-muted-foreground/50 hover:text-red-400"
+                    title="Excluir tarefa"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

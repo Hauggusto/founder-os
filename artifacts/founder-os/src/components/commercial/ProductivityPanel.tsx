@@ -19,6 +19,12 @@ type Activity = {
   date: string;
   status: "pending" | "executed" | "failed";
 };
+type OneOffTask = {
+  id: string;
+  title: string;
+  done: boolean;
+  completedAt?: string | null;
+};
 const KEY = "founder-os-daily-productivity";
 
 export function ProductivityPanel() {
@@ -36,6 +42,16 @@ export function ProductivityPanel() {
   const [timelinePeriod, setTimelinePeriod] = useState<
     "weekly" | "monthly" | "annual"
   >("weekly");
+  const [oneOffTitle, setOneOffTitle] = useState("");
+  const [oneOffTasks, setOneOffTasks] = useState<OneOffTask[]>(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("founder-os-one-off-habit-tasks") || "[]",
+      );
+    } catch {
+      return [];
+    }
+  });
   useEffect(() => {
     localStorage.setItem(KEY, JSON.stringify(activities));
     window.dispatchEvent(new CustomEvent("founder-productivity-updated"));
@@ -52,6 +68,26 @@ export function ProductivityPanel() {
     .reduce((sum, item) => sum + item.quantity, 0);
   const score =
     executed + failed ? Math.round((executed / (executed + failed)) * 100) : 0;
+  const saveOneOff = (tasks: OneOffTask[]) => {
+    setOneOffTasks(tasks);
+    localStorage.setItem(
+      "founder-os-one-off-habit-tasks",
+      JSON.stringify(tasks),
+    );
+  };
+  const addOneOff = () => {
+    if (!oneOffTitle.trim()) return;
+    saveOneOff([
+      ...oneOffTasks,
+      {
+        id: `task-${Date.now()}`,
+        title: oneOffTitle.trim(),
+        done: false,
+        completedAt: null,
+      },
+    ]);
+    setOneOffTitle("");
+  };
   const chartData = useMemo(
     () =>
       Array.from({ length: 7 }, (_, index) => {
@@ -133,6 +169,13 @@ export function ProductivityPanel() {
         rows={timelineRows}
         period={timelinePeriod}
         setPeriod={setTimelinePeriod}
+      />
+      <OneOffTaskList
+        tasks={oneOffTasks}
+        title={oneOffTitle}
+        setTitle={setOneOffTitle}
+        add={addOneOff}
+        save={saveOneOff}
       />
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -270,6 +313,105 @@ export function ProductivityPanel() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function OneOffTaskList({
+  tasks,
+  title,
+  setTitle,
+  add,
+  save,
+}: {
+  tasks: OneOffTask[];
+  title: string;
+  setTitle: (value: string) => void;
+  add: () => void;
+  save: (tasks: OneOffTask[]) => void;
+}) {
+  return (
+    <section className="mb-6 rounded-2xl border border-white/[.08] bg-card/60 p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Lista de tarefas avulsas</h2>
+          <p className="text-xs text-muted-foreground">
+            Ações pontuais que entram na métrica no dia em que forem executadas.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            onKeyDown={(event) => event.key === "Enter" && add()}
+            placeholder="Ex.: renovar documento"
+            className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-emerald-400"
+          />
+          <button
+            onClick={add}
+            className="inline-flex h-9 items-center gap-1 rounded-lg bg-emerald-400 px-3 text-sm font-semibold text-slate-950"
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar
+          </button>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {tasks.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-white/[.1] px-4 py-5 text-center text-xs text-muted-foreground">
+            Nenhuma tarefa avulsa adicionada.
+          </p>
+        ) : (
+          tasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-background/35 px-3 py-3"
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  save(
+                    tasks.map((item) =>
+                      item.id === task.id
+                        ? {
+                            ...item,
+                            done: !item.done,
+                            completedAt: item.done
+                              ? null
+                              : new Date().toISOString().slice(0, 10),
+                          }
+                        : item,
+                    ),
+                  )
+                }
+                className={`flex h-5 w-5 items-center justify-center rounded-md border ${task.done ? "border-emerald-400/60 bg-emerald-400/20 text-emerald-300" : "border-emerald-400/30"}`}
+              >
+                {task.done && <Check className="h-3.5 w-3.5" />}
+              </button>
+              <span
+                className={`flex-1 text-sm ${task.done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
+              >
+                {task.title}
+                <small className="ml-2 text-[10px] text-muted-foreground/60">
+                  {task.done && task.completedAt
+                    ? `executada em ${task.completedAt.split("-").reverse().join("/")}`
+                    : "pendente"}
+                </small>
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  save(tasks.filter((item) => item.id !== task.id))
+                }
+                className="text-muted-foreground/50 hover:text-red-400"
+                title="Excluir tarefa"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </section>
   );
