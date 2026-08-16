@@ -39,25 +39,12 @@ export function Layout({ children }: LayoutProps) {
   const sidebarWidth = useAppStore(s => s.sidebarWidth);
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const mobileItems = [
-    ['/', 'Cockpit', LayoutDashboard], ['/financeiro', 'Financeiro', DollarSign],
-    ['/projetos', 'Projetos', FolderKanban], ['/produtividade', 'Produtividade', Activity],
-    ['/alertas-risco', 'Risco', Menu],
-  ] as const;
-
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <nav className="mobile-nav" aria-label="Navegação mobile">
-        {mobileItems.map(([path, label, Icon]) => (
-          <Link key={path} href={path}>
-            <span className={location === path ? 'mobile-nav-item active' : 'mobile-nav-item'}>
-              <Icon className="h-4 w-4" /><small>{label}</small>
-            </span>
-          </Link>
-        ))}
+      <nav className="mobile-nav mobile-nav-only-menu" aria-label="Navegação mobile">
         <button type="button" className="mobile-nav-item mobile-menu-trigger" onClick={() => setMenuOpen(true)} aria-label="Abrir menu completo">
-          <Menu className="h-4 w-4" /><small>Menu</small>
+          <Menu className="h-5 w-5" /><small>Menu</small>
         </button>
       </nav>
 
