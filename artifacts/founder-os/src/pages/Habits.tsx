@@ -123,6 +123,18 @@ export default function Habits() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [addingCategory, setAddingCategory] = useState<string | null>(null);
   const [categoryTitle, setCategoryTitle] = useState("");
+  const [oneOffTitle, setOneOffTitle] = useState("");
+  const [oneOffTasks, setOneOffTasks] = useState<
+    { id: string; title: string; done: boolean }[]
+  >(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("founder-os-one-off-habit-tasks") || "[]",
+      );
+    } catch {
+      return [];
+    }
+  });
   const days = useMemo(() => periodDays(period), [period]);
   const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
   const filtered = habits.filter(
@@ -171,6 +183,23 @@ export default function Habits() {
         category: name.trim(),
         order: habits.length,
       });
+  };
+  const saveOneOff = (
+    tasks: { id: string; title: string; done: boolean }[],
+  ) => {
+    setOneOffTasks(tasks);
+    localStorage.setItem(
+      "founder-os-one-off-habit-tasks",
+      JSON.stringify(tasks),
+    );
+  };
+  const addOneOff = () => {
+    if (!oneOffTitle.trim()) return;
+    saveOneOff([
+      ...oneOffTasks,
+      { id: `task-${Date.now()}`, title: oneOffTitle.trim(), done: false },
+    ]);
+    setOneOffTitle("");
   };
   const renameCategory = (category: string) => {
     const name = window.prompt("Editar nome da categoria", category);
@@ -553,6 +582,77 @@ export default function Habits() {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+      <section className="rounded-2xl border border-white/[.08] bg-card/60 p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">Lista de tarefas avulsas</h2>
+            <p className="text-xs text-muted-foreground">
+              Para ações que não precisam ser repetidas todos os dias.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={oneOffTitle}
+              onChange={(e) => setOneOffTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addOneOff()}
+              placeholder="Ex.: renovar documento"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-cyan-400"
+            />
+            <button
+              onClick={addOneOff}
+              className="inline-flex h-9 items-center gap-1 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950"
+            >
+              <Plus className="h-4 w-4" />
+              Adicionar
+            </button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {oneOffTasks.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-white/[.1] px-4 py-5 text-center text-xs text-muted-foreground">
+              Nenhuma tarefa avulsa adicionada.
+            </p>
+          ) : (
+            oneOffTasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-background/35 px-3 py-3"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    saveOneOff(
+                      oneOffTasks.map((item) =>
+                        item.id === task.id
+                          ? { ...item, done: !item.done }
+                          : item,
+                      ),
+                    )
+                  }
+                  className={`flex h-5 w-5 items-center justify-center rounded-md border ${task.done ? "border-emerald-400/60 bg-emerald-400/20 text-emerald-300" : "border-cyan-400/30"}`}
+                >
+                  {task.done && <Check className="h-3.5 w-3.5" />}
+                </button>
+                <span
+                  className={`flex-1 text-sm ${task.done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
+                >
+                  {task.title}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    saveOneOff(oneOffTasks.filter((item) => item.id !== task.id))
+                  }
+                  className="text-muted-foreground/50 hover:text-red-400"
+                  title="Excluir tarefa"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       </section>
     </div>
