@@ -474,8 +474,8 @@ export default function Habits() {
           );
         })}
       </section>
-      <section className="overflow-hidden rounded-2xl bg-card/35">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 p-5">
+      <section className="overflow-hidden rounded-2xl border border-white/[.08] bg-card/45 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/15 bg-cyan-400/[.025] p-5">
           <div className="flex items-center gap-3">
             <ClipboardCheck className="h-5 w-5 text-cyan-400" />
             <div>
@@ -505,8 +505,8 @@ export default function Habits() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse">
             <thead>
-              <tr className="border-b border-white/[.06] text-xs text-muted-foreground">
-                <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left">
+              <tr className="border-b border-white/[.08] bg-background/25 text-xs text-muted-foreground">
+                <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left font-medium">
                   Tarefa / hábito
                 </th>
                 {days.map((date) => (
@@ -525,104 +525,106 @@ export default function Habits() {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(grouped).map(([category, entries]) => (
-                <>
-                  <tr key={`category-${category}`}>
-                    <td
-                      colSpan={days.length + 1}
-                      className="border-x border-t border-cyan-400/20 bg-background/20 px-5 pb-2 pt-4 text-sm font-normal text-foreground/80"
-                    >
-                      <div className="flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => renameCategory(category)}
-                          className="text-left text-sm font-normal text-foreground/80 transition hover:text-cyan-300"
-                        >
-                          {category}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setAddingCategory(
-                              addingCategory === category ? null : category,
-                            )
-                          }
-                          className="inline-flex items-center gap-1 rounded-md border border-cyan-400/20 bg-cyan-400/[.03] px-2 py-1 text-[10px] font-medium normal-case tracking-normal text-cyan-300/80 transition hover:border-cyan-400/50 hover:bg-cyan-400/[.08]"
-                        >
-                          <Plus className="h-3 w-3" />
-                          Adicionar
-                        </button>
-                      </div>
-                      {addingCategory === category && (
-                        <div className="mt-3 flex max-w-md gap-2">
-                          <input
-                            autoFocus
-                            value={categoryTitle}
-                            onChange={(e) => setCategoryTitle(e.target.value)}
-                            onKeyDown={(e) =>
-                              e.key === "Enter" && addToCategory(category)
-                            }
-                            placeholder={`Novo item em ${category}`}
-                            className="h-8 flex-1 rounded-md border border-cyan-400/30 bg-background px-2 text-sm font-normal text-foreground/80 outline-none placeholder:text-muted-foreground/50 focus:border-cyan-400"
-                          />
+              {Object.entries(grouped).map(
+                ([category, entries], categoryIndex) => (
+                  <>
+                    <tr key={`category-${category}`}>
+                      <td
+                        colSpan={days.length + 1}
+                        className={`border-x border-t px-5 pb-2 pt-4 text-sm font-normal text-foreground/80 ${categoryIndex % 3 === 0 ? "border-cyan-400/35 bg-cyan-400/[.035]" : categoryIndex % 3 === 1 ? "border-violet-400/30 bg-violet-400/[.03]" : "border-emerald-400/30 bg-emerald-400/[.025]"}`}
+                      >
+                        <div className="flex items-center justify-between">
                           <button
                             type="button"
-                            onClick={() => addToCategory(category)}
-                            className="rounded-md bg-cyan-400 px-3 text-xs font-semibold text-slate-950"
+                            onClick={() => renameCategory(category)}
+                            className="text-left text-sm font-medium tracking-wide text-foreground/85 transition hover:text-cyan-300"
                           >
-                            Salvar
+                            {category}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAddingCategory(
+                                addingCategory === category ? null : category,
+                              )
+                            }
+                            className="inline-flex items-center gap-1 rounded-md border border-cyan-400/20 bg-cyan-400/[.03] px-2 py-1 text-[10px] font-medium normal-case tracking-normal text-cyan-300/80 transition hover:border-cyan-400/50 hover:bg-cyan-400/[.08]"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Adicionar
                           </button>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                  {entries.map((habit, index) => (
-                    <tr
-                      key={habit.id}
-                      className={`border-x border-white/[.045] transition-colors hover:bg-white/[.018] ${index === entries.length - 1 ? "border-b border-cyan-400/20" : "border-b"}`}
-                    >
-                      <td className="sticky left-0 bg-card/95 px-5 py-5">
-                        <div className="flex items-center gap-2">
-                          <div className="min-w-0 flex-1">
+                        {addingCategory === category && (
+                          <div className="mt-3 flex max-w-md gap-2">
+                            <input
+                              autoFocus
+                              value={categoryTitle}
+                              onChange={(e) => setCategoryTitle(e.target.value)}
+                              onKeyDown={(e) =>
+                                e.key === "Enter" && addToCategory(category)
+                              }
+                              placeholder={`Novo item em ${category}`}
+                              className="h-8 flex-1 rounded-md border border-cyan-400/30 bg-background px-2 text-sm font-normal text-foreground/80 outline-none placeholder:text-muted-foreground/50 focus:border-cyan-400"
+                            />
                             <button
                               type="button"
-                              onClick={() => editHabit(habit)}
-                              className="block text-left text-sm font-normal text-foreground/80 hover:text-cyan-300"
+                              onClick={() => addToCategory(category)}
+                              className="rounded-md bg-cyan-400 px-3 text-xs font-semibold text-slate-950"
                             >
-                              {habit.title}
+                              Salvar
                             </button>
-                            <p className="mt-1 text-[11px] text-muted-foreground/60">
-                              Sequência: {habit.streak} dias
-                            </p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeHabit(habit)}
-                            className="text-muted-foreground/50 hover:text-red-400"
-                            title="Excluir"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                        )}
                       </td>
-                      {days.map((date) => (
-                        <td
-                          key={keyOf(date)}
-                          className="border-l border-white/[.035] px-2 py-5 text-center"
-                        >
-                          <HabitCell
-                            habit={habit}
-                            date={date}
-                            onChange={(status) =>
-                              setHabitCheck(habit.id, keyOf(date), status)
-                            }
-                          />
-                        </td>
-                      ))}
                     </tr>
-                  ))}
-                </>
-              ))}
+                    {entries.map((habit, index) => (
+                      <tr
+                        key={habit.id}
+                        className={`border-x border-white/[.07] bg-background/15 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
+                      >
+                        <td className="sticky left-0 bg-card/95 px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                              <button
+                                type="button"
+                                onClick={() => editHabit(habit)}
+                                className="block text-left text-sm font-normal text-foreground/80 hover:text-cyan-300"
+                              >
+                                {habit.title}
+                              </button>
+                              <p className="mt-1 text-[11px] text-muted-foreground/60">
+                                Sequência: {habit.streak} dias
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeHabit(habit)}
+                              className="text-muted-foreground/50 hover:text-red-400"
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                        {days.map((date) => (
+                          <td
+                            key={keyOf(date)}
+                            className="border-l border-white/[.035] px-2 py-5 text-center"
+                          >
+                            <HabitCell
+                              habit={habit}
+                              date={date}
+                              onChange={(status) =>
+                                setHabitCheck(habit.id, keyOf(date), status)
+                              }
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </>
+                ),
+              )}
             </tbody>
           </table>
         </div>
