@@ -125,7 +125,7 @@ export default function Habits() {
   const [categoryTitle, setCategoryTitle] = useState("");
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
-    { id: string; title: string; done: boolean }[]
+    { id: string; title: string; done: boolean; completedAt?: string | null }[]
   >(() => {
     try {
       return JSON.parse(
@@ -185,7 +185,12 @@ export default function Habits() {
       });
   };
   const saveOneOff = (
-    tasks: { id: string; title: string; done: boolean }[],
+    tasks: {
+      id: string;
+      title: string;
+      done: boolean;
+      completedAt?: string | null;
+    }[],
   ) => {
     setOneOffTasks(tasks);
     localStorage.setItem(
@@ -197,7 +202,12 @@ export default function Habits() {
     if (!oneOffTitle.trim()) return;
     saveOneOff([
       ...oneOffTasks,
-      { id: `task-${Date.now()}`, title: oneOffTitle.trim(), done: false },
+      {
+        id: `task-${Date.now()}`,
+        title: oneOffTitle.trim(),
+        done: false,
+        completedAt: null,
+      },
     ]);
     setOneOffTitle("");
   };
@@ -230,15 +240,30 @@ export default function Habits() {
           100,
       )
     : 0;
+  const allMetricDays = habits.length * days.length + oneOffTasks.length;
+  const metricPoints =
+    habits.reduce(
+      (sum, h) =>
+        sum + days.reduce((inner, d) => inner + statusScore(h.checks?.[keyOf(d)]), 0),
+      0,
+    ) + oneOffTasks.filter((task) => task.done && days.some((day) => keyOf(day) === task.completedAt)).length;
+  const combinedScore = allMetricDays
+    ? Math.round((metricPoints / allMetricDays) * 100)
+    : score;
   const dailyData = days.map((day) => {
     const values = habits
       .map((h) => h.checks?.[keyOf(day)])
       .filter(Boolean) as IdentityStatus[];
+    const oneOffDone = oneOffTasks.filter(
+      (task) => task.done && task.completedAt === keyOf(day),
+    ).length;
+    const totalItems = habits.length + oneOffTasks.length;
     return {
       name: dateLabel(day),
-      execução: values.length
+      execução: totalItems
         ? Math.round(
-            (values.reduce((s, v) => s + statusScore(v), 0) / values.length) *
+            ((values.reduce((s, v) => s + statusScore(v), 0) + oneOffDone) /
+              totalItems) *
               100,
           )
         : 0,
@@ -301,7 +326,7 @@ export default function Habits() {
           </div>
           <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/5 px-5 py-3 text-right">
             <p className="text-xs text-muted-foreground">Execução no período</p>
-            <p className="text-2xl font-bold text-cyan-300">{score}%</p>
+            <p className="text-2xl font-bold text-cyan-300">{combinedScore}%</p>
           </div>
         </div>
       </header>
@@ -626,7 +651,13 @@ export default function Habits() {
                     saveOneOff(
                       oneOffTasks.map((item) =>
                         item.id === task.id
-                          ? { ...item, done: !item.done }
+                          ? {
+                              ...item,
+                              done: !item.done,
+                              completedAt: item.done
+                                ? null
+                                : keyOf(new Date()),
+                            }
                           : item,
                       ),
                     )
@@ -639,6 +670,11 @@ export default function Habits() {
                   className={`flex-1 text-sm ${task.done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
                 >
                   {task.title}
+                  <small className="ml-2 text-[10px] text-muted-foreground/60">
+                    {task.done && task.completedAt
+                      ? `executada em ${dateLabel(new Date(`${task.completedAt}T12:00:00`))}`
+                      : "pendente"}
+                  </small>
                 </span>
                 <button
                   type="button"
