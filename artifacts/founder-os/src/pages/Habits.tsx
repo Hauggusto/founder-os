@@ -471,19 +471,10 @@ export default function Habits() {
                   <tr key={`category-${category}`}>
                     <td
                       colSpan={days.length + 1}
-                      className="border-x border-t border-cyan-400/20 bg-background/20 px-5 pb-2 pt-4 text-[11px] font-medium uppercase tracking-[.2em] text-cyan-200/75"
+                      className="border-x border-t border-cyan-400/20 bg-background/20 px-5 pb-2 pt-4 text-sm font-normal text-foreground/80"
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span>{category}</span>
-                          <button
-                            type="button"
-                            onClick={() => renameCategory(category)}
-                            className="rounded-md px-1.5 py-0.5 text-[10px] normal-case tracking-normal text-muted-foreground/50 transition hover:bg-white/[.05] hover:text-cyan-300"
-                          >
-                            Editar
-                          </button>
-                        </div>
+                        <button type="button" onClick={() => renameCategory(category)} className="text-left text-sm font-normal text-foreground/80 transition hover:text-cyan-300">{category}</button>
                         <button
                           type="button"
                           onClick={() =>
@@ -507,7 +498,7 @@ export default function Habits() {
                               e.key === "Enter" && addToCategory(category)
                             }
                             placeholder={`Novo item em ${category}`}
-                            className="h-8 flex-1 rounded-md border border-cyan-400/30 bg-background px-2 text-xs outline-none"
+                            className="h-8 flex-1 rounded-md border border-cyan-400/30 bg-background px-2 text-sm font-normal text-foreground/80 outline-none placeholder:text-muted-foreground/50 focus:border-cyan-400"
                           />
                           <button
                             type="button"
