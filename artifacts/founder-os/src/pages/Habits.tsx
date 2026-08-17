@@ -141,6 +141,8 @@ export default function Habits() {
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitTitle, setEditingHabitTitle] = useState("");
   const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState("");
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
@@ -234,12 +236,24 @@ export default function Habits() {
     }[],
   ) => setOneOffTasks(tasks);
   const addOneOff = () => undefined;
-  const renameCategory = (category: string) => {
-    const name = window.prompt("Editar nome da categoria", category);
-    if (name?.trim() && name.trim() !== category)
+  const startEditingCategory = (category: string) => {
+    setEditingCategory(category);
+    setEditingCategoryName(category);
+  };
+  const saveEditingCategory = (category: string) => {
+    const name = editingCategoryName.trim();
+    if (name && name !== category) {
       habits
         .filter((h) => (h.category || "Rotina") === category)
-        .forEach((h) => updateHabitEntry(h.id, { category: name.trim() }));
+        .forEach((h) => updateHabitEntry(h.id, { category: name }));
+      if (categoryFilter === category) setCategoryFilter(name);
+    }
+    setEditingCategory(null);
+    setEditingCategoryName("");
+  };
+  const cancelEditingCategory = () => {
+    setEditingCategory(null);
+    setEditingCategoryName("");
   };
   const removeCategory = (category: string) => {
     const entries = habits.filter(
@@ -701,21 +715,37 @@ export default function Habits() {
                   <>
                     <tr key={`category-${category}`}>
                       <td
-                        colSpan={days.length + 2}
+                        colSpan={executionDays.length + 2}
                         style={categoryColors[category] ? { borderColor: `${categoryColors[category]}88`, boxShadow: `inset 3px 0 ${categoryColors[category]}` } : undefined}
                         className={`border px-5 pb-3 pt-4 text-sm font-normal text-foreground/80 shadow-[0_8px_18px_rgba(0,0,0,.12)] ${categoryIndex % 3 === 0 ? "rounded-t-xl border-cyan-400/35 bg-cyan-400/[.05]" : categoryIndex % 3 === 1 ? "rounded-t-xl border-violet-400/30 bg-violet-400/[.045]" : "rounded-t-xl border-emerald-400/30 bg-emerald-400/[.04]"}`}
                       >
                         <div className="flex items-center justify-between">
-                          <button
-                            type="button"
-                            onClick={() => renameCategory(category)}
-                            className="flex items-center gap-2 text-left text-sm font-semibold tracking-wide text-foreground/90 transition hover:text-cyan-300"
-                          >
-                            <span
-                              className={`h-2 w-2 rounded-full ${categoryIndex % 3 === 0 ? "bg-cyan-300 shadow-[0_0_8px_#67e8f9]" : categoryIndex % 3 === 1 ? "bg-violet-300 shadow-[0_0_8px_#c4b5fd]" : "bg-emerald-300 shadow-[0_0_8px_#6ee7b7]"}`}
+                          {editingCategory === category ? (
+                            <input
+                              autoFocus
+                              value={editingCategoryName}
+                              onChange={(e) => setEditingCategoryName(e.target.value)}
+                              onBlur={() => saveEditingCategory(category)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveEditingCategory(category);
+                                if (e.key === "Escape") cancelEditingCategory();
+                              }}
+                              className="h-8 w-48 rounded-md border border-cyan-400/60 bg-background px-2 text-sm outline-none shadow-[0_0_12px_rgba(34,211,238,.1)]"
+                              aria-label={`Editar categoria ${category}`}
                             />
-                            {category}
-                          </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => startEditingCategory(category)}
+                              className="flex items-center gap-2 text-left text-sm font-semibold tracking-wide text-foreground/90 transition hover:text-cyan-300"
+                              title="Clique para editar a categoria"
+                            >
+                              <span
+                                className={`h-2 w-2 rounded-full ${categoryIndex % 3 === 0 ? "bg-cyan-300 shadow-[0_0_8px_#67e8f9]" : categoryIndex % 3 === 1 ? "bg-violet-300 shadow-[0_0_8px_#c4b5fd]" : "bg-emerald-300 shadow-[0_0_8px_#6ee7b7]"}`}
+                              />
+                              {category}
+                            </button>
+                          )}
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
