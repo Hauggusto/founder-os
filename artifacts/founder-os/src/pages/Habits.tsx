@@ -493,9 +493,6 @@ export default function Habits() {
       </Chart>
       <section className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
         {categoryData.map((category, categoryIndex) => {
-          const items = habits.filter(
-            (habit) => (habit.category || "Rotina") === category.name,
-          );
           const categoryTone = [
             {
               border: "border-cyan-400/30",
@@ -543,18 +540,6 @@ export default function Habits() {
                   className={`h-full rounded-full transition-all ${categoryTone.bar}`}
                   style={{ width: `${category.execução}%` }}
                 />
-              </div>
-              <div className="space-y-1.5">
-                {items.map((habit) => (
-                  <button
-                    key={habit.id}
-                    type="button"
-                    onClick={() => editHabit(habit)}
-                    className="flex w-full items-center justify-between rounded-lg border border-white/[.06] bg-background/45 px-3 py-2 text-left text-xs text-muted-foreground/80 transition hover:border-cyan-400/20 hover:bg-cyan-400/[.04] hover:text-cyan-200"
-                  >
-                    <span className="truncate">{habit.title}</span>
-                  </button>
-                ))}
               </div>
             </article>
           );
