@@ -92,7 +92,7 @@ function HabitCell({
     <button
       title={status || "Não registrado"}
       onClick={() => onChange(nextStatus(status))}
-      className={`mx-auto flex h-8 w-8 items-center justify-center rounded-lg border transition hover:scale-110 ${status ? tone[status] : "border-cyan-500/25 bg-background/50 text-transparent"}`}
+      className={`mx-auto flex h-8 w-8 items-center justify-center rounded-md border transition hover:scale-110 ${status ? tone[status] : "border-cyan-500/25 bg-background/50 text-transparent"}`}
     >
       {status === "done" ? (
         <Check className="h-4 w-4" />
