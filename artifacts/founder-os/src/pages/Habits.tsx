@@ -121,6 +121,8 @@ export default function Habits() {
   } = useAppStore();
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState<Period>("week");
+  const [categoryEvolutionPeriod, setCategoryEvolutionPeriod] =
+    useState<Period>("week");
   const [statusFilter, setStatusFilter] = useState<"all" | IdentityStatus>(
     "all",
   );
@@ -136,6 +138,10 @@ export default function Habits() {
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
   >([]);
   const days = useMemo(() => periodDays(period), [period]);
+  const categoryEvolutionDays = useMemo(
+    () => periodDays(categoryEvolutionPeriod),
+    [categoryEvolutionPeriod],
+  );
   const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
   const filtered = habits.filter(
     (habit) =>
@@ -269,7 +275,7 @@ export default function Habits() {
         : 0,
     };
   });
-  const categoryEvolution = days.map((day) => {
+  const categoryEvolution = categoryEvolutionDays.map((day) => {
     const row: Record<string, string | number> = {
       name: dateLabel(day),
     };
@@ -446,7 +452,11 @@ export default function Habits() {
           </ResponsiveContainer>
         </Chart>
       </section>
-      <Chart title="Evolução de cada categoria" period={period} setPeriod={setPeriod}>
+      <Chart
+        title="Evolução de cada categoria"
+        period={categoryEvolutionPeriod}
+        setPeriod={setCategoryEvolutionPeriod}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={categoryEvolution}
