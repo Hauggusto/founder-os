@@ -5,6 +5,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -432,7 +433,16 @@ export default function Habits() {
                 contentStyle={tip}
                 formatter={(v) => [`${v}%`, "Execução"]}
               />
-              <Bar dataKey="execução" fill="#10B981" radius={[0, 5, 5, 0]} />
+              <Bar dataKey="execução" fill="#10B981" radius={[0, 5, 5, 0]}>
+                <LabelList
+                  dataKey="execução"
+                  position="right"
+                  formatter={(value: number) => `${value}%`}
+                  fill="#d8f3ff"
+                  fontSize={11}
+                  fontWeight={600}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </Chart>
@@ -467,7 +477,16 @@ export default function Habits() {
                 }
                 radius={[4, 4, 0, 0]}
                 maxBarSize={24}
-              />
+              >
+                <LabelList
+                  dataKey={category}
+                  position="top"
+                  formatter={(value: number) => `${value}%`}
+                  fill="#d8f3ff"
+                  fontSize={9}
+                  fontWeight={600}
+                />
+              </Bar>
             ))}
           </BarChart>
         </ResponsiveContainer>
