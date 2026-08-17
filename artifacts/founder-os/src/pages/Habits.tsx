@@ -137,6 +137,8 @@ export default function Habits() {
   const [showHabitForm, setShowHabitForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
+  const [editingHabitTitle, setEditingHabitTitle] = useState("");
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
@@ -241,9 +243,19 @@ export default function Habits() {
       if (categoryFilter === category) setCategoryFilter("all");
     }
   };
-  const editHabit = (habit: HabitEntry) => {
-    const name = window.prompt("Editar hábito", habit.title);
-    if (name?.trim()) updateHabitEntry(habit.id, { title: name.trim() });
+  const startEditingHabit = (habit: HabitEntry) => {
+    setEditingHabitId(habit.id);
+    setEditingHabitTitle(habit.title);
+  };
+  const saveEditingHabit = (habit: HabitEntry) => {
+    const name = editingHabitTitle.trim();
+    if (name) updateHabitEntry(habit.id, { title: name });
+    setEditingHabitId(null);
+    setEditingHabitTitle("");
+  };
+  const cancelEditingHabit = () => {
+    setEditingHabitId(null);
+    setEditingHabitTitle("");
   };
   const removeHabit = (habit: HabitEntry) => {
     if (window.confirm(`Excluir "${habit.title}"?`)) deleteHabitEntry(habit.id);
@@ -714,14 +726,29 @@ export default function Habits() {
                         <td className="sticky left-0 bg-card/95 px-5 py-2">
                           <div className="flex items-center gap-2">
                             <div className="min-w-0 flex-1">
-                              <button
-                                type="button"
-                                onClick={() => editHabit(habit)}
-                                title="Clique para editar este hábito"
-                                className="group block w-full rounded-md border border-transparent px-1 py-0.5 text-left text-sm font-normal text-foreground/80 transition hover:border-cyan-400/30 hover:bg-cyan-400/[.04] hover:text-cyan-300"
-                              >
-                                {habit.title}
-                              </button>
+                              {editingHabitId === habit.id ? (
+                                <input
+                                  autoFocus
+                                  value={editingHabitTitle}
+                                  onChange={(e) => setEditingHabitTitle(e.target.value)}
+                                  onBlur={() => saveEditingHabit(habit)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveEditingHabit(habit);
+                                    if (e.key === "Escape") cancelEditingHabit();
+                                  }}
+                                  className="block w-full rounded-md border border-cyan-400/60 bg-background px-2 py-1 text-sm text-foreground outline-none shadow-[0_0_12px_rgba(34,211,238,.1)]"
+                                  aria-label={`Editar ${habit.title}`}
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => startEditingHabit(habit)}
+                                  title="Clique para editar este hábito"
+                                  className="group block w-full rounded-md border border-transparent px-1 py-0.5 text-left text-sm font-normal text-foreground/80 transition hover:border-cyan-400/30 hover:bg-cyan-400/[.04] hover:text-cyan-300"
+                                >
+                                  {habit.title}
+                                </button>
+                              )}
                             </div>
                             <button
                               type="button"
