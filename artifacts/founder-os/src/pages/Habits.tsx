@@ -137,6 +137,7 @@ export default function Habits() {
   const [showHabitForm, setShowHabitForm] = useState(false);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryColor, setNewCategoryColor] = useState("#22d3ee");
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitTitle, setEditingHabitTitle] = useState("");
   const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
@@ -162,6 +163,11 @@ export default function Habits() {
     [executionPeriod],
   );
   const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
+  const categoryColors = Object.fromEntries(
+    habits
+      .filter((habit) => habit.categoryColor)
+      .map((habit) => [habit.category || "Rotina", habit.categoryColor]),
+  ) as Record<string, string | undefined>;
   const filtered = habits.filter(
     (habit) =>
       (categoryFilter === "all" || habit.category === categoryFilter) &&
@@ -210,9 +216,11 @@ export default function Habits() {
         done: false,
         streak: 0,
         category: name,
+        categoryColor: newCategoryColor,
         order: habits.length,
       });
       setNewCategoryName("");
+      setNewCategoryColor("#22d3ee");
       setShowCategoryForm(false);
     }
   };
@@ -507,9 +515,11 @@ export default function Habits() {
           return (
             <article
               key={category.name}
+              style={categoryColors[category.name] ? { borderColor: `${categoryColors[category.name]}88` } : undefined}
               className={`relative overflow-hidden rounded-xl border bg-background/35 p-4 shadow-[0_8px_24px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/80 ${categoryTone.border} ${categoryTone.glow}`}
             >
               <div
+                style={categoryColors[category.name] ? { backgroundColor: categoryColors[category.name] } : undefined}
                 className={`absolute inset-x-0 top-0 h-0.5 ${categoryTone.bar}`}
               />
               <div className="mb-4 flex items-start justify-between gap-3">
@@ -614,6 +624,10 @@ export default function Habits() {
                 placeholder="Nome da categoria"
                 className="h-9 min-w-52 flex-1 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
               />
+              <label className="flex h-9 items-center gap-2 rounded-lg border border-white/[.1] bg-background px-2 text-xs text-muted-foreground">
+                <input type="color" value={newCategoryColor} onChange={(e) => setNewCategoryColor(e.target.value)} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0" aria-label="Cor da categoria" />
+                Cor
+              </label>
               <button
                 onClick={addCategory}
                 className="h-9 rounded-lg bg-cyan-400 px-4 text-sm font-semibold text-slate-950"
@@ -688,6 +702,7 @@ export default function Habits() {
                     <tr key={`category-${category}`}>
                       <td
                         colSpan={days.length + 2}
+                        style={categoryColors[category] ? { borderColor: `${categoryColors[category]}88`, boxShadow: `inset 3px 0 ${categoryColors[category]}` } : undefined}
                         className={`border px-5 pb-3 pt-4 text-sm font-normal text-foreground/80 shadow-[0_8px_18px_rgba(0,0,0,.12)] ${categoryIndex % 3 === 0 ? "rounded-t-xl border-cyan-400/35 bg-cyan-400/[.05]" : categoryIndex % 3 === 1 ? "rounded-t-xl border-violet-400/30 bg-violet-400/[.045]" : "rounded-t-xl border-emerald-400/30 bg-emerald-400/[.04]"}`}
                       >
                         <div className="flex items-center justify-between">

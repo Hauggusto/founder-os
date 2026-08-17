@@ -83,6 +83,7 @@ export interface HabitEntry {
   streak: number;
   category: string;
   order: number;
+  categoryColor?: string;
   checks?: Record<string, IdentityStatus>;
 }
 
