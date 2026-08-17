@@ -122,6 +122,8 @@ export default function Habits() {
   } = useAppStore();
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState<Period>("week");
+  const [dailyChartPeriod, setDailyChartPeriod] = useState<Period>("week");
+  const [comparisonPeriod, setComparisonPeriod] = useState<Period>("week");
   const [categoryEvolutionPeriod, setCategoryEvolutionPeriod] =
     useState<Period>("week");
   const [executionPeriod, setExecutionPeriod] = useState<Period>("week");
@@ -140,6 +142,14 @@ export default function Habits() {
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
   >([]);
   const days = useMemo(() => periodDays(period), [period]);
+  const dailyChartDays = useMemo(
+    () => periodDays(dailyChartPeriod),
+    [dailyChartPeriod],
+  );
+  const comparisonDays = useMemo(
+    () => periodDays(comparisonPeriod),
+    [comparisonPeriod],
+  );
   const categoryEvolutionDays = useMemo(
     () => periodDays(categoryEvolutionPeriod),
     [categoryEvolutionPeriod],
@@ -253,7 +263,7 @@ export default function Habits() {
           100,
       )
     : 0;
-  const dailyData = days.map((day) => {
+  const dailyData = dailyChartDays.map((day) => {
     const executed = habits.reduce(
       (sum, habit) => sum + statusScore(habit.checks?.[keyOf(day)]),
       0,
@@ -265,7 +275,7 @@ export default function Habits() {
   });
   const categoryData = categories.map((category) => {
     const items = habits.filter((h) => (h.category || "Rotina") === category);
-    const total = items.length * days.length;
+    const total = items.length * comparisonDays.length;
     return {
       name: category,
       execução: total
@@ -273,7 +283,10 @@ export default function Habits() {
             (items.reduce(
               (s, h) =>
                 s +
-                days.reduce((i, d) => i + statusScore(h.checks?.[keyOf(d)]), 0),
+                comparisonDays.reduce(
+                  (i, d) => i + statusScore(h.checks?.[keyOf(d)]),
+                  0,
+                ),
               0,
             ) /
               total) *
@@ -397,7 +410,7 @@ export default function Habits() {
         </div>
       </section>
       <section className="grid gap-6 xl:grid-cols-2">
-        <Chart title="Evolução dos hábitos" period={period} setPeriod={setPeriod}>
+        <Chart title="Evolução dos hábitos" period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData}>
               <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
@@ -422,7 +435,7 @@ export default function Habits() {
             </AreaChart>
           </ResponsiveContainer>
         </Chart>
-        <Chart title="Comparação por categoria" period={period} setPeriod={setPeriod}>
+        <Chart title="Comparação por categoria" period={comparisonPeriod} setPeriod={setComparisonPeriod}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={categoryData} layout="vertical">
               <CartesianGrid
