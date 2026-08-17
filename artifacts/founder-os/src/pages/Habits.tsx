@@ -486,7 +486,7 @@ export default function Habits() {
           return (
             <article
               key={category.name}
-              className={`relative overflow-hidden rounded-2xl border bg-card/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/95 ${categoryTone.border} ${categoryTone.glow}`}
+              className={`relative overflow-hidden rounded-2xl border bg-card/80 p-3 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/95 ${categoryTone.border} ${categoryTone.glow}`}
             >
               <div
                 className={`absolute inset-x-0 top-0 h-0.5 ${categoryTone.bar}`}
@@ -519,13 +519,13 @@ export default function Habits() {
                   style={{ width: `${category.execução}%` }}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {items.map((habit) => (
                   <button
                     key={habit.id}
                     type="button"
                     onClick={() => editHabit(habit)}
-                    className="flex w-full items-center justify-between rounded-xl border border-white/[.06] bg-background/45 px-3 py-3 text-left text-xs text-muted-foreground/80 transition hover:border-cyan-400/20 hover:bg-cyan-400/[.04] hover:text-cyan-200"
+                    className="flex w-full items-center justify-between rounded-lg border border-white/[.06] bg-background/45 px-3 py-2 text-left text-xs text-muted-foreground/80 transition hover:border-cyan-400/20 hover:bg-cyan-400/[.04] hover:text-cyan-200"
                   >
                     <span className="truncate">{habit.title}</span>
                   </button>
@@ -677,7 +677,7 @@ export default function Habits() {
                         key={habit.id}
                         className={`border-x border-white/[.07] bg-background/25 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "rounded-b-xl border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
                       >
-                        <td className="sticky left-0 bg-card/95 px-5 py-4">
+                        <td className="sticky left-0 bg-card/95 px-5 py-3">
                           <div className="flex items-center gap-2">
                             <div className="min-w-0 flex-1">
                               <button
@@ -701,7 +701,7 @@ export default function Habits() {
                         {days.map((date) => (
                           <td
                             key={keyOf(date)}
-                            className="border-l border-white/[.035] px-2 py-5 text-center"
+                            className="border-l border-white/[.035] px-2 py-3 text-center"
                           >
                             <HabitCell
                               habit={habit}
