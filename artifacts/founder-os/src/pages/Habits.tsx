@@ -139,6 +139,7 @@ export default function Habits() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitTitle, setEditingHabitTitle] = useState("");
+  const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
@@ -173,6 +174,9 @@ export default function Habits() {
       return groups;
     },
     {},
+  );
+  Object.values(grouped).forEach((entries) =>
+    entries.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
   );
   const add = (category = "Rotina") => {
     if (!title.trim()) return;
@@ -259,6 +263,19 @@ export default function Habits() {
   };
   const removeHabit = (habit: HabitEntry) => {
     if (window.confirm(`Excluir "${habit.title}"?`)) deleteHabitEntry(habit.id);
+  };
+  const reorderWithinCategory = (category: string, targetId: string) => {
+    if (!draggedHabitId || draggedHabitId === targetId) return;
+    const entries = habits
+      .filter((habit) => (habit.category || "Rotina") === category)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const from = entries.findIndex((habit) => habit.id === draggedHabitId);
+    const to = entries.findIndex((habit) => habit.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [moved] = entries.splice(from, 1);
+    entries.splice(to, 0, moved);
+    entries.forEach((habit, index) => updateHabitEntry(habit.id, { order: index }));
+    setDraggedHabitId(null);
   };
   const score = habits.length
     ? Math.round(
@@ -605,7 +622,13 @@ export default function Habits() {
                 autoFocus
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && add(newHabitCategory)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") add(newHabitCategory);
+                  if (e.key === "Escape") {
+                    setTitle("");
+                    setShowHabitForm(false);
+                  }
+                }}
                 placeholder="Nome do hábito (ex.: Ler 20 minutos)"
                 className="h-10 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
               />
@@ -701,9 +724,13 @@ export default function Habits() {
                               autoFocus
                               value={categoryTitle}
                               onChange={(e) => setCategoryTitle(e.target.value)}
-                              onKeyDown={(e) =>
-                                e.key === "Enter" && addToCategory(category)
-                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") addToCategory(category);
+                                if (e.key === "Escape") {
+                                  setCategoryTitle("");
+                                  setAddingCategory(null);
+                                }
+                              }}
                               placeholder={`Novo item em ${category}`}
                               className="h-8 flex-1 rounded-md border border-cyan-400/30 bg-background px-2 text-sm font-normal text-foreground/80 outline-none placeholder:text-muted-foreground/50 focus:border-cyan-400"
                             />
@@ -721,6 +748,11 @@ export default function Habits() {
                     {entries.map((habit, index) => (
                       <tr
                         key={habit.id}
+                        draggable
+                        onDragStart={() => setDraggedHabitId(habit.id)}
+                        onDragEnd={() => setDraggedHabitId(null)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => reorderWithinCategory(category, habit.id)}
                         className={`border-x border-white/[.07] bg-background/25 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "rounded-b-xl border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
                       >
                         <td className="sticky left-0 bg-card/95 px-5 py-2">
