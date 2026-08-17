@@ -200,6 +200,20 @@ export default function Habits() {
         .filter((h) => (h.category || "Rotina") === category)
         .forEach((h) => updateHabitEntry(h.id, { category: name.trim() }));
   };
+  const removeCategory = (category: string) => {
+    const entries = habits.filter(
+      (habit) => (habit.category || "Rotina") === category,
+    );
+    if (!entries.length) return;
+    if (
+      window.confirm(
+        `Excluir a categoria "${category}" e seus ${entries.length} hábitos?`,
+      )
+    ) {
+      entries.forEach((habit) => deleteHabitEntry(habit.id));
+      if (categoryFilter === category) setCategoryFilter("all");
+    }
+  };
   const editHabit = (habit: HabitEntry) => {
     const name = window.prompt("Editar hábito", habit.title);
     if (name?.trim()) updateHabitEntry(habit.id, { title: name.trim() });
@@ -636,18 +650,28 @@ export default function Habits() {
                             />
                             {category}
                           </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setAddingCategory(
-                                addingCategory === category ? null : category,
-                              )
-                            }
-                            className="inline-flex items-center gap-1 rounded-md border border-cyan-400/20 bg-cyan-400/[.03] px-2 py-1 text-[10px] font-medium normal-case tracking-normal text-cyan-300/80 transition hover:border-cyan-400/50 hover:bg-cyan-400/[.08]"
-                          >
-                            <Plus className="h-3 w-3" />
-                            Adicionar
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setAddingCategory(
+                                  addingCategory === category ? null : category,
+                                )
+                              }
+                              className="inline-flex items-center gap-1 rounded-md border border-cyan-400/20 bg-cyan-400/[.03] px-2 py-1 text-[10px] font-medium normal-case tracking-normal text-cyan-300/80 transition hover:border-cyan-400/50 hover:bg-cyan-400/[.08]"
+                            >
+                              <Plus className="h-3 w-3" />
+                              Adicionar hábito
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeCategory(category)}
+                              title={`Excluir categoria ${category}`}
+                              className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-red-400/10 hover:text-red-400"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                         {addingCategory === category && (
                           <div className="mt-3 flex max-w-md gap-2">
