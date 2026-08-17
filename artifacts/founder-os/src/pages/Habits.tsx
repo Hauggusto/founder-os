@@ -5,8 +5,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -125,6 +123,8 @@ export default function Habits() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [addingCategory, setAddingCategory] = useState<string | null>(null);
   const [categoryTitle, setCategoryTitle] = useState("");
+  const [newHabitCategory, setNewHabitCategory] = useState("Rotina");
+  const [showHabitForm, setShowHabitForm] = useState(false);
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
@@ -154,6 +154,7 @@ export default function Habits() {
       order: habits.length,
     });
     setTitle("");
+    setShowHabitForm(false);
   };
   const addToCategory = (category: string) => {
     if (!categoryTitle.trim()) return;
@@ -401,7 +402,11 @@ export default function Habits() {
       </section>
       <Chart title="Evolução de cada categoria">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={categoryEvolution}>
+          <BarChart
+            data={categoryEvolution}
+            margin={{ top: 8, right: 12, left: 0, bottom: 4 }}
+            barGap={3}
+          >
             <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
             <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10 }} />
             <YAxis
@@ -409,26 +414,21 @@ export default function Habits() {
               tickFormatter={(value) => `${value}%`}
               tick={{ fill: "#94a3b8", fontSize: 10 }}
             />
-            <Tooltip contentStyle={tip} />
-            <Line
-              dataKey={categories[0]}
-              stroke="#00C9FF"
-              strokeWidth={2}
-              dot={false}
+            <Tooltip
+              contentStyle={tip}
+              formatter={(value, name) => [`${value}%`, name]}
             />
-            <Line
-              dataKey={categories[1]}
-              stroke="#10B981"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              dataKey={categories[2]}
-              stroke="#F97316"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
+            {categories.map((category, index) => (
+              <Bar
+                key={category}
+                dataKey={category}
+                name={category}
+                fill={["#00C9FF", "#10B981", "#F97316", "#A855F7", "#F43F5E"][index % 5]}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={24}
+              />
+            ))}
+          </BarChart>
         </ResponsiveContainer>
       </Chart>
       <section className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -475,34 +475,54 @@ export default function Habits() {
         })}
       </section>
       <section className="overflow-hidden rounded-2xl border border-white/[.08] bg-card/45 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cyan-400/15 bg-cyan-400/[.025] p-5">
+        <div className="border-b border-white/[.08] bg-card/70 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <ClipboardCheck className="h-5 w-5 text-lime-400" />
             <div>
-              <h2 className="font-semibold uppercase tracking-[.12em]">
-                Weekly habit tracker
-              </h2>
+              <h2 className="font-semibold">Acompanhamento dos hábitos</h2>
               <p className="text-xs text-muted-foreground">
-                Verde: feito · laranja: parcial · vermelho: não executado
+                Clique em cada dia para registrar feito, parcial ou não feito.
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && add()}
-              placeholder="Adicionar tarefa ou hábito..."
-              className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-cyan-400"
-            />
+          <div className="flex items-center gap-2">
+            <span className="hidden rounded-full bg-white/[.04] px-3 py-1.5 text-xs text-muted-foreground sm:inline-flex">
+              {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
+            </span>
             <button
-              onClick={() => add()}
-              className="inline-flex h-9 items-center gap-1 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950"
+              onClick={() => setShowHabitForm((value) => !value)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
             >
-              <Plus className="h-4 w-4" />
-              Adicionar
+              <Plus className="h-4 w-4" /> Novo hábito
             </button>
           </div>
+        </div>
+          {showHabitForm && (
+            <div className="mt-4 grid gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.035] p-3 sm:grid-cols-[1fr_180px_auto]">
+              <input
+                autoFocus
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && add(newHabitCategory)}
+                placeholder="Nome do hábito (ex.: Ler 20 minutos)"
+                className="h-10 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
+              />
+              <select
+                value={newHabitCategory}
+                onChange={(e) => setNewHabitCategory(e.target.value)}
+                className="h-10 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
+              >
+                {categories.map((category) => <option key={category}>{category}</option>)}
+              </select>
+              <button
+                onClick={() => add(newHabitCategory)}
+                className="h-10 rounded-lg border border-cyan-400/40 px-4 text-sm font-semibold text-cyan-300 hover:bg-cyan-400/10"
+              >
+                Salvar hábito
+              </button>
+            </div>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse">
