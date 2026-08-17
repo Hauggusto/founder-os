@@ -80,6 +80,7 @@ function levelFor(score: number) {
 
 export default function Identity() {
   const { habits } = useAppStore();
+  const [selectedDate, setSelectedDate] = useState(() => keyOf(new Date()));
   const [period, setPeriod] = useState<
     "day" | "week" | "fortnight" | "month" | "previousMonth"
   >("week");
@@ -203,6 +204,56 @@ export default function Identity() {
           (productivityDone / (productivityDone + productivityFailed)) * 100,
         )
       : 0;
+  const selectedDateObject = new Date(`${selectedDate}T12:00:00`);
+  const selectedHabits = habits
+    .map((habit) => ({ habit, status: habit.checks?.[selectedDate] || null }))
+    .filter((item) => item.status !== null);
+  const selectedProductivity = productivity.filter(
+    (item) => item.date === selectedDate,
+  );
+  const selectedOneOffDone = oneOffTasks.filter(
+    (item) => item.done && item.completedAt === selectedDate,
+  ).length;
+  const selectedExecuted =
+    selectedProductivity
+      .filter((item) => item.status === "executed")
+      .reduce((sum, item) => sum + item.quantity, 0) + selectedOneOffDone;
+  const selectedFailed = selectedProductivity
+    .filter((item) => item.status === "failed")
+    .reduce((sum, item) => sum + item.quantity, 0);
+  const selectedHabitScore = selectedHabits.length
+    ? Math.round(
+        (selectedHabits.reduce(
+          (sum, item) => sum + scoreOf[item.status as IdentityStatus],
+          0,
+        ) /
+          selectedHabits.length) *
+          100,
+      )
+    : null;
+  const selectedProductivityTotal =
+    selectedExecuted + selectedFailed + selectedProductivity.length;
+  const selectedProductivityScore = selectedProductivityTotal
+    ? Math.round(
+        (selectedExecuted / (selectedExecuted + selectedFailed || 1)) * 100,
+      )
+    : null;
+  const selectedValues = [
+    selectedHabitScore,
+    selectedProductivityScore,
+  ].filter((value): value is number => value !== null);
+  const selectedScore = selectedValues.length
+    ? Math.round(
+        selectedValues.reduce((sum, value) => sum + value, 0) /
+          selectedValues.length,
+      )
+    : 0;
+  const selectedLevel = levelFor(selectedScore);
+  const selectedLabel = selectedDateObject.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+  });
   const distribution = [
     {
       name: "Hauggusto I",
@@ -309,6 +360,96 @@ export default function Identity() {
           </div>
         </div>
       </header>
+      <section className="rounded-xl border border-purple-400/20 bg-card/70 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[.2em] text-purple-300">
+              LEITURA DO DIA
+            </p>
+            <h2 className="mt-1 text-xl font-semibold capitalize">
+              {selectedLabel}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Hábitos e tarefas executadas consolidados em uma única visão.
+            </p>
+          </div>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(event) => setSelectedDate(event.target.value)}
+            className="rounded-lg border border-purple-400/30 bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-purple-300"
+            aria-label="Selecionar data do relatório diário"
+          />
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-4">
+          <div className="rounded-lg border border-purple-400/25 bg-purple-400/5 p-3">
+            <p className="text-xs text-muted-foreground">Execução do dia</p>
+            <p className="text-2xl font-bold" style={{ color: selectedLevel.color }}>
+              {selectedScore}%
+            </p>
+          </div>
+          <div className="rounded-lg border border-cyan-400/25 bg-cyan-400/5 p-3">
+            <p className="text-xs text-muted-foreground">Hábitos</p>
+            <p className="text-xl font-semibold text-cyan-300">
+              {selectedHabitScore === null ? "—" : `${selectedHabitScore}%`}
+            </p>
+          </div>
+          <div className="rounded-lg border border-emerald-400/25 bg-emerald-400/5 p-3">
+            <p className="text-xs text-muted-foreground">Produtividade</p>
+            <p className="text-xl font-semibold text-emerald-300">
+              {selectedProductivityScore === null
+                ? "—"
+                : `${selectedProductivityScore}%`}
+            </p>
+          </div>
+          <div
+            className="rounded-lg border p-3"
+            style={{
+              borderColor: `${selectedLevel.color}55`,
+              background: `${selectedLevel.color}0d`,
+            }}
+          >
+            <p className="text-xs text-muted-foreground">Leitura</p>
+            <p className="text-sm font-semibold" style={{ color: selectedLevel.color }}>
+              {selectedScore >= 75
+                ? "Dia de expansão"
+                : selectedScore >= 50
+                  ? "Dia consistente"
+                  : selectedScore >= 25
+                    ? "Dia em construção"
+                    : "Atenção necessária"}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 md:grid-cols-2">
+          <div className="rounded-lg border border-white/[.08] bg-background/30 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              O que foi feito
+            </p>
+            {selectedHabits.filter((item) => item.status === "done").length ||
+            selectedExecuted ? (
+              <p className="text-sm text-emerald-300">
+                {selectedHabits.filter((item) => item.status === "done").length} hábitos concluídos e {selectedExecuted} entregas registradas.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">Nada concluído neste dia.</p>
+            )}
+          </div>
+          <div className="rounded-lg border border-white/[.08] bg-background/30 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Pontos de atenção
+            </p>
+            {selectedHabits.filter((item) => item.status !== "done").length ||
+            selectedFailed ? (
+              <p className="text-sm text-orange-300">
+                {selectedHabits.filter((item) => item.status !== "done").length} hábitos parciais ou não executados e {selectedFailed} tarefas não realizadas.
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhum ponto de atenção registrado.</p>
+            )}
+          </div>
+        </div>
+      </section>
       <section className="rounded-xl border border-border/70 bg-card/70 p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
