@@ -241,17 +241,13 @@ export default function Habits() {
       )
     : 0;
   const dailyData = days.map((day) => {
-    const values = habits
-      .map((h) => h.checks?.[keyOf(day)])
-      .filter(Boolean) as IdentityStatus[];
+    const executed = habits.reduce(
+      (sum, habit) => sum + statusScore(habit.checks?.[keyOf(day)]),
+      0,
+    );
     return {
       name: dateLabel(day),
-      execução: values.length
-        ? Math.round(
-            (values.reduce((s, v) => s + statusScore(v), 0) / values.length) *
-              100,
-          )
-        : 0,
+      execução: habits.length ? Math.round((executed / habits.length) * 100) : 0,
     };
   });
   const categoryData = categories.map((category) => {
@@ -278,15 +274,15 @@ export default function Habits() {
       name: dateLabel(day),
     };
     categories.forEach((category) => {
-      const values = habits
-        .filter((h) => (h.category || "Rotina") === category)
-        .map((h) => h.checks?.[keyOf(day)])
-        .filter(Boolean) as IdentityStatus[];
-      row[category] = values.length
-        ? Math.round(
-            (values.reduce((s, v) => s + statusScore(v), 0) / values.length) *
-              100,
-          )
+      const items = habits.filter(
+        (habit) => (habit.category || "Rotina") === category,
+      );
+      const executed = items.reduce(
+        (sum, habit) => sum + statusScore(habit.checks?.[keyOf(day)]),
+        0,
+      );
+      row[category] = items.length
+        ? Math.round((executed / items.length) * 100)
         : 0;
     });
     return row;
