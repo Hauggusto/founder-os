@@ -384,7 +384,7 @@ export default function Habits() {
         </div>
       </section>
       <section className="grid gap-6 xl:grid-cols-3">
-        <Chart title="Evolução dos hábitos" className="xl:col-span-2">
+        <Chart title="Evolução dos hábitos" period={period} setPeriod={setPeriod} className="xl:col-span-2">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData}>
               <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
@@ -409,7 +409,7 @@ export default function Habits() {
             </AreaChart>
           </ResponsiveContainer>
         </Chart>
-        <Chart title="Comparação por categoria">
+        <Chart title="Comparação por categoria" period={period} setPeriod={setPeriod}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={categoryData} layout="vertical">
               <CartesianGrid
@@ -446,7 +446,7 @@ export default function Habits() {
           </ResponsiveContainer>
         </Chart>
       </section>
-      <Chart title="Evolução de cada categoria">
+      <Chart title="Evolução de cada categoria" period={period} setPeriod={setPeriod}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={categoryEvolution}
@@ -510,6 +510,9 @@ export default function Habits() {
               key={category.name}
               className={`relative overflow-hidden rounded-2xl border bg-card/80 p-3 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/95 ${categoryTone.border} ${categoryTone.glow}`}
             >
+              <div className="mb-3 flex justify-end">
+                <PeriodSelector period={period} setPeriod={setPeriod} compact />
+              </div>
               <div
                 className={`absolute inset-x-0 top-0 h-0.5 ${categoryTone.bar}`}
               />
@@ -836,10 +839,14 @@ export default function Habits() {
 }
 function Chart({
   title,
+  period,
+  setPeriod,
   children,
   className = "",
 }: {
   title: string;
+  period: Period;
+  setPeriod: (period: Period) => void;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -847,11 +854,50 @@ function Chart({
     <section
       className={`rounded-2xl border border-cyan-400/15 bg-card/70 p-5 ${className}`}
     >
-      <h2 className="font-semibold">{title}</h2>
-      <p className="mb-3 text-xs text-muted-foreground">
-        Acompanhe a execução no período selecionado.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="font-semibold">{title}</h2>
+          <p className="text-xs text-muted-foreground">
+            Acompanhe a execução no período selecionado.
+          </p>
+        </div>
+        <PeriodSelector period={period} setPeriod={setPeriod} compact />
+      </div>
+      <div className="mb-3" />
       <div className="h-56">{children}</div>
     </section>
+  );
+}
+
+function PeriodSelector({
+  period,
+  setPeriod,
+  compact = false,
+}: {
+  period: Period;
+  setPeriod: (period: Period) => void;
+  compact?: boolean;
+}) {
+  const options: [Period, string][] = [
+    ["week", "Sem"],
+    ["fortnight", "15d"],
+    ["month", "Mês"],
+    ["previousMonth", "Ant."],
+  ];
+  return (
+    <div
+      className={`flex items-center gap-0.5 rounded-lg border border-cyan-400/20 bg-background/50 p-0.5 ${compact ? "text-[9px]" : "text-xs"}`}
+    >
+      {options.map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          onClick={() => setPeriod(value)}
+          className={`rounded-md px-2 py-1 transition ${period === value ? "bg-cyan-400/15 text-cyan-200" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
