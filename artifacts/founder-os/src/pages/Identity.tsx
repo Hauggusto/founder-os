@@ -12,6 +12,8 @@ import {
   CalendarDays,
   Check,
   ClipboardCheck,
+  ChevronLeft,
+  ChevronRight,
   Minus,
   Sparkles,
   X,
@@ -24,6 +26,8 @@ const scoreOf: Record<IdentityStatus, number> = {
   partial: 0.5,
   missed: 0,
 };
+const formatDate = (value: string) =>
+  new Date(`${value}T12:00:00`).toLocaleDateString("pt-BR");
 const daysOf = (
   period: "day" | "week" | "fortnight" | "month" | "previousMonth",
 ) => {
@@ -81,6 +85,11 @@ function levelFor(score: number) {
 export default function Identity() {
   const { habits } = useAppStore();
   const [selectedDate, setSelectedDate] = useState(() => keyOf(new Date()));
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerMonth, setPickerMonth] = useState(() => {
+    const date = new Date();
+    return new Date(date.getFullYear(), date.getMonth(), 1, 12);
+  });
   const [period, setPeriod] = useState<
     "day" | "week" | "fortnight" | "month" | "previousMonth"
   >("week");
@@ -254,6 +263,31 @@ export default function Identity() {
     day: "2-digit",
     month: "2-digit",
   });
+  const pickerDays = useMemo(() => {
+    const firstDay = new Date(
+      pickerMonth.getFullYear(),
+      pickerMonth.getMonth(),
+      1,
+      12,
+    );
+    const offset = (firstDay.getDay() + 6) % 7;
+    const totalDays = new Date(
+      pickerMonth.getFullYear(),
+      pickerMonth.getMonth() + 1,
+      0,
+      12,
+    ).getDate();
+    return Array.from({ length: offset + totalDays }, (_, index) =>
+      index < offset
+        ? null
+        : new Date(
+            pickerMonth.getFullYear(),
+            pickerMonth.getMonth(),
+            index - offset + 1,
+            12,
+          ),
+    );
+  }, [pickerMonth]);
   const distribution = [
     {
       name: "Hauggusto I",
@@ -373,13 +407,84 @@ export default function Identity() {
               Hábitos e tarefas executadas consolidados em uma única visão.
             </p>
           </div>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(event) => setSelectedDate(event.target.value)}
-            className="rounded-lg border border-purple-400/30 bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-purple-300"
-            aria-label="Selecionar data do relatório diário"
-          />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setPickerOpen((open) => !open)}
+              className="inline-flex items-center gap-2 rounded-lg border border-purple-400/35 bg-background/80 px-3 py-2 text-sm text-foreground transition hover:border-cyan-300"
+            >
+              <CalendarDays className="h-4 w-4 text-cyan-300" />
+              {formatDate(selectedDate)}
+            </button>
+            {pickerOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-64 rounded-xl border border-purple-400/30 bg-[#121722] p-3 shadow-[0_18px_45px_rgba(0,0,0,.45)]">
+                <div className="mb-3 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPickerMonth(
+                        new Date(
+                          pickerMonth.getFullYear(),
+                          pickerMonth.getMonth() - 1,
+                          1,
+                          12,
+                        ),
+                      )
+                    }
+                    className="rounded-md p-1 text-muted-foreground hover:bg-purple-400/10 hover:text-cyan-300"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="text-sm font-semibold capitalize">
+                    {pickerMonth.toLocaleDateString("pt-BR", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPickerMonth(
+                        new Date(
+                          pickerMonth.getFullYear(),
+                          pickerMonth.getMonth() + 1,
+                          1,
+                          12,
+                        ),
+                      )
+                    }
+                    className="rounded-md p-1 text-muted-foreground hover:bg-purple-400/10 hover:text-cyan-300"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mb-1 grid grid-cols-7 text-center text-[10px] uppercase text-muted-foreground">
+                  {['2ª', '3ª', '4ª', '5ª', '6ª', 'S', 'D'].map((day) => (
+                    <span key={day}>{day}</span>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {pickerDays.map((date, index) =>
+                    date ? (
+                      <button
+                        key={date.toISOString()}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDate(keyOf(date));
+                          setPickerOpen(false);
+                        }}
+                        className={`h-8 rounded-md text-xs transition ${keyOf(date) === selectedDate ? "bg-purple-500 text-white shadow-[0_0_12px_rgba(168,85,247,.45)]" : "text-muted-foreground hover:bg-cyan-400/10 hover:text-cyan-200"}`}
+                      >
+                        {date.getDate()}
+                      </button>
+                    ) : (
+                      <span key={`empty-${index}`} />
+                    ),
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-4">
           <div className="rounded-lg border border-purple-400/25 bg-purple-400/5 p-3">
