@@ -22,6 +22,7 @@ type Activity = {
 type OneOffTask = {
   id: string;
   title: string;
+  area?: string;
   done: boolean;
   completedAt?: string | null;
 };
@@ -40,9 +41,10 @@ export function ProductivityPanel() {
   const [quantity, setQuantity] = useState("1");
   const [status, setStatus] = useState<Activity["status"]>("pending");
   const [timelinePeriod, setTimelinePeriod] = useState<
-    "weekly" | "monthly" | "annual"
+    "daily" | "weekly" | "monthly"
   >("weekly");
   const [oneOffTitle, setOneOffTitle] = useState("");
+  const [oneOffArea, setOneOffArea] = useState("Soul Krieg");
   const [oneOffTasks, setOneOffTasks] = useState<OneOffTask[]>(() => {
     try {
       return JSON.parse(
@@ -82,6 +84,7 @@ export function ProductivityPanel() {
       {
         id: `task-${Date.now()}`,
         title: oneOffTitle.trim(),
+        area: oneOffArea.trim() || "Geral",
         done: false,
         completedAt: null,
       },
@@ -109,10 +112,23 @@ export function ProductivityPanel() {
     [activities],
   );
   const timelineRows = useMemo(
-    () =>
-      [...new Set(activities.map((item) => item.area || "Produtividade"))].map(
+    () => {
+      const now = new Date();
+      const todayKey = now.toISOString().slice(0, 10);
+      const monthKey = todayKey.slice(0, 7);
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 6);
+      const weekStartKey = weekStart.toISOString().slice(0, 10);
+      const visibleActivities = activities.filter((item) =>
+        timelinePeriod === "daily"
+          ? item.date === todayKey
+          : timelinePeriod === "monthly"
+            ? item.date.startsWith(monthKey)
+            : item.date >= weekStartKey && item.date <= todayKey,
+      );
+      return [...new Set(visibleActivities.map((item) => item.area || "Produtividade"))].map(
         (name) => {
-          const items = activities.filter(
+          const items = visibleActivities.filter(
             (item) => (item.area || "Produtividade") === name,
           );
           const total = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -127,8 +143,9 @@ export function ProductivityPanel() {
               : "Concluído",
           };
         },
-      ),
-    [activities],
+      );
+    },
+    [activities, timelinePeriod],
   );
   const addActivity = () => {
     if (!text.trim()) return;
@@ -183,6 +200,8 @@ export function ProductivityPanel() {
         tasks={oneOffTasks}
         taskTitle={oneOffTitle}
         setTaskTitle={setOneOffTitle}
+        taskArea={oneOffArea}
+        setTaskArea={setOneOffArea}
         addTask={addOneOff}
         saveTasks={saveOneOff}
         activities={activities}
@@ -356,6 +375,8 @@ function UnifiedTaskList({
   tasks,
   taskTitle,
   setTaskTitle,
+  taskArea,
+  setTaskArea,
   addTask,
   saveTasks,
   activities,
@@ -374,6 +395,8 @@ function UnifiedTaskList({
   tasks: OneOffTask[];
   taskTitle: string;
   setTaskTitle: (value: string) => void;
+  taskArea: string;
+  setTaskArea: (value: string) => void;
   addTask: () => void;
   saveTasks: (tasks: OneOffTask[]) => void;
   activities: Activity[];
@@ -405,6 +428,12 @@ function UnifiedTaskList({
             onKeyDown={(event) => event.key === "Enter" && addTask()}
             placeholder="Ex.: renovar documento"
             className="h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-emerald-400"
+          />
+          <input
+            value={taskArea}
+            onChange={(event) => setTaskArea(event.target.value)}
+            placeholder="Projeto ou área"
+            className="h-9 w-36 rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-emerald-400"
           />
           <button
             onClick={addTask}
@@ -448,6 +477,9 @@ function UnifiedTaskList({
                   className={`flex-1 text-sm ${task.done ? "line-through text-muted-foreground" : "text-foreground/80"}`}
                 >
                   {task.title}
+                  <small className="ml-2 text-[10px] text-cyan-300/70">
+                    {task.area || "Geral"}
+                  </small>
                   <small className="ml-2 text-[10px] text-muted-foreground/60">
                     {task.done && task.completedAt
                       ? `executada em ${task.completedAt.split("-").reverse().join("/")}`
@@ -654,11 +686,13 @@ function ProductivityTimeline({
   setPeriod,
 }: {
   rows: { name: string; percent: number; status: string }[];
-  period: "weekly" | "monthly" | "annual";
-  setPeriod: (period: "weekly" | "monthly" | "annual") => void;
+  period: "daily" | "weekly" | "monthly";
+  setPeriod: (period: "daily" | "weekly" | "monthly") => void;
 }) {
   const labels =
-    period === "weekly"
+    period === "daily"
+      ? ["HOJE"]
+      : period === "weekly"
       ? [
           "28 JUL - 03 AGO",
           "04 AGO - 10 AGO",
@@ -683,9 +717,9 @@ function ProductivityTimeline({
         <div className="flex overflow-hidden rounded-lg border border-cyan-400/20 bg-background/40 p-0.5">
           {(
             [
+              ["daily", "DIÁRIO"],
               ["weekly", "SEMANAL"],
               ["monthly", "MENSAL"],
-              ["annual", "ANUAL"],
             ] as const
           ).map(([value, label]) => (
             <button
