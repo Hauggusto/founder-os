@@ -559,7 +559,7 @@ export default function Habits() {
               </span>
               <button
                 onClick={() => setShowCategoryForm(true)}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950 transition hover:bg-cyan-300"
               >
                 <Plus className="h-4 w-4" /> Nova categoria
               </button>
@@ -604,7 +604,13 @@ export default function Habits() {
                 autoFocus
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addCategory();
+                  if (e.key === "Escape") {
+                    setNewCategoryName("");
+                    setShowCategoryForm(false);
+                  }
+                }}
                 placeholder="Nome da categoria"
                 className="h-9 min-w-52 flex-1 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
               />
