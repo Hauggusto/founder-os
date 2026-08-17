@@ -337,78 +337,6 @@ export default function Habits() {
           </div>
         </div>
       </header>
-      <section className="rounded-2xl border border-border/70 bg-card/70 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="mr-2 flex items-center gap-2 text-sm font-semibold">
-            <ListTodo className="h-4 w-4 text-cyan-400" />
-            Período
-          </div>
-          {(["week", "fortnight", "month", "previousMonth"] as Period[]).map(
-            (item) => (
-              <button
-                key={item}
-                onClick={() => setPeriod(item)}
-                className={`rounded-lg border px-3 py-2 text-xs ${period === item ? "border-cyan-400/60 bg-cyan-400/15 text-cyan-300" : "border-border text-muted-foreground"}`}
-              >
-                {item === "week"
-                  ? "Semana"
-                  : item === "fortnight"
-                    ? "Quinzena"
-                    : item === "month"
-                      ? "Mês atual"
-                      : "Mês anterior"}
-              </button>
-            ),
-          )}
-          <select
-            value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as typeof statusFilter)
-            }
-            className="ml-auto rounded-lg border border-border bg-background px-3 py-2 text-xs"
-          >
-            <option value="all">Todos os status</option>
-            <option value="done">Feitos</option>
-            <option value="partial">Parciais</option>
-            <option value="missed">Não feitos</option>
-          </select>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
-          >
-            <option value="all">Todas as categorias</option>
-            {categories.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-          <button
-            onClick={() => setShowCategoryForm((value) => !value)}
-            className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/30 px-3 py-2 text-xs text-cyan-300"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Nova categoria
-          </button>
-          {showCategoryForm && (
-            <div className="flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.04] p-2">
-              <input
-                autoFocus
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addCategory()}
-                placeholder="Nome da categoria"
-                className="h-8 w-44 rounded-lg border border-white/[.1] bg-background px-2 text-xs outline-none focus:border-cyan-400"
-              />
-              <button
-                onClick={addCategory}
-                className="h-8 rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950"
-              >
-                Criar
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
       <section className="grid gap-6 xl:grid-cols-2">
         <Chart title="Evolução dos hábitos" period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
           <ResponsiveContainer width="100%" height="100%">
@@ -613,6 +541,52 @@ export default function Habits() {
               />
             </div>
           </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/[.08] bg-background/30 p-2">
+            <div className="mr-auto flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <ListTodo className="h-4 w-4 text-cyan-400" />
+              Filtros do acompanhamento
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as typeof statusFilter)
+              }
+              className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
+            >
+              <option value="all">Todos os status</option>
+              <option value="done">Feitos</option>
+              <option value="partial">Parciais</option>
+              <option value="missed">Não feitos</option>
+            </select>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
+            >
+              <option value="all">Todas as categorias</option>
+              {categories.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          {showCategoryForm && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.04] p-2">
+              <input
+                autoFocus
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                placeholder="Nome da categoria"
+                className="h-9 min-w-52 flex-1 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
+              />
+              <button
+                onClick={addCategory}
+                className="h-9 rounded-lg bg-cyan-400 px-4 text-sm font-semibold text-slate-950"
+              >
+                Criar categoria
+              </button>
+            </div>
+          )}
           {showHabitForm && (
             <div className="mt-4 grid gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.035] p-3 sm:grid-cols-[1fr_180px_auto]">
               <input
