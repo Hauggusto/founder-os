@@ -507,11 +507,6 @@ export default function Habits() {
               />
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
-                  <p
-                    className={`mb-1 text-[9px] font-semibold uppercase tracking-[.2em] ${categoryTone.label}`}
-                  >
-                    Área de execução
-                  </p>
                   <h3 className="text-base font-medium text-foreground/90">
                     {category.name}
                   </h3>
@@ -522,9 +517,6 @@ export default function Habits() {
                   >
                     {category.execução}%
                   </span>
-                  <p className="mt-2 text-[10px] text-muted-foreground/60">
-                    {items.length} {items.length === 1 ? "hábito" : "hábitos"}
-                  </p>
                 </div>
               </div>
               <div className="mb-4 h-1 overflow-hidden rounded-full bg-white/[.06]">
