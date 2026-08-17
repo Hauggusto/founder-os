@@ -97,7 +97,7 @@ function HabitCell({
     <button
       title={status || "Não registrado"}
       onClick={() => onChange(nextStatus(status))}
-      className={`mx-auto flex h-7 w-7 items-center justify-center rounded-sm border transition hover:scale-110 ${status ? tone[status] : "border-cyan-500/25 bg-background/50 text-transparent"}`}
+      className={`mx-auto flex h-6 w-6 items-center justify-center rounded-sm border transition hover:scale-110 ${status ? tone[status] : "border-cyan-500/25 bg-background/50 text-transparent"}`}
     >
       {status === "done" ? (
         <Check className="h-4 w-4" />
@@ -737,7 +737,7 @@ export default function Habits() {
                         key={habit.id}
                         className={`border-x border-white/[.07] bg-background/25 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "rounded-b-xl border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
                       >
-                        <td className="sticky left-0 bg-card/95 px-5 py-3">
+                        <td className="sticky left-0 bg-card/95 px-5 py-2">
                           <div className="flex items-center gap-2">
                             <div className="min-w-0 flex-1">
                               <button
