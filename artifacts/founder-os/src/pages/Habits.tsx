@@ -423,7 +423,11 @@ export default function Habits() {
                 key={category}
                 dataKey={category}
                 name={category}
-                fill={["#00C9FF", "#10B981", "#F97316", "#A855F7", "#F43F5E"][index % 5]}
+                fill={
+                  ["#00C9FF", "#10B981", "#F97316", "#A855F7", "#F43F5E"][
+                    index % 5
+                  ]
+                }
                 radius={[4, 4, 0, 0]}
                 maxBarSize={24}
               />
@@ -512,29 +516,33 @@ export default function Habits() {
         })}
       </section>
       <section className="overflow-hidden rounded-2xl border border-white/[.08] bg-card/45 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
-        <div className="border-b border-white/[.08] bg-card/70 p-5">
+        <div className="border-b border-lime-400/15 bg-gradient-to-r from-lime-400/[.06] via-card/80 to-cyan-400/[.04] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <ClipboardCheck className="h-5 w-5 text-lime-400" />
-            <div>
-              <h2 className="font-semibold">Acompanhamento dos hábitos</h2>
-              <p className="text-xs text-muted-foreground">
-                Clique em cada dia para registrar feito, parcial ou não feito.
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-lime-400/30 bg-lime-400/[.08] shadow-[0_0_16px_rgba(163,230,53,.12)]">
+                <ClipboardCheck className="h-5 w-5 text-lime-300" />
+              </div>
+              <div>
+                <h2 className="font-semibold tracking-wide">
+                  Acompanhamento dos hábitos
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Clique em cada dia para registrar feito, parcial ou não feito.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden rounded-full bg-white/[.04] px-3 py-1.5 text-xs text-muted-foreground sm:inline-flex">
+                {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
+              </span>
+              <button
+                onClick={() => setShowHabitForm((value) => !value)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
+              >
+                <Plus className="h-4 w-4" /> Novo hábito
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="hidden rounded-full bg-white/[.04] px-3 py-1.5 text-xs text-muted-foreground sm:inline-flex">
-              {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
-            </span>
-            <button
-              onClick={() => setShowHabitForm((value) => !value)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
-            >
-              <Plus className="h-4 w-4" /> Novo hábito
-            </button>
-          </div>
-        </div>
           {showHabitForm && (
             <div className="mt-4 grid gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.035] p-3 sm:grid-cols-[1fr_180px_auto]">
               <input
@@ -550,7 +558,9 @@ export default function Habits() {
                 onChange={(e) => setNewHabitCategory(e.target.value)}
                 className="h-10 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
               >
-                {categories.map((category) => <option key={category}>{category}</option>)}
+                {categories.map((category) => (
+                  <option key={category}>{category}</option>
+                ))}
               </select>
               <button
                 onClick={() => add(newHabitCategory)}
@@ -562,10 +572,10 @@ export default function Habits() {
           )}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse">
+          <table className="w-full min-w-[820px] border-separate border-spacing-y-1">
             <thead>
               <tr className="border-b border-white/[.08] bg-background/25 text-xs text-muted-foreground">
-                <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left font-medium">
+                <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-lime-300/75">
                   Tarefa / hábito
                 </th>
                 {days.map((date) => (
@@ -573,10 +583,10 @@ export default function Habits() {
                     key={keyOf(date)}
                     className="border-l border-border/20 px-3 py-3 text-center"
                   >
-                    <span className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                    <span className="block text-xs font-semibold uppercase tracking-wide text-lime-300/85">
                       {dayLabel(date)}
                     </span>
-                    <span className="mt-1 block text-[10px] font-normal text-muted-foreground/60">
+                    <span className="mt-1 block text-[11px] font-normal text-muted-foreground/70">
                       {dateLabel(date)}
                     </span>
                   </th>
@@ -593,14 +603,17 @@ export default function Habits() {
                     <tr key={`category-${category}`}>
                       <td
                         colSpan={days.length + 2}
-                        className={`border-x border-t px-5 pb-2 pt-4 text-sm font-normal text-foreground/80 ${categoryIndex % 3 === 0 ? "border-cyan-400/35 bg-cyan-400/[.035]" : categoryIndex % 3 === 1 ? "border-violet-400/30 bg-violet-400/[.03]" : "border-emerald-400/30 bg-emerald-400/[.025]"}`}
+                        className={`border px-5 pb-3 pt-4 text-sm font-normal text-foreground/80 shadow-[0_8px_18px_rgba(0,0,0,.12)] ${categoryIndex % 3 === 0 ? "rounded-t-xl border-cyan-400/35 bg-cyan-400/[.05]" : categoryIndex % 3 === 1 ? "rounded-t-xl border-violet-400/30 bg-violet-400/[.045]" : "rounded-t-xl border-emerald-400/30 bg-emerald-400/[.04]"}`}
                       >
                         <div className="flex items-center justify-between">
                           <button
                             type="button"
                             onClick={() => renameCategory(category)}
-                            className="text-left text-sm font-medium tracking-wide text-foreground/85 transition hover:text-cyan-300"
+                            className="flex items-center gap-2 text-left text-sm font-semibold tracking-wide text-foreground/90 transition hover:text-cyan-300"
                           >
+                            <span
+                              className={`h-2 w-2 rounded-full ${categoryIndex % 3 === 0 ? "bg-cyan-300 shadow-[0_0_8px_#67e8f9]" : categoryIndex % 3 === 1 ? "bg-violet-300 shadow-[0_0_8px_#c4b5fd]" : "bg-emerald-300 shadow-[0_0_8px_#6ee7b7]"}`}
+                            />
                             {category}
                           </button>
                           <button
@@ -642,7 +655,7 @@ export default function Habits() {
                     {entries.map((habit, index) => (
                       <tr
                         key={habit.id}
-                        className={`border-x border-white/[.07] bg-background/15 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
+                        className={`border-x border-white/[.07] bg-background/25 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "rounded-b-xl border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
                       >
                         <td className="sticky left-0 bg-card/95 px-5 py-4">
                           <div className="flex items-center gap-2">
