@@ -123,6 +123,7 @@ export default function Habits() {
   const [period, setPeriod] = useState<Period>("week");
   const [categoryEvolutionPeriod, setCategoryEvolutionPeriod] =
     useState<Period>("week");
+  const [executionPeriod, setExecutionPeriod] = useState<Period>("week");
   const [statusFilter, setStatusFilter] = useState<"all" | IdentityStatus>(
     "all",
   );
@@ -141,6 +142,10 @@ export default function Habits() {
   const categoryEvolutionDays = useMemo(
     () => periodDays(categoryEvolutionPeriod),
     [categoryEvolutionPeriod],
+  );
+  const executionDays = useMemo(
+    () => periodDays(executionPeriod),
+    [executionPeriod],
   );
   const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
   const filtered = habits.filter(
@@ -180,8 +185,8 @@ export default function Habits() {
     setCategoryTitle("");
     setAddingCategory(null);
   };
-  const addCategory = () => {
-    const name = newCategoryName.trim();
+  const createCategory = (rawName: string) => {
+    const name = rawName.trim();
     if (name) {
       addHabitEntry({
         title: "Novo item",
@@ -194,6 +199,7 @@ export default function Habits() {
       setShowCategoryForm(false);
     }
   };
+  const addCategory = () => createCategory(newCategoryName);
   const saveOneOff = (
     tasks: {
       id: string;
@@ -568,11 +574,19 @@ export default function Habits() {
                 {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
               </span>
               <button
-                onClick={() => setShowCategoryForm((value) => !value)}
+                onClick={() => {
+                  const name = window.prompt("Nome da nova categoria");
+                  if (name?.trim()) createCategory(name);
+                }}
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
               >
                 <Plus className="h-4 w-4" /> Nova categoria
               </button>
+              <PeriodSelector
+                period={executionPeriod}
+                setPeriod={setExecutionPeriod}
+                compact
+              />
             </div>
           </div>
           {showHabitForm && (
@@ -610,7 +624,7 @@ export default function Habits() {
                 <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-lime-300/75">
                   Tarefa / hábito
                 </th>
-                {days.map((date) => (
+                {executionDays.map((date) => (
                   <th
                     key={keyOf(date)}
                     className="border-l border-border/20 px-3 py-3 text-center"
@@ -720,7 +734,7 @@ export default function Habits() {
                             </button>
                           </div>
                         </td>
-                        {days.map((date) => (
+                        {executionDays.map((date) => (
                           <td
                             key={keyOf(date)}
                             className="border-l border-white/[.035] px-2 py-3 text-center"
