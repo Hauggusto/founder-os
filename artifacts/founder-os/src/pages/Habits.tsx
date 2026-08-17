@@ -17,7 +17,6 @@ import {
 import {
   Check,
   ClipboardCheck,
-  ListTodo,
   Minus,
   Plus,
   Trash2,
@@ -174,7 +173,7 @@ export default function Habits() {
     (habit) =>
       (categoryFilter === "all" || habit.category === categoryFilter) &&
       (statusFilter === "all" ||
-        days.some((day) => habit.checks?.[keyOf(day)] === statusFilter)),
+        executionDays.some((day) => habit.checks?.[keyOf(day)] === statusFilter)),
   );
   const grouped = filtered.reduce<Record<string, HabitEntry[]>>(
     (groups, habit) => {
@@ -578,9 +577,6 @@ export default function Habits() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden rounded-full bg-white/[.04] px-3 py-1.5 text-xs text-muted-foreground sm:inline-flex">
-                {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
-              </span>
               <button
                 onClick={() => setShowCategoryForm(true)}
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950 transition hover:bg-cyan-300"
@@ -595,16 +591,12 @@ export default function Habits() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/[.08] bg-background/30 p-2">
-            <div className="mr-auto flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <ListTodo className="h-4 w-4 text-cyan-400" />
-              Filtros do acompanhamento
-            </div>
             <select
               value={statusFilter}
               onChange={(e) =>
                 setStatusFilter(e.target.value as typeof statusFilter)
               }
-              className="rounded-xl border border-cyan-400/20 bg-background/80 px-3 py-2 text-xs text-foreground shadow-[0_0_14px_rgba(34,211,238,.04)] outline-none transition hover:border-cyan-400/40 focus:border-cyan-400/70"
+              className="rounded-xl border border-cyan-400/20 bg-background/80 px-3 py-2.5 text-sm text-foreground shadow-[0_0_14px_rgba(34,211,238,.04)] outline-none transition hover:border-cyan-400/40 focus:border-cyan-400/70"
             >
               <option value="all">Todos os status</option>
               <option value="done">Feitos</option>
@@ -614,7 +606,7 @@ export default function Habits() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="rounded-xl border border-violet-400/20 bg-background/80 px-3 py-2 text-xs text-foreground shadow-[0_0_14px_rgba(167,139,250,.04)] outline-none transition hover:border-violet-400/40 focus:border-violet-400/70"
+              className="rounded-xl border border-violet-400/20 bg-background/80 px-3 py-2.5 text-sm text-foreground shadow-[0_0_14px_rgba(167,139,250,.04)] outline-none transition hover:border-violet-400/40 focus:border-violet-400/70"
             >
               <option value="all">Todas as categorias</option>
               {categories.map((c) => (
@@ -1016,7 +1008,7 @@ function PeriodSelector({
   ];
   return (
     <div
-      className={`flex items-center gap-0.5 rounded-lg border border-cyan-400/20 bg-background/50 p-0.5 ${compact ? "text-[9px]" : "text-xs"}`}
+      className={`flex items-center gap-0.5 rounded-lg border border-cyan-400/20 bg-background/50 p-0.5 ${compact ? "text-xs" : "text-sm"}`}
     >
       {options.map(([value, label]) => (
         <button
