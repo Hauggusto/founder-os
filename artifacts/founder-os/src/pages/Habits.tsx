@@ -453,7 +453,7 @@ export default function Habits() {
             {categoryData.length} áreas acompanhadas
           </span>
         </div>
-        <div className="grid items-start gap-4 md:grid-cols-2">
+        <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         {categoryData.map((category, categoryIndex) => {
           const categoryTone = [
             {
@@ -551,7 +551,7 @@ export default function Habits() {
               onChange={(e) =>
                 setStatusFilter(e.target.value as typeof statusFilter)
               }
-              className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
+              className="rounded-xl border border-cyan-400/20 bg-background/80 px-3 py-2 text-xs text-foreground shadow-[0_0_14px_rgba(34,211,238,.04)] outline-none transition hover:border-cyan-400/40 focus:border-cyan-400/70"
             >
               <option value="all">Todos os status</option>
               <option value="done">Feitos</option>
@@ -561,7 +561,7 @@ export default function Habits() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-xs"
+              className="rounded-xl border border-violet-400/20 bg-background/80 px-3 py-2 text-xs text-foreground shadow-[0_0_14px_rgba(167,139,250,.04)] outline-none transition hover:border-violet-400/40 focus:border-violet-400/70"
             >
               <option value="all">Todas as categorias</option>
               {categories.map((c) => (
@@ -717,7 +717,8 @@ export default function Habits() {
                               <button
                                 type="button"
                                 onClick={() => editHabit(habit)}
-                                className="block text-left text-sm font-normal text-foreground/80 hover:text-cyan-300"
+                                title="Clique para editar este hábito"
+                                className="group block w-full rounded-md border border-transparent px-1 py-0.5 text-left text-sm font-normal text-foreground/80 transition hover:border-cyan-400/30 hover:bg-cyan-400/[.04] hover:text-cyan-300"
                               >
                                 {habit.title}
                               </button>
