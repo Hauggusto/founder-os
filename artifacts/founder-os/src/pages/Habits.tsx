@@ -6,6 +6,9 @@ import {
   BarChart,
   CartesianGrid,
   LabelList,
+  Line,
+  LineChart,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -449,10 +452,9 @@ export default function Habits() {
       </section>
       <Chart title="Evolução de cada categoria">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
+          <LineChart
             data={categoryEvolution}
             margin={{ top: 8, right: 12, left: 0, bottom: 4 }}
-            barGap={3}
           >
             <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
             <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10 }} />
@@ -465,30 +467,24 @@ export default function Habits() {
               contentStyle={tip}
               formatter={(value, name) => [`${value}%`, name]}
             />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
             {categories.map((category, index) => (
-              <Bar
+              <Line
                 key={category}
                 dataKey={category}
                 name={category}
-                fill={
+                stroke={
                   ["#00C9FF", "#10B981", "#F97316", "#A855F7", "#F43F5E"][
                     index % 5
                   ]
                 }
-                radius={[4, 4, 0, 0]}
-                maxBarSize={24}
-              >
-                <LabelList
-                  dataKey={category}
-                  position="top"
-                  formatter={(value: number) => `${value}%`}
-                  fill="#d8f3ff"
-                  fontSize={9}
-                  fontWeight={600}
-                />
-              </Bar>
+                type="monotone"
+                strokeWidth={2.5}
+                dot={{ r: 3, strokeWidth: 1.5 }}
+                activeDot={{ r: 5 }}
+              />
             ))}
-          </BarChart>
+          </LineChart>
         </ResponsiveContainer>
       </Chart>
       <section className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -566,10 +562,10 @@ export default function Habits() {
                 {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
               </span>
               <button
-                onClick={() => setShowHabitForm((value) => !value)}
+                onClick={() => setShowCategoryForm((value) => !value)}
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
               >
-                <Plus className="h-4 w-4" /> Novo hábito
+                <Plus className="h-4 w-4" /> Nova categoria
               </button>
             </div>
           </div>
