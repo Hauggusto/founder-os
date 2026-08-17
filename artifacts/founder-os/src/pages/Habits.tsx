@@ -707,7 +707,7 @@ export default function Habits() {
                   <>
                     <tr key={`category-${category}`}>
                       <td
-                        colSpan={executionDays.length + 2}
+                        colSpan={999}
                         style={categoryColors[category] ? { borderColor: `${categoryColors[category]}88`, boxShadow: `inset 3px 0 ${categoryColors[category]}` } : undefined}
                         className={`border px-5 pb-3 pt-4 text-sm font-normal text-foreground/80 shadow-[0_8px_18px_rgba(0,0,0,.12)] ${categoryIndex % 3 === 0 ? "rounded-t-xl border-cyan-400/35 bg-cyan-400/[.05]" : categoryIndex % 3 === 1 ? "rounded-t-xl border-violet-400/30 bg-violet-400/[.045]" : "rounded-t-xl border-emerald-400/30 bg-emerald-400/[.04]"}`}
                       >
