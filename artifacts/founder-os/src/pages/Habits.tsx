@@ -383,8 +383,8 @@ export default function Habits() {
           )}
         </div>
       </section>
-      <section className="grid gap-6 xl:grid-cols-3">
-        <Chart title="Evolução dos hábitos" period={period} setPeriod={setPeriod} className="xl:col-span-2">
+      <section className="grid gap-6 xl:grid-cols-2">
+        <Chart title="Evolução dos hábitos" period={period} setPeriod={setPeriod}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData}>
               <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
@@ -510,9 +510,6 @@ export default function Habits() {
               key={category.name}
               className={`relative overflow-hidden rounded-2xl border bg-card/80 p-3 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/95 ${categoryTone.border} ${categoryTone.glow}`}
             >
-              <div className="mb-3 flex justify-end">
-                <PeriodSelector period={period} setPeriod={setPeriod} compact />
-              </div>
               <div
                 className={`absolute inset-x-0 top-0 h-0.5 ${categoryTone.bar}`}
               />
