@@ -432,26 +432,63 @@ export default function Habits() {
         </ResponsiveContainer>
       </Chart>
       <section className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {categoryData.map((category) => {
+        {categoryData.map((category, categoryIndex) => {
           const items = habits.filter(
             (habit) => (habit.category || "Rotina") === category.name,
           );
+          const categoryTone = [
+            {
+              border: "border-cyan-400/30",
+              glow: "shadow-cyan-500/[.08]",
+              bar: "bg-cyan-400",
+              label: "text-cyan-300",
+            },
+            {
+              border: "border-violet-400/30",
+              glow: "shadow-violet-500/[.08]",
+              bar: "bg-violet-400",
+              label: "text-violet-300",
+            },
+            {
+              border: "border-emerald-400/30",
+              glow: "shadow-emerald-500/[.08]",
+              bar: "bg-emerald-400",
+              label: "text-emerald-300",
+            },
+          ][categoryIndex % 3];
           return (
             <article
               key={category.name}
-              className="rounded-2xl border border-white/[.08] bg-card/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:border-cyan-400/25 hover:bg-card/95"
+              className={`relative overflow-hidden rounded-2xl border bg-card/80 p-4 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/95 ${categoryTone.border} ${categoryTone.glow}`}
             >
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h3 className="text-base font-medium text-foreground/90">
-                  {category.name}
-                </h3>
-                <span className="rounded-full border border-white/[.08] bg-white/[.025] px-2.5 py-1 text-xs font-normal text-cyan-300/85">
-                  {category.execução}%
-                </span>
+              <div
+                className={`absolute inset-x-0 top-0 h-0.5 ${categoryTone.bar}`}
+              />
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p
+                    className={`mb-1 text-[9px] font-semibold uppercase tracking-[.2em] ${categoryTone.label}`}
+                  >
+                    Área de execução
+                  </p>
+                  <h3 className="text-base font-medium text-foreground/90">
+                    {category.name}
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <span
+                    className={`rounded-full border border-white/[.1] bg-white/[.025] px-2.5 py-1 text-xs font-semibold ${categoryTone.label}`}
+                  >
+                    {category.execução}%
+                  </span>
+                  <p className="mt-2 text-[10px] text-muted-foreground/60">
+                    {items.length} {items.length === 1 ? "hábito" : "hábitos"}
+                  </p>
+                </div>
               </div>
               <div className="mb-4 h-1 overflow-hidden rounded-full bg-white/[.06]">
                 <div
-                  className="h-full rounded-full bg-cyan-400/70 transition-all"
+                  className={`h-full rounded-full transition-all ${categoryTone.bar}`}
                   style={{ width: `${category.execução}%` }}
                 />
               </div>
