@@ -513,7 +513,19 @@ export default function Habits() {
           </LineChart>
         </ResponsiveContainer>
       </Chart>
-      <section className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <section className="rounded-2xl border border-cyan-400/15 bg-card/45 p-4 shadow-[0_14px_40px_rgba(0,0,0,.12)]">
+        <div className="mb-4 flex items-end justify-between gap-3 border-b border-white/[.07] pb-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-cyan-300">
+              PAINEL DE CATEGORIAS
+            </p>
+            <h2 className="mt-1 text-lg font-semibold">Evolução por área</h2>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {categoryData.length} áreas acompanhadas
+          </span>
+        </div>
+        <div className="grid items-start gap-4 md:grid-cols-2">
         {categoryData.map((category, categoryIndex) => {
           const categoryTone = [
             {
@@ -538,7 +550,7 @@ export default function Habits() {
           return (
             <article
               key={category.name}
-              className={`relative overflow-hidden rounded-2xl border bg-card/80 p-3 shadow-[0_10px_30px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/95 ${categoryTone.border} ${categoryTone.glow}`}
+              className={`relative overflow-hidden rounded-xl border bg-background/35 p-4 shadow-[0_8px_24px_rgba(0,0,0,.12)] transition hover:-translate-y-0.5 hover:bg-card/80 ${categoryTone.border} ${categoryTone.glow}`}
             >
               <div
                 className={`absolute inset-x-0 top-0 h-0.5 ${categoryTone.bar}`}
@@ -566,6 +578,7 @@ export default function Habits() {
             </article>
           );
         })}
+        </div>
       </section>
       <section className="overflow-hidden rounded-2xl border border-white/[.08] bg-card/45 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
         <div className="border-b border-lime-400/15 bg-gradient-to-r from-lime-400/[.06] via-card/80 to-cyan-400/[.04] p-5">
