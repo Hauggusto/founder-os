@@ -125,6 +125,8 @@ export default function Habits() {
   const [categoryTitle, setCategoryTitle] = useState("");
   const [newHabitCategory, setNewHabitCategory] = useState("Rotina");
   const [showHabitForm, setShowHabitForm] = useState(false);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
@@ -169,15 +171,18 @@ export default function Habits() {
     setAddingCategory(null);
   };
   const addCategory = () => {
-    const name = window.prompt("Nome da nova categoria");
-    if (name?.trim())
+    const name = newCategoryName.trim();
+    if (name) {
       addHabitEntry({
         title: "Novo item",
         done: false,
         streak: 0,
-        category: name.trim(),
+        category: name,
         order: habits.length,
       });
+      setNewCategoryName("");
+      setShowCategoryForm(false);
+    }
   };
   const saveOneOff = (
     tasks: {
@@ -338,12 +343,30 @@ export default function Habits() {
             ))}
           </select>
           <button
-            onClick={addCategory}
+            onClick={() => setShowCategoryForm((value) => !value)}
             className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/30 px-3 py-2 text-xs text-cyan-300"
           >
             <Plus className="h-3.5 w-3.5" />
             Nova categoria
           </button>
+          {showCategoryForm && (
+            <div className="flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.04] p-2">
+              <input
+                autoFocus
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                placeholder="Nome da categoria"
+                className="h-8 w-44 rounded-lg border border-white/[.1] bg-background px-2 text-xs outline-none focus:border-cyan-400"
+              />
+              <button
+                onClick={addCategory}
+                className="h-8 rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950"
+              >
+                Criar
+              </button>
+            </div>
+          )}
         </div>
       </section>
       <section className="grid gap-6 xl:grid-cols-3">
@@ -505,9 +528,6 @@ export default function Habits() {
                     className="flex w-full items-center justify-between rounded-xl border border-white/[.06] bg-background/45 px-3 py-3 text-left text-xs text-muted-foreground/80 transition hover:border-cyan-400/20 hover:bg-cyan-400/[.04] hover:text-cyan-200"
                   >
                     <span className="truncate">{habit.title}</span>
-                    <span className="ml-2 rounded-md bg-white/[.04] px-1.5 py-0.5 text-[10px] text-muted-foreground/50">
-                      {habit.streak}d
-                    </span>
                   </button>
                 ))}
               </div>
@@ -667,9 +687,6 @@ export default function Habits() {
                               >
                                 {habit.title}
                               </button>
-                              <p className="mt-1 text-[11px] text-muted-foreground/60">
-                                Sequência: {habit.streak} dias
-                              </p>
                             </div>
                             <button
                               type="button"
