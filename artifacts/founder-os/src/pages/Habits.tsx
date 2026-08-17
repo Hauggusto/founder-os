@@ -29,7 +29,7 @@ import {
   type IdentityStatus,
 } from "@/store/useAppStore";
 
-type Period = "week" | "fortnight" | "month" | "previousMonth";
+type Period = "day" | "week" | "fortnight" | "month" | "previousMonth";
 const keyOf = (date: Date) => date.toISOString().slice(0, 10);
 const dayLabel = (date: Date) =>
   ["D", "2ª", "3ª", "4ª", "5ª", "6ª", "S"][date.getDay()];
@@ -55,6 +55,7 @@ const tone: Record<string, string> = {
 function periodDays(period: Period) {
   const now = new Date();
   now.setHours(12, 0, 0, 0);
+  if (period === "day") return [now];
   if (period === "week" || period === "fortnight") {
     const monday = new Date(now);
     monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
@@ -574,10 +575,7 @@ export default function Habits() {
                 {filtered.length} {filtered.length === 1 ? "hábito" : "hábitos"}
               </span>
               <button
-                onClick={() => {
-                  const name = window.prompt("Nome da nova categoria");
-                  if (name?.trim()) createCategory(name);
-                }}
+                onClick={() => setShowCategoryForm(true)}
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-cyan-400 px-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
               >
                 <Plus className="h-4 w-4" /> Nova categoria
@@ -900,10 +898,10 @@ function PeriodSelector({
   compact?: boolean;
 }) {
   const options: [Period, string][] = [
-    ["week", "Sem"],
-    ["fortnight", "15d"],
-    ["month", "Mês"],
-    ["previousMonth", "Ant."],
+    ["day", "Diário"],
+    ["week", "Semanal"],
+    ["fortnight", "Quinzenal"],
+    ["month", "Mensal"],
   ];
   return (
     <div
