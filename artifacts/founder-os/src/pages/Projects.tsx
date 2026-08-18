@@ -12,6 +12,8 @@ import {
   Upload,
   X,
   CheckCircle2,
+  Network,
+  CircleDot,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,6 +43,7 @@ export default function Projects() {
             id: project.id,
             title: project.title,
             category: project.category || "",
+            ecosystem: project.ecosystem || project.category || "",
             status: project.status,
             progress: project.progress || 0,
             phase: project.phase || "",
@@ -58,6 +61,7 @@ export default function Projects() {
       type: "project" as const,
       title: projectEditor.title.trim(),
       category: projectEditor.category.trim() || "Sem grupo",
+      ecosystem: projectEditor.ecosystem.trim() || projectEditor.category.trim() || "Sem ecossistema",
       status: projectEditor.status,
       progress: projectEditor.progress,
       phase: projectEditor.phase.trim(),
@@ -83,6 +87,8 @@ export default function Projects() {
     .filter((m) => !selectedProject || m.title.trim().toLowerCase() === selectedProject.trim().toLowerCase())
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
+  const ecosystemProjects = modules.filter((m) => m.type === "project");
+  const ecosystems = Array.from(new Set(ecosystemProjects.map((project) => project.ecosystem || project.category || "Sem ecossistema")));
 
   const moveProject = (targetId: string) => {
     if (!draggedProjectId || draggedProjectId === targetId) return;
@@ -160,6 +166,13 @@ export default function Projects() {
       <p className="mb-4 text-xs text-muted-foreground">
         Arraste qualquer card para reorganizar a ordem dos projetos.
       </p>
+
+      <section className="mb-6 rounded-2xl border border-primary/20 bg-card/60 p-4 shadow-[0_0_24px_rgba(0,201,255,.06)]">
+        <div className="mb-4 flex items-center gap-3"><div className="rounded-lg border border-primary/30 bg-primary/10 p-2"><Network className="h-5 w-5 text-primary" /></div><div><h2 className="text-sm font-semibold">Mapa de ecossistemas</h2><p className="text-xs text-muted-foreground">Cada núcleo conecta os projetos que fazem parte da mesma frente.</p></div></div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {ecosystems.map((ecosystem) => { const linked = ecosystemProjects.filter((project) => (project.ecosystem || project.category || "Sem ecossistema") === ecosystem); return <article key={ecosystem} className="relative overflow-hidden rounded-xl border border-white/10 bg-background/40 p-4"><div className="absolute left-1/2 top-1/2 hidden h-px w-3/4 -translate-x-1/2 bg-primary/20 lg:block" /><div className="relative flex flex-wrap items-center justify-center gap-3"><div className="z-10 flex min-h-16 min-w-28 flex-col items-center justify-center rounded-full border-2 border-primary/60 bg-primary/10 px-4 text-center shadow-[0_0_20px_rgba(0,201,255,.16)]"><CircleDot className="mb-1 h-4 w-4 text-primary" /><span className="text-xs font-bold text-primary">{ecosystem}</span><span className="text-[9px] text-muted-foreground">{linked.length} projetos</span></div>{linked.map((project) => <Link key={project.id} href={`/projetos?project=${encodeURIComponent(project.title)}`} className="z-10 rounded-lg border border-white/10 bg-card px-3 py-2 text-center transition hover:border-primary/50 hover:bg-primary/10"><span className="block max-w-32 truncate text-xs font-semibold">{project.title}</span><span className="text-[9px] text-muted-foreground">{project.progress || 0}% execução</span></Link>)}</div></article>; })}
+        </div>
+      </section>
 
       {projects.length === 0 ? (
         <div className="bg-card border border-card-border rounded-lg p-12 text-center">
@@ -362,6 +375,7 @@ function emptyProjectForm() {
     id: "",
     title: "",
     category: "",
+    ecosystem: "",
     status: "active" as ModuleStatus,
     progress: 0,
     phase: "",
@@ -442,6 +456,13 @@ function ProjectEditor({
               value={form.category}
               onChange={(e) => update("category", e.target.value)}
               placeholder="Ex.: Canais, Produto, Cliente"
+            />
+          </Field>
+          <Field label="Ecossistema">
+            <input
+              value={form.ecosystem}
+              onChange={(e) => update("ecosystem", e.target.value)}
+              placeholder="Ex.: Conteúdo, Distribuição, Produtos"
             />
           </Field>
           <div className="md:col-span-2">
