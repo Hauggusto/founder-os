@@ -404,7 +404,9 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
       </header>
       {isProductivity && (
         <section className="grid gap-4 xl:grid-cols-[1.2fr_.8fr_1.2fr] [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
-          <FutureVisionBlock />
+          <div className="[&>div>section:first-child]:hidden [&>div>section:last-child]:lg:col-span-2">
+            <FutureVisionBlock />
+          </div>
           <NextActionsBlock />
           <AgendaBlock />
         </section>
