@@ -492,6 +492,12 @@ function UnifiedTaskList({
     start.setDate(start.getDate() - (taskPeriod === "weekly" ? 6 : 29));
     return activity.date >= start.toISOString().slice(0, 10) && activity.date <= todayKey;
   });
+  const groupedActivities = Object.entries(
+    visibleActivities.reduce<Record<string, Activity[]>>((groups, activity) => {
+      (groups[activity.area || "Geral"] ||= []).push(activity);
+      return groups;
+    }, {}),
+  );
   return (
     <section className="order-1 mb-6 rounded-2xl border border-white/[.08] bg-card/60 p-5 shadow-[0_12px_30px_rgba(16,185,129,.05)]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -538,24 +544,33 @@ function UnifiedTaskList({
       </div>
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
         <div>
-          <div className="mb-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[.025] p-3">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[.18em] text-emerald-300">Tarefas para executar</p>
-            <div className="space-y-2">
-              {visibleActivities.length === 0 ? (
+          <div className="mb-3">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[.18em] text-emerald-300">Tarefas para executar</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              {groupedActivities.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhuma tarefa registrada neste período.</p>
-              ) : visibleActivities.map((activity) => (
-                <button
-                  key={activity.id}
-                  type="button"
-                  onClick={() => toggleActivity(activity.id)}
-                  className="flex w-full items-center gap-3 rounded-lg border border-white/[.07] bg-background/45 p-3 text-left transition hover:border-emerald-400/35"
-                >
-                  <span className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs ${activity.status === "executed" ? "border-emerald-400/60 bg-emerald-400/15 text-emerald-300" : activity.status === "failed" ? "border-orange-400/60 bg-orange-400/15 text-orange-300" : "border-cyan-400/30 text-cyan-300"}`}>
-                    {activity.status === "executed" ? "✓" : activity.status === "failed" ? "×" : "·"}
-                  </span>
-                  <span className="flex-1 text-sm text-foreground/85">{activity.text}</span>
-                  <span className="text-[11px] text-muted-foreground">{activity.area}</span>
-                </button>
+              ) : groupedActivities.map(([group, groupItems], index) => (
+                <article key={group} className={`rounded-xl border p-3 ${index % 3 === 0 ? "border-emerald-400/25 bg-emerald-400/[.035]" : index % 3 === 1 ? "border-amber-400/25 bg-amber-400/[.035]" : "border-cyan-400/25 bg-cyan-400/[.035]"}`}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-medium text-foreground/90">{group}</h3>
+                    <span className="text-[10px] text-muted-foreground">{groupItems.length} ações</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {groupItems.map((activity) => (
+                      <button
+                        key={activity.id}
+                        type="button"
+                        onClick={() => toggleActivity(activity.id)}
+                        className="flex w-full items-center gap-2 rounded-lg border border-white/[.07] bg-background/45 p-2.5 text-left transition hover:border-emerald-400/35"
+                      >
+                        <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs ${activity.status === "executed" ? "border-emerald-400/60 bg-emerald-400/15 text-emerald-300" : activity.status === "failed" ? "border-orange-400/60 bg-orange-400/15 text-orange-300" : "border-cyan-400/30 text-cyan-300"}`}>
+                          {activity.status === "executed" ? "✓" : activity.status === "failed" ? "×" : "·"}
+                        </span>
+                        <span className={`flex-1 text-xs ${activity.status === "executed" ? "text-muted-foreground line-through" : "text-foreground/85"}`}>{activity.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </article>
               ))}
             </div>
           </div>
