@@ -83,7 +83,7 @@ function levelFor(score: number) {
 }
 
 export default function Identity() {
-  const { habits } = useAppStore();
+  const { habits, nextActions } = useAppStore();
   const [selectedDate, setSelectedDate] = useState(() => keyOf(new Date()));
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerMonth, setPickerMonth] = useState(() => {
@@ -150,18 +150,22 @@ export default function Identity() {
         )
       : null;
     const entries = productivity.filter((item) => item.date === keyOf(date));
+    const actionEntries = nextActions.filter((item) => item.date === keyOf(date));
     const oneOffDone = oneOffTasks.filter(
       (item) => item.done && item.completedAt === keyOf(date),
     ).length;
+    const actionDone = actionEntries.filter((item) => item.done).length;
+    const actionFailed = actionEntries.filter((item) => item.executionStatus === 'failed').length;
     const done =
       entries
         .filter((item) => item.status === "executed")
         .reduce((sum, item) => sum + item.quantity, 0) + oneOffDone;
     const failed = entries
       .filter((item) => item.status === "failed")
-      .reduce((sum, item) => sum + item.quantity, 0);
+      .reduce((sum, item) => sum + item.quantity, 0) + actionFailed;
+    const totalActionDone = done + actionDone;
     const productivityScore =
-      done + failed ? Math.round((done / (done + failed)) * 100) : null;
+      totalActionDone + failed ? Math.round((totalActionDone / (totalActionDone + failed)) * 100) : null;
     const values = [habitScore, productivityScore].filter(
       (value): value is number => value !== null,
     );
@@ -230,6 +234,9 @@ export default function Identity() {
   const selectedFailed = selectedProductivity
     .filter((item) => item.status === "failed")
     .reduce((sum, item) => sum + item.quantity, 0);
+  const selectedActions = nextActions.filter((item) => item.date === selectedDate);
+  const selectedActionDone = selectedActions.filter((item) => item.done).length;
+  const selectedActionFailed = selectedActions.filter((item) => item.executionStatus === 'failed').length;
   const selectedHabitScore = selectedHabits.length
     ? Math.round(
         (selectedHabits.reduce(
@@ -241,10 +248,10 @@ export default function Identity() {
       )
     : null;
   const selectedProductivityTotal =
-    selectedExecuted + selectedFailed + selectedProductivity.length;
+    selectedExecuted + selectedFailed + selectedProductivity.length + selectedActions.length;
   const selectedProductivityScore = selectedProductivityTotal
     ? Math.round(
-        (selectedExecuted / (selectedExecuted + selectedFailed || 1)) * 100,
+        ((selectedExecuted + selectedActionDone) / (selectedExecuted + selectedActionDone + selectedFailed + selectedActionFailed || 1)) * 100,
       )
     : null;
   const selectedValues = [
@@ -534,7 +541,7 @@ export default function Identity() {
             {selectedHabits.filter((item) => item.status === "done").length ||
             selectedExecuted ? (
               <p className="text-sm text-emerald-300">
-                {selectedHabits.filter((item) => item.status === "done").length} hábitos concluídos e {selectedExecuted} entregas registradas.
+                {selectedHabits.filter((item) => item.status === "done").length} hábitos concluídos, {selectedExecuted} entregas e {selectedActionDone} ações pontuais executadas.
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">Nada concluído neste dia.</p>
@@ -547,7 +554,7 @@ export default function Identity() {
             {selectedHabits.filter((item) => item.status !== "done").length ||
             selectedFailed ? (
               <p className="text-sm text-orange-300">
-                {selectedHabits.filter((item) => item.status !== "done").length} hábitos parciais ou não executados e {selectedFailed} tarefas não realizadas.
+                {selectedHabits.filter((item) => item.status !== "done").length} hábitos parciais ou não executados, {selectedFailed + selectedActionFailed} tarefas não realizadas e {selectedActions.filter((item) => !item.done && item.executionStatus !== 'failed').length} ações pendentes.
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">Nenhum ponto de atenção registrado.</p>

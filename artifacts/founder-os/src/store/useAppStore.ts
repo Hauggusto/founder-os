@@ -173,7 +173,7 @@ export interface AppData {
   identityChecks: IdentityCheck[];
   learningCards: LearningCard[];
   futureGoals: FutureGoal[];
-  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent' }[];
+  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; executionStatus?: 'pending' | 'executed' | 'failed' }[];
   weekSummary: string;
   energyLevel: number;
   focusLevel: number;
@@ -232,7 +232,7 @@ interface AppStore extends AppData {
   updateAgendaItem: (id: string, updates: Partial<AgendaItem>) => void;
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
-  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent') => void;
+  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent', date?: string) => void;
   updateNextAction: (id: string, updates: Partial<AppData['nextActions'][number]>) => void;
   deleteNextAction: (id: string) => void;
   toggleNextAction: (id: string) => void;
@@ -577,13 +577,15 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
-  addNextAction: (text, project, priority) => {
+  addNextAction: (text, project, priority, date) => {
     const newAction = {
       id: `na-${Date.now()}`,
       text,
       done: false,
       project,
-      priority
+      priority,
+      date: date || new Date().toISOString().slice(0, 10),
+      executionStatus: 'pending'
     };
     set({ nextActions: [...get().nextActions, newAction] });
     get().saveToStorage();
@@ -601,7 +603,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   toggleNextAction: (id) => {
     set({
-      nextActions: get().nextActions.map((n) => n.id === id ? { ...n, done: !n.done } : n)
+      nextActions: get().nextActions.map((n) => n.id === id ? { ...n, done: !n.done, executionStatus: n.done ? 'pending' : 'executed' } : n)
     });
     get().saveToStorage();
   },
