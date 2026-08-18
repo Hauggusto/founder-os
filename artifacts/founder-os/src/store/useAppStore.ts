@@ -13,7 +13,6 @@ export interface Module {
   type: ModuleType;
   title: string;
   category: string;
-  ecosystem?: string;
   subcategory?: string;
   color?: string;
   status: ModuleStatus;
@@ -586,7 +585,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       project,
       priority,
       date: date || new Date().toISOString().slice(0, 10),
-      executionStatus: 'pending' as const
+      executionStatus: 'pending'
     };
     set({ nextActions: [...get().nextActions, newAction] });
     get().saveToStorage();
