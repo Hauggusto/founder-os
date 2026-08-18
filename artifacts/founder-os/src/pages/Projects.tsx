@@ -153,8 +153,6 @@ export default function Projects() {
           Novo Projeto
         </Button>
       </div>
-      {(selectedProject || selectedEcosystem) && <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/[.04] px-3 py-2 text-xs"><span>{selectedProject ? <>Visualizando o projeto <strong className="text-primary">{selectedProject}</strong></> : <>Visualizando o ecossistema <strong className="text-primary">{ecosystems.find((item) => item.id === selectedEcosystem)?.name || "selecionado"}</strong></>}</span><Link href="/projetos" className="text-primary hover:underline">Ver todos</Link></div>}
-
       <div className="flex gap-2 mb-6">
         {(["all", "active", "paused", "done", "archived"] as const).map(
           (status) => (
