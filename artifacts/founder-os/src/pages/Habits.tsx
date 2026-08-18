@@ -591,11 +591,11 @@ export default function Habits({ mode = "habits" }: any) {
         </div>
       </section>
       <section className="overflow-hidden rounded-2xl border border-white/[.08] bg-card/45 shadow-[0_14px_40px_rgba(0,0,0,.14)]">
-        <div className="border-b border-lime-400/15 bg-gradient-to-r from-lime-400/[.06] via-card/80 to-cyan-400/[.04] p-5">
+        <div className={`border-b p-5 ${isProductivity ? 'border-orange-400/20 bg-gradient-to-r from-orange-400/[.09] via-card/80 to-amber-400/[.04]' : 'border-lime-400/15 bg-gradient-to-r from-lime-400/[.06] via-card/80 to-cyan-400/[.04]'}`}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-lime-400/30 bg-lime-400/[.08] shadow-[0_0_16px_rgba(163,230,53,.12)]">
-                <ClipboardCheck className="h-5 w-5 text-lime-300" />
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl border shadow-[0_0_16px_rgba(249,115,22,.12)] ${isProductivity ? 'border-orange-400/35 bg-orange-400/[.1]' : 'border-lime-400/30 bg-lime-400/[.08]'}`}>
+                <ClipboardCheck className={`h-5 w-5 ${isProductivity ? 'text-orange-300' : 'text-lime-300'}`} />
               </div>
               <div>
                 <h2 className="font-semibold tracking-wide">
