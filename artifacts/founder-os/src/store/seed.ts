@@ -174,6 +174,7 @@ export const seedData: AppData = {
     { id: 'cat-2', name: 'Financeiro', order: 1 },
     { id: 'cat-3', name: 'Operações', order: 2 },
   ],
+  ecosystems: [],
   weeklyData: [
     { week: '2024-W24', revenue: 12500, expenses: 8200, label: 'Sem 24' },
     { week: '2024-W25', revenue: 15800, expenses: 9100, label: 'Sem 25' },

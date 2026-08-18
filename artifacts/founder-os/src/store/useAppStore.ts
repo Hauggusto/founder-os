@@ -13,6 +13,7 @@ export interface Module {
   type: ModuleType;
   title: string;
   category: string;
+  ecosystem?: string;
   subcategory?: string;
   color?: string;
   status: ModuleStatus;
@@ -52,6 +53,7 @@ export interface Category {
   parentId?: string;
   order: number;
 }
+export interface EcosystemGroup { id: string; name: string; color: string; }
 
 export interface WeeklyEntry {
   week: string;
@@ -157,6 +159,7 @@ const defaultFutureGoals: FutureGoal[] = [
 export interface AppData {
   modules: Module[];
   categories: Category[];
+  ecosystems: EcosystemGroup[];
   weeklyData: WeeklyEntry[];
   transactions: FinancialTransaction[];
   financialSummary: FinancialSummaryOverrides;
@@ -199,6 +202,7 @@ interface AppStore extends AppData {
   
   // Category actions
   addCategory: (cat: Omit<Category, 'id'>) => void;
+  addEcosystem: (ecosystem: Omit<EcosystemGroup, 'id'>) => void;
   
   // Quick capture actions
   addQuickCapture: (text: string) => void;
@@ -268,6 +272,7 @@ const loadInitialData = (): AppData => {
         modules: (parsed.modules || seedData.modules).map((module: Module) => module.id === '8' && module.type === 'financial_account' && module.balance === 32000 ? { ...module, balance: 300 } : module),
         // Fallbacks for new fields
         transactions: parsed.transactions || seedData.transactions,
+        ecosystems: parsed.ecosystems || seedData.ecosystems,
         financialSummary: parsed.financialSummary || seedData.financialSummary,
         habits: parsed.habits || seedData.habits,
         productivityHabits: parsed.productivityHabits || parsed.habits || seedData.habits,
@@ -311,6 +316,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const data: AppData = {
       modules: state.modules,
       categories: state.categories,
+      ecosystems: state.ecosystems,
       weeklyData: state.weeklyData,
       transactions: state.transactions,
       financialSummary: state.financialSummary,
@@ -349,6 +355,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
       order: get().modules.length,
     };
     set({ modules: [...get().modules, newModule] });
+    get().saveToStorage();
+  },
+
+  addEcosystem: (ecosystem) => {
+    set({ ecosystems: [...get().ecosystems, { ...ecosystem, id: `ecosystem-${Date.now()}` }] });
     get().saveToStorage();
   },
 
@@ -666,6 +677,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const data: AppData = {
       modules: state.modules,
       categories: state.categories,
+      ecosystems: state.ecosystems,
       weeklyData: state.weeklyData,
       transactions: state.transactions,
       financialSummary: state.financialSummary,
@@ -698,6 +710,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       set({
         modules: parsed.modules || [],
         categories: parsed.categories || [],
+        ecosystems: parsed.ecosystems || [],
         weeklyData: parsed.weeklyData || [],
         transactions: parsed.transactions || [],
         financialSummary: parsed.financialSummary || {},

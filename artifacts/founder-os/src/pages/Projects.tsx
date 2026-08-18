@@ -12,6 +12,7 @@ import {
   Upload,
   X,
   CheckCircle2,
+  Layers3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,8 +22,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Projects() {
-  const { modules, productivityHabits, addModule, updateModule, duplicateModule, deleteModule } =
+  const { modules, ecosystems, productivityHabits, addModule, updateModule, addEcosystem, duplicateModule, deleteModule } =
     useAppStore();
+  const [newEcosystem, setNewEcosystem] = useState("");
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | "all">("all");
   const selectedProject = new URLSearchParams(window.location.search).get("project");
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
@@ -83,6 +85,8 @@ export default function Projects() {
     .filter((m) => !selectedProject || m.title.trim().toLowerCase() === selectedProject.trim().toLowerCase())
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
+  const allProjects = modules.filter((module) => module.type === "project");
+  const createEcosystem = () => { if (!newEcosystem.trim()) return; addEcosystem({ name: newEcosystem.trim(), color: "#00C9FF" }); setNewEcosystem(""); };
 
   const moveProject = (targetId: string) => {
     if (!draggedProjectId || draggedProjectId === targetId) return;
@@ -161,6 +165,12 @@ export default function Projects() {
         Arraste qualquer card para reorganizar a ordem dos projetos.
       </p>
 
+      <section className="mb-6 rounded-2xl border border-primary/20 bg-card/50 p-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2"><Layers3 className="h-5 w-5 text-primary" /><div><h2 className="text-sm font-semibold">Ecossistemas</h2><p className="text-xs text-muted-foreground">Crie uma frente e arraste os projetos correspondentes para dentro dela.</p></div></div><div className="flex gap-2"><input value={newEcosystem} onChange={(event) => setNewEcosystem(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") createEcosystem(); if (event.key === "Escape") setNewEcosystem(""); }} placeholder="Nome do ecossistema" className="h-9 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary" /><Button onClick={createEcosystem} size="sm" className="bg-primary">+ Criar</Button></div></div>
+        {ecosystems.length === 0 ? <div className="rounded-xl border border-dashed border-white/10 p-4 text-center text-xs text-muted-foreground">Crie seu primeiro ecossistema para começar a organizar os projetos.</div> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{ecosystems.map((ecosystem) => { const linked = allProjects.filter((project) => project.ecosystem === ecosystem.id); return <article key={ecosystem.id} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { const projectId = event.dataTransfer.getData("project-id"); if (projectId) updateModule(projectId, { ecosystem: ecosystem.id }); }} className="min-h-32 rounded-xl border border-primary/25 bg-background/40 p-3 transition hover:border-primary/60"><div className="mb-3 flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_8px_currentColor]" /><h3 className="text-xs font-semibold">{ecosystem.name}</h3><span className="ml-auto text-[10px] text-muted-foreground">{linked.length} projetos</span></div>{linked.length ? <div className="flex flex-wrap gap-2">{linked.map((project) => <Link key={project.id} href={`/projetos?project=${encodeURIComponent(project.title)}`} className="rounded-lg border border-primary/20 bg-primary/[.06] px-2.5 py-2 text-xs hover:bg-primary/10">{project.title}</Link>)}</div> : <p className="rounded-lg border border-dashed border-white/10 p-3 text-center text-[11px] text-muted-foreground">Solte um projeto aqui</p>}</article>; })}</div>}
+        <p className="mt-3 text-[10px] text-muted-foreground">Para vincular: arraste um card de projeto e solte no ecossistema desejado.</p>
+      </section>
+
       {projects.length === 0 ? (
         <div className="bg-card border border-card-border rounded-lg p-12 text-center">
           <p className="text-muted-foreground mb-4">
@@ -182,7 +192,7 @@ export default function Projects() {
               className="cursor-grab overflow-hidden bg-card border border-card-border rounded-lg transition-transform duration-200 hover:scale-[1.01] active:cursor-grabbing active:scale-[0.99]"
               data-testid={`project-card-${project.id}`}
               draggable
-              onDragStart={() => setDraggedProjectId(project.id)}
+              onDragStart={(event) => { setDraggedProjectId(project.id); event.dataTransfer.setData("project-id", project.id); }}
               onDragOver={(event) => {
                 event.preventDefault();
                 setDragOverProjectId(project.id);
