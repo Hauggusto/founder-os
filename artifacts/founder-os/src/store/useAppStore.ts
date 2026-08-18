@@ -91,8 +91,9 @@ export interface AgendaItem {
   id: string;
   title: string;
   time: string;
-  type: 'meeting' | 'task' | 'reminder';
+  type: 'meeting' | 'task' | 'reminder' | 'presencial';
   done: boolean;
+  date?: string;
 }
 
 export interface LifeArea {
@@ -212,6 +213,7 @@ interface AppStore extends AppData {
   updateHabitEntry: (id: string, updates: Partial<HabitEntry>) => void;
   deleteHabitEntry: (id: string) => void;
   addAgendaItem: (item: Omit<AgendaItem, 'id'>) => void;
+  updateAgendaItem: (id: string, updates: Partial<AgendaItem>) => void;
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
   addNextAction: (text: string, project?: string) => void;
@@ -507,6 +509,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({
       agenda: get().agenda.map((a) => a.id === id ? { ...a, done: !a.done } : a)
     });
+    get().saveToStorage();
+  },
+
+  updateAgendaItem: (id, updates) => {
+    set({ agenda: get().agenda.map((a) => a.id === id ? { ...a, ...updates } : a) });
     get().saveToStorage();
   },
 

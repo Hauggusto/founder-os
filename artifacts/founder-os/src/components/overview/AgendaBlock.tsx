@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 export function AgendaBlock() {
-  const { agenda, toggleAgendaItem } = useAppStore();
+  const { agenda, toggleAgendaItem, updateAgendaItem, addAgendaItem } = useAppStore();
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState<{ title: string; time: string; date: string; type: 'meeting' | 'task' | 'reminder' | 'presencial' }>({ title: '', time: '09:00', date: new Date().toISOString().slice(0, 10), type: 'task' });
   
   const sortedAgenda = [...agenda].sort((a, b) => a.time.localeCompare(b.time));
 
@@ -15,8 +18,16 @@ export function AgendaBlock() {
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
           Agenda
         </h3>
-        {/* We can add an inline modal for new event later if needed, prompt allowed simple modal, but we have capture/bottom bar for now. */}
+        <button onClick={() => setAdding((value) => !value)} className="inline-flex items-center gap-1 rounded-lg border border-primary/30 px-2 py-1 text-[10px] text-primary hover:bg-primary/10"><Plus className="h-3 w-3" /> Adicionar</button>
       </div>
+
+      {adding && <div className="mb-3 grid gap-2 rounded-xl border border-primary/20 bg-primary/[.04] p-2 sm:grid-cols-[1fr_auto_auto_auto_auto]">
+        <input autoFocus value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="Nome do compromisso" className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs outline-none focus:border-primary" />
+        <input type="date" value={draft.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs" />
+        <input type="time" value={draft.time} onChange={(e) => setDraft({ ...draft, time: e.target.value })} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs" />
+        <select value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value as typeof draft.type })} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs"><option value="task">Tarefa</option><option value="meeting">Reunião</option><option value="reminder">Lembrete</option><option value="presencial">Presencial</option></select>
+        <button onClick={() => { if (!draft.title.trim()) return; addAgendaItem({ ...draft, title: draft.title.trim(), done: false }); setDraft({ ...draft, title: '' }); setAdding(false); }} className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">Salvar</button>
+      </div>}
 
       <div className="space-y-1">
         {sortedAgenda.map((item, idx) => {
@@ -28,26 +39,24 @@ export function AgendaBlock() {
                 isNext ? 'bg-[#ffffff0a] border border-[#ffffff10]' : 'hover:bg-[#ffffff05]'
               }`}
             >
-              <span className={`text-xs font-mono mt-0.5 w-10 ${item.done ? 'text-muted-foreground' : 'text-primary'}`}>
-                {item.time}
-              </span>
+              <div className="flex w-[92px] flex-col gap-0.5">
+                <input type="time" value={item.time} onChange={(e) => updateAgendaItem(item.id, { time: e.target.value })} className={`w-[68px] rounded border border-transparent bg-transparent px-1 text-xs font-mono outline-none focus:border-primary ${item.done ? 'text-muted-foreground' : 'text-primary'}`} />
+                <input type="date" value={item.date || ''} onChange={(e) => updateAgendaItem(item.id, { date: e.target.value })} className="w-[88px] rounded border border-transparent bg-transparent px-1 text-[9px] text-muted-foreground outline-none focus:border-primary" aria-label="Data da agenda" />
+              </div>
               <div className="flex-1 flex items-start gap-2">
-                <span className={`text-sm leading-tight ${item.done ? 'line-through text-muted-foreground' : 'text-foreground font-medium'}`}>
-                  {item.title}
-                </span>
-                <Badge variant="outline" className={`text-[9px] px-1 py-0 uppercase h-4 border-transparent ${
+                <input value={item.title} onChange={(e) => updateAgendaItem(item.id, { title: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-tight outline-none focus:border-primary ${item.done ? 'line-through text-muted-foreground' : 'text-foreground font-medium'}`} />
+                <select value={item.type} onChange={(e) => updateAgendaItem(item.id, { type: e.target.value as typeof item.type })} className={`h-5 rounded border-transparent bg-background px-1 text-[9px] uppercase outline-none focus:border-primary ${
                   item.type === 'meeting' ? 'bg-[#8B5CF6]/10 text-[#8B5CF6]' :
                   item.type === 'task' ? 'bg-[#00C9FF]/10 text-[#00C9FF]' :
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  {item.type}
-                </Badge>
+                  item.type === 'presencial' ? 'bg-amber-500/10 text-amber-300' : 'bg-muted text-muted-foreground'
+                }`}><option value="meeting">Reunião</option><option value="task">Tarefa</option><option value="reminder">Lembrete</option><option value="presencial">Presencial</option></select>
               </div>
               <Checkbox 
                 checked={item.done} 
                 onCheckedChange={() => toggleAgendaItem(item.id)}
                 className="mt-0.5"
               />
+              <button onClick={() => updateAgendaItem(item.id, { title: `${item.title}` })} className="sr-only" aria-label="Salvar agenda" />
             </div>
           );
         })}
