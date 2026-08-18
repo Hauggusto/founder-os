@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { seedData } from './seed';
+import { saveCloudAppData } from '@/lib/cloudSync';
 
 const STORAGE_KEY = 'founder-os-data';
 
@@ -321,6 +322,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       version: '1.0',
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    void saveCloudAppData(data);
   },
 
   addModule: (moduleData) => {

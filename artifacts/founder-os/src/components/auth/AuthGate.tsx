@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { LogIn, ShieldCheck } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { loadCloudAppData } from '@/lib/cloudSync';
+import { useAppStore } from '@/store/useAppStore';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -68,6 +70,17 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    let active = true;
+    void loadCloudAppData().then((cloudData) => {
+      if (!active) return;
+      if (cloudData) useAppStore.setState(cloudData);
+      else useAppStore.getState().saveToStorage();
+    });
+    return () => { active = false; };
+  }, [session]);
 
   if (!isSupabaseConfigured) {
     return <AuthMessage title="Autenticação ainda não configurada" body="Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY nas variáveis da Vercel e no ambiente local." />;

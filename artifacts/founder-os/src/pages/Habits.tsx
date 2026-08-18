@@ -114,7 +114,7 @@ function HabitCell({
   );
 }
 
-export default function Habits({ mode = "habits" }: { mode?: "habits" | "productivity"; [key: string]: unknown }) {
+export default function Habits({ mode = "habits" }: any) {
   const isProductivity = mode === "productivity";
   const store = useAppStore();
   const habits = isProductivity ? store.productivityHabits : store.habits;
