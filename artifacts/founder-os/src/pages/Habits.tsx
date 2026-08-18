@@ -381,16 +381,16 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
     borderRadius: 8,
   };
   return (
-    <div className="mx-auto w-full max-w-[1500px] space-y-6">
-      <header className="rounded-2xl border border-cyan-400/25 bg-gradient-to-r from-[#07151d] via-card to-[#111421] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[.25em] text-cyan-400">
-          ROTINA / EXECUÇÃO
+    <div className={`mx-auto w-full max-w-[1500px] space-y-6 ${isProductivity ? "productivity-workspace" : ""}`}>
+      <header className={`rounded-2xl border p-6 ${isProductivity ? "border-amber-400/30 bg-gradient-to-r from-[#1b1308] via-card to-[#17111d] shadow-[0_18px_45px_rgba(245,158,11,.08)]" : "border-cyan-400/25 bg-gradient-to-r from-[#07151d] via-card to-[#111421]"}`}>
+        <p className={`text-xs font-semibold uppercase tracking-[.25em] ${isProductivity ? "text-amber-300" : "text-cyan-400"}`}>
+          {isProductivity ? "FOCO / ENTREGA" : "ROTINA / EXECUÇÃO"}
         </p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">{isProductivity ? "Checklist de Produtividade" : "Checklist de Hábitos"}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Planeje, execute e reveja o que aconteceu em cada dia.
+              {isProductivity ? "Transforme prioridades em entregas concretas, dia após dia." : "Planeje, execute e reveja o que aconteceu em cada dia."}
             </p>
           </div>
           <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/5 px-5 py-3 text-right">
@@ -400,7 +400,7 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
         </div>
       </header>
       <section className="grid gap-6 xl:grid-cols-2">
-        <Chart title="Evolução dos hábitos" period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
+          <Chart title={isProductivity ? "Ritmo de entregas" : "Evolução dos hábitos"} period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData}>
               <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
@@ -417,8 +417,8 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
               <Area
                 type="monotone"
                 dataKey="execução"
-                stroke="#00C9FF"
-                fill="#00C9FF"
+                stroke={isProductivity ? "#f59e0b" : "#00C9FF"}
+                fill={isProductivity ? "#f59e0b" : "#00C9FF"}
                 fillOpacity={0.12}
                 strokeWidth={2}
               />
@@ -448,7 +448,7 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
                 contentStyle={tip}
                 formatter={(v) => [`${v}%`, "Execução"]}
               />
-              <Bar dataKey="execução" fill="#10B981" radius={[0, 5, 5, 0]}>
+              <Bar dataKey="execução" fill={isProductivity ? "#a855f7" : "#10B981"} radius={[0, 5, 5, 0]}>
                 <LabelList
                   dataKey="execução"
                   position="right"
@@ -463,7 +463,7 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
         </Chart>
       </section>
       <Chart
-        title="Evolução de cada categoria"
+        title={isProductivity ? "Evolução por frente de trabalho" : "Evolução de cada categoria"}
         period={categoryEvolutionPeriod}
         setPeriod={setCategoryEvolutionPeriod}
       >
@@ -490,7 +490,7 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
                 dataKey={category}
                 name={category}
                 stroke={
-                  ["#00C9FF", "#10B981", "#F97316", "#A855F7", "#F43F5E"][
+                  (isProductivity ? ["#f59e0b", "#a855f7", "#38bdf8", "#fb7185", "#34d399"] : ["#00C9FF", "#10B981", "#F97316", "#A855F7", "#F43F5E"])[
                     index % 5
                   ]
                 }
@@ -588,10 +588,10 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
               </div>
               <div>
                 <h2 className="font-semibold tracking-wide">
-                  Acompanhamento dos hábitos
+                  {isProductivity ? "Acompanhamento das entregas" : "Acompanhamento dos hábitos"}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Clique em cada dia para registrar feito, parcial ou não feito.
+                  {isProductivity ? "Marque o avanço de cada frente e veja sua consistência." : "Clique em cada dia para registrar feito, parcial ou não feito."}
                 </p>
               </div>
             </div>
