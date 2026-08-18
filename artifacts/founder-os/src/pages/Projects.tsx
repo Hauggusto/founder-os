@@ -10,6 +10,7 @@ import {
   Plus,
   Upload,
   X,
+  CheckCircle2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Projects() {
-  const { modules, addModule, updateModule, duplicateModule, deleteModule } =
+  const { modules, productivityHabits, addModule, updateModule, duplicateModule, deleteModule } =
     useAppStore();
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | "all">("all");
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
@@ -212,6 +213,27 @@ export default function Projects() {
                 </div>
               )}
               <div className="p-3">
+                {(() => {
+                  const linkedTasks = productivityHabits.filter((habit) =>
+                    (habit.category || "").trim().toLowerCase() === project.title.trim().toLowerCase(),
+                  );
+                  return linkedTasks.length > 0 ? (
+                    <div className="mb-3 rounded-lg border border-amber-400/20 bg-amber-400/[.04] p-2.5">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-semibold uppercase tracking-[.14em] text-amber-300">Produtividade vinculada</span>
+                        <span className="text-[10px] text-muted-foreground">{linkedTasks.length} itens</span>
+                      </div>
+                      <div className="space-y-1">
+                        {linkedTasks.slice(0, 4).map((task) => (
+                          <div key={task.id} className="flex items-center gap-1.5 text-[11px] text-foreground/80">
+                            <CheckCircle2 className={`h-3 w-3 ${task.done ? "text-emerald-400" : "text-muted-foreground"}`} />
+                            <span className={task.done ? "line-through text-muted-foreground" : ""}>{task.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
                 <div className="mb-3 flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-base font-semibold text-foreground">
