@@ -180,7 +180,12 @@ export default function Habits() {
     (habit) =>
       (categoryFilter === "all" || habit.category === categoryFilter) &&
       (statusFilter === "all" ||
-        executionDays.some((day) => habit.checks?.[keyOf(day)] === statusFilter)),
+        executionDays.some((day) => {
+          const check = habit.checks?.[keyOf(day)] ?? null;
+          if (statusFilter === "done") return check === "done";
+          if (statusFilter === "partial") return check === "partial";
+          return check === "missed" || check === null;
+        })),
   );
   const grouped = filtered.reduce<Record<string, HabitEntry[]>>(
     (groups, habit) => {
