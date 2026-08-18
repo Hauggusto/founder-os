@@ -99,6 +99,7 @@ export default function Projects() {
     .sort((a, b) => a.order - b.order);
   const allProjects = modules.filter((module) => module.type === "project");
   const createEcosystem = () => { if (!newEcosystem.trim()) return; addEcosystem({ name: newEcosystem.trim(), color: "#00C9FF" }); setNewEcosystem(""); };
+  const clearProjectFilter = () => { setSelectedEcosystemId(null); setLocation("/projetos"); };
 
   const moveProject = (targetId: string) => {
     if (!draggedProjectId || draggedProjectId === targetId) return;
@@ -163,7 +164,7 @@ export default function Projects() {
               key={status}
               variant={filterStatus === status ? "default" : "outline"}
               size="sm"
-              onClick={() => setFilterStatus(status)}
+              onClick={() => { setFilterStatus(status); if (status === "all") clearProjectFilter(); }}
               className={filterStatus === status ? "bg-primary" : ""}
             >
               {status === "all" ? "Todos" : getStatusLabel(status)}
@@ -171,6 +172,7 @@ export default function Projects() {
           ),
         )}
       </div>
+      {(selectedEcosystem || selectedProject) && <button type="button" onClick={clearProjectFilter} className="mb-4 inline-flex items-center rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/20">← Todos os projetos</button>}
       <p className="mb-4 text-xs text-muted-foreground">
         Arraste qualquer card para reorganizar a ordem dos projetos.
       </p>
