@@ -163,7 +163,7 @@ export interface AppData {
   identityItems: IdentityItem[];
   identityChecks: IdentityCheck[];
   learningCards: LearningCard[];
-  nextActions: { id: string; text: string; done: boolean; project?: string }[];
+  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent' }[];
   weekSummary: string;
   energyLevel: number;
   focusLevel: number;
@@ -222,7 +222,7 @@ interface AppStore extends AppData {
   updateAgendaItem: (id: string, updates: Partial<AgendaItem>) => void;
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
-  addNextAction: (text: string, project?: string) => void;
+  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent') => void;
   toggleNextAction: (id: string) => void;
   setLifeAreaScore: (id: string, score: number) => void;
   setEnergyLevel: (n: number) => void;
@@ -562,12 +562,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
-  addNextAction: (text, project) => {
+  addNextAction: (text, project, priority) => {
     const newAction = {
       id: `na-${Date.now()}`,
       text,
       done: false,
-      project
+      project,
+      priority
     };
     set({ nextActions: [...get().nextActions, newAction] });
     get().saveToStorage();
