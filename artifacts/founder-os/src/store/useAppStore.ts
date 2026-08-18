@@ -596,7 +596,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       project,
       priority,
       date: date || new Date().toISOString().slice(0, 10),
-      executionStatus: 'pending'
+      executionStatus: 'pending' as const
     };
     set({ nextActions: [...get().nextActions, newAction] });
     get().saveToStorage();

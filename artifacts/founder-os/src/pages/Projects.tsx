@@ -85,7 +85,7 @@ export default function Projects() {
   const projects = modules
     .filter((m) => m.type === "project")
     .filter((m) => !selectedProject || m.title.trim().toLowerCase() === selectedProject.trim().toLowerCase())
-    .filter((m) => !selectedEcosystem || m.ecosystem === selectedEcosystem)
+    .filter((m) => !selectedEcosystem || m.ecosystem === selectedEcosystem || m.category === ecosystems.find((ecosystem) => ecosystem.id === selectedEcosystem)?.name)
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
   const allProjects = modules.filter((module) => module.type === "project");
