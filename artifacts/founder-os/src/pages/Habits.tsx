@@ -402,12 +402,12 @@ export default function Habits({ mode = "habits" }: any) {
         </div>
       </header>
       {isProductivity && (
-        <section className="grid gap-4 xl:grid-cols-[1.2fr_.8fr_1.2fr] [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
-          <div className="[&>div>section:first-child]:hidden [&>div>section:last-child]:lg:col-span-2">
-            <FutureVisionBlock />
-          </div>
+        <section className="space-y-4 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
           <NextActionsBlock />
-          <AgendaBlock />
+          <div className="grid gap-4 lg:grid-cols-2 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
+            <div className="[&>div>section:first-child]:hidden [&>div>section:last-child]:lg:col-span-2"><FutureVisionBlock /></div>
+            <AgendaBlock />
+          </div>
         </section>
       )}
       <section className="grid gap-6 xl:grid-cols-2">
