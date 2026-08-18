@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { useAppStore, type ModuleStatus } from "@/store/useAppStore";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -23,6 +24,7 @@ export default function Projects() {
   const { modules, productivityHabits, addModule, updateModule, duplicateModule, deleteModule } =
     useAppStore();
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | "all">("all");
+  const selectedProject = new URLSearchParams(window.location.search).get("project");
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
   const [dragOverProjectId, setDragOverProjectId] = useState<string | null>(
     null,
@@ -78,6 +80,7 @@ export default function Projects() {
 
   const projects = modules
     .filter((m) => m.type === "project")
+    .filter((m) => !selectedProject || m.title.trim().toLowerCase() === selectedProject.trim().toLowerCase())
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
 
@@ -137,6 +140,7 @@ export default function Projects() {
           Novo Projeto
         </Button>
       </div>
+      {selectedProject && <div className="mb-4 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/[.04] px-3 py-2 text-xs"><span>Visualizando o projeto <strong className="text-primary">{selectedProject}</strong></span><Link href="/projetos" className="text-primary hover:underline">Ver todos</Link></div>}
 
       <div className="flex gap-2 mb-6">
         {(["all", "active", "paused", "done", "archived"] as const).map(
