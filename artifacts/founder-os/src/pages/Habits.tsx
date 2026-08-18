@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import {
   Check,
+  ChevronDown,
   ClipboardCheck,
   Minus,
   Plus,
@@ -604,28 +605,23 @@ export default function Habits() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/[.08] bg-background/30 p-2">
-            <select
+            <FilterMenu
               value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as typeof statusFilter)
-              }
-              className="rounded-xl border border-cyan-400/20 bg-background/80 px-3 py-2.5 text-sm text-foreground shadow-[0_0_14px_rgba(34,211,238,.04)] outline-none transition hover:border-cyan-400/40 focus:border-cyan-400/70"
-            >
-              <option value="all">Todos os status</option>
-              <option value="done">Feitos</option>
-              <option value="partial">Parciais</option>
-              <option value="missed">Não feitos</option>
-            </select>
-            <select
+              onChange={(value) => setStatusFilter(value as typeof statusFilter)}
+              options={[
+                ["all", "Todos os status"],
+                ["done", "Feitos"],
+                ["partial", "Parciais"],
+                ["missed", "Não feitos"],
+              ]}
+              tone="cyan"
+            />
+            <FilterMenu
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="rounded-xl border border-violet-400/20 bg-background/80 px-3 py-2.5 text-sm text-foreground shadow-[0_0_14px_rgba(167,139,250,.04)] outline-none transition hover:border-violet-400/40 focus:border-violet-400/70"
-            >
-              <option value="all">Todas as categorias</option>
-              {categories.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
+              onChange={setCategoryFilter}
+              options={[["all", "Todas as categorias"], ...categories.map((c) => [c, c] as [string, string])]}
+              tone="violet"
+            />
           </div>
           {showCategoryForm && (
             <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.04] p-2">
@@ -1033,6 +1029,52 @@ function PeriodSelector({
           {label}
         </button>
       ))}
+    </div>
+  );
+}
+
+function FilterMenu({
+  value,
+  onChange,
+  options,
+  tone,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: [string, string][];
+  tone: "cyan" | "violet";
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find(([option]) => option === value)?.[1] ?? options[0][1];
+  const accent = tone === "cyan" ? "border-cyan-400/40 text-cyan-200" : "border-violet-400/40 text-violet-200";
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className={`inline-flex min-w-40 items-center justify-between gap-3 rounded-xl border bg-background/85 px-3 py-2.5 text-sm text-foreground shadow-[0_8px_20px_rgba(0,0,0,.14)] transition hover:bg-card ${open ? accent : "border-white/[.12]"}`}
+        aria-expanded={open}
+      >
+        {selected}
+        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+6px)] z-30 min-w-full overflow-hidden rounded-xl border border-white/[.14] bg-[#11161d] p-1 shadow-[0_18px_40px_rgba(0,0,0,.45)]">
+          {options.map(([option, label]) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => {
+                onChange(option);
+                setOpen(false);
+              }}
+              className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition ${value === option ? "bg-cyan-400/12 text-cyan-200" : "text-muted-foreground hover:bg-white/[.06] hover:text-foreground"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
