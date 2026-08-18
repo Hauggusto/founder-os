@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -16,7 +16,6 @@ import {
 } from "recharts";
 import {
   Check,
-  ChevronDown,
   ClipboardCheck,
   Minus,
   Plus,
@@ -609,25 +608,6 @@ export default function Habits() {
               />
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-white/[.08] bg-background/30 p-2">
-            <FilterMenu
-              value={statusFilter}
-              onChange={(value) => setStatusFilter(value as typeof statusFilter)}
-              options={[
-                ["all", "Todos os status"],
-                ["done", "Feitos"],
-                ["partial", "Parciais"],
-                ["missed", "Não feitos"],
-              ]}
-              tone="cyan"
-            />
-            <FilterMenu
-              value={categoryFilter}
-              onChange={setCategoryFilter}
-              options={[["all", "Todas as categorias"], ...categories.map((c) => [c, c] as [string, string])]}
-              tone="violet"
-            />
-          </div>
           {showCategoryForm && (
             <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[.04] p-2">
               <input
@@ -1034,60 +1014,6 @@ function PeriodSelector({
           {label}
         </button>
       ))}
-    </div>
-  );
-}
-
-function FilterMenu({
-  value,
-  onChange,
-  options,
-  tone,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  options: [string, string][];
-  tone: "cyan" | "violet";
-}) {
-  const [open, setOpen] = useState(false);
-  const selected = options.find(([option]) => option === value)?.[1] ?? options[0][1];
-  const accent = tone === "cyan" ? "border-cyan-400/40 text-cyan-200" : "border-violet-400/40 text-violet-200";
-  useEffect(() => {
-    if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [open]);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-        className={`inline-flex min-w-40 items-center justify-between gap-3 rounded-xl border bg-background/85 px-3 py-2.5 text-sm text-foreground shadow-[0_8px_20px_rgba(0,0,0,.14)] transition hover:bg-card ${open ? accent : "border-white/[.12]"}`}
-        aria-expanded={open}
-      >
-        {selected}
-        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-30 min-w-full overflow-hidden rounded-xl border border-white/[.14] bg-[#11161d] p-1 shadow-[0_18px_40px_rgba(0,0,0,.45)]">
-          {options.map(([option, label]) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => {
-                onChange(option);
-                setOpen(false);
-              }}
-              className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition ${value === option ? "bg-cyan-400/12 text-cyan-200" : "text-muted-foreground hover:bg-white/[.06] hover:text-foreground"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
