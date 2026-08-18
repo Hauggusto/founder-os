@@ -125,6 +125,8 @@ export default function Habits() {
   const [comparisonPeriod, setComparisonPeriod] = useState<Period>("week");
   const [categoryEvolutionPeriod, setCategoryEvolutionPeriod] =
     useState<Period>("week");
+  const [categoryPanelPeriod, setCategoryPanelPeriod] =
+    useState<Period>("week");
   const [executionPeriod, setExecutionPeriod] = useState<Period>("week");
   const [statusFilter, setStatusFilter] = useState<"all" | IdentityStatus>(
     "all",
@@ -158,6 +160,10 @@ export default function Habits() {
   const categoryEvolutionDays = useMemo(
     () => periodDays(categoryEvolutionPeriod),
     [categoryEvolutionPeriod],
+  );
+  const categoryPanelDays = useMemo(
+    () => periodDays(categoryPanelPeriod),
+    [categoryPanelPeriod],
   );
   const executionDays = useMemo(
     () => periodDays(executionPeriod),
@@ -325,7 +331,7 @@ export default function Habits() {
   });
   const categoryData = categories.map((category) => {
     const items = habits.filter((h) => (h.category || "Rotina") === category);
-    const total = items.length * comparisonDays.length;
+    const total = items.length * categoryPanelDays.length;
     return {
       name: category,
       execução: total
@@ -333,7 +339,7 @@ export default function Habits() {
             (items.reduce(
               (s, h) =>
                 s +
-                comparisonDays.reduce(
+                categoryPanelDays.reduce(
                   (i, d) => i + statusScore(h.checks?.[keyOf(d)]),
                   0,
                 ),
@@ -504,8 +510,8 @@ export default function Habits() {
               {categoryData.length} áreas acompanhadas
             </span>
             <PeriodSelector
-              period={categoryEvolutionPeriod}
-              setPeriod={setCategoryEvolutionPeriod}
+              period={categoryPanelPeriod}
+              setPeriod={setCategoryPanelPeriod}
               compact
             />
           </div>
