@@ -203,6 +203,7 @@ interface AppStore extends AppData {
   // Category actions
   addCategory: (cat: Omit<Category, 'id'>) => void;
   addEcosystem: (ecosystem: Omit<EcosystemGroup, 'id'>) => void;
+  deleteEcosystem: (id: string) => void;
   
   // Quick capture actions
   addQuickCapture: (text: string) => void;
@@ -360,6 +361,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addEcosystem: (ecosystem) => {
     set({ ecosystems: [...get().ecosystems, { ...ecosystem, id: `ecosystem-${Date.now()}` }] });
+    get().saveToStorage();
+  },
+
+  deleteEcosystem: (id) => {
+    set({
+      ecosystems: get().ecosystems.filter((ecosystem) => ecosystem.id !== id),
+      modules: get().modules.map((module) => module.ecosystem === id ? { ...module, ecosystem: undefined } : module),
+    });
     get().saveToStorage();
   },
 
