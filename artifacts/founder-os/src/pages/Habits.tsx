@@ -499,9 +499,16 @@ export default function Habits() {
             </p>
             <h2 className="mt-1 text-lg font-semibold">Evolução por área</h2>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {categoryData.length} áreas acompanhadas
-          </span>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <span className="text-xs text-muted-foreground">
+              {categoryData.length} áreas acompanhadas
+            </span>
+            <PeriodSelector
+              period={categoryEvolutionPeriod}
+              setPeriod={setCategoryEvolutionPeriod}
+              compact
+            />
+          </div>
         </div>
         <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         {categoryData.map((category, categoryIndex) => {
