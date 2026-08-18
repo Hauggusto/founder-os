@@ -181,7 +181,31 @@ export function ProductivityPanel() {
       ),
     );
   return (
-    <section className="rounded-2xl border border-[#10B98144] bg-[#061510]/70 p-5 shadow-[0_0_24px_#10b9810b]">
+    <section className="rounded-2xl border border-emerald-400/20 bg-[#061510]/55 p-5 shadow-[0_18px_50px_rgba(16,185,129,.08)]">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-emerald-400/10 pb-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-emerald-300">
+            CENTRAL DE EXECUÇÃO
+          </p>
+          <h2 className="mt-1 text-xl font-semibold">Ritmo de produtividade</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Registre ações pontuais e veja o impacto real por área.
+          </p>
+        </div>
+        <div className="grid grid-cols-4 gap-2 text-center">
+          {[
+            ["Índice", `${score}%`, "text-emerald-300"],
+            ["Feitas", executed, "text-cyan-300"],
+            ["Pendentes", pending, "text-amber-300"],
+            ["Não feitas", failed, "text-orange-300"],
+          ].map(([label, value, color]) => (
+            <div key={String(label)} className="min-w-[70px] rounded-xl border border-white/[.07] bg-background/45 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+              <p className={`mt-1 text-lg font-semibold ${color}`}>{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
       <ProductivityTimeline
         rows={timelineRows}
         period={timelinePeriod}

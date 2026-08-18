@@ -33,7 +33,7 @@ function Router() {
         <Route path="/" component={Overview} />
         <Route path="/financeiro" component={Financial} />
         <Route path="/produtividade">
-          <div className="mx-auto w-full max-w-[1500px] space-y-6"><header className="rounded-2xl border border-[#10B98144] bg-gradient-to-r from-[#061510] via-card to-[#10141a] p-6"><p className="text-xs font-semibold uppercase tracking-[.2em] text-emerald-400">ROTINA / PERFORMANCE</p><h1 className="mt-2 text-3xl font-bold">Produtividade diária</h1><p className="mt-1 text-sm text-muted-foreground">Registre o que você fez hoje e acompanhe sua evolução durante a semana.</p></header><ProductivityGauge /><ProductivityPanel /></div>
+          <div className="mx-auto w-full max-w-[1500px] space-y-6"><header className="rounded-2xl border border-emerald-400/25 bg-gradient-to-r from-[#061510] via-card to-[#111421] p-6 shadow-[0_16px_40px_rgba(16,185,129,.07)]"><p className="text-xs font-semibold uppercase tracking-[.25em] text-emerald-300">ROTINA / PERFORMANCE</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">Produtividade diária</h1><p className="mt-1 text-sm text-muted-foreground">Planeje ações pontuais, registre a execução e acompanhe seu ritmo por área.</p></header><ProductivityGauge /><ProductivityPanel /></div>
         </Route>
         <Route path="/financeiro/conta/:id" component={FinancialAccount} />
         <Route path="/projetos" component={Projects} />
