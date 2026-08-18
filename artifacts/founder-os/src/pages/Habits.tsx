@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -1047,6 +1047,14 @@ function FilterMenu({
   const [open, setOpen] = useState(false);
   const selected = options.find(([option]) => option === value)?.[1] ?? options[0][1];
   const accent = tone === "cyan" ? "border-cyan-400/40 text-cyan-200" : "border-violet-400/40 text-violet-200";
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
   return (
     <div className="relative">
       <button
