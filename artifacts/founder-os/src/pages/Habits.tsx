@@ -27,6 +27,9 @@ import {
   type HabitEntry,
   type IdentityStatus,
 } from "@/store/useAppStore";
+import { FutureVisionBlock } from "@/components/overview/FutureVisionBlock";
+import { NextActionsBlock } from "@/components/overview/NextActionsBlock";
+import { AgendaBlock } from "@/components/overview/AgendaBlock";
 
 type Period = "day" | "week" | "fortnight" | "month" | "previousMonth";
 const keyOf = (date: Date) => date.toISOString().slice(0, 10);
@@ -399,6 +402,13 @@ export default function Habits({ mode = "habits" }: { mode?: "habits" | "product
           </div>
         </div>
       </header>
+      {isProductivity && (
+        <section className="grid gap-4 xl:grid-cols-[1.2fr_.8fr_1.2fr] [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
+          <FutureVisionBlock />
+          <NextActionsBlock />
+          <AgendaBlock />
+        </section>
+      )}
       <section className="grid gap-6 xl:grid-cols-2">
           <Chart title={isProductivity ? "Ritmo de entregas" : "Evolução dos hábitos"} period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
           <ResponsiveContainer width="100%" height="100%">
