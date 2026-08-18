@@ -182,7 +182,7 @@ export function ProductivityPanel() {
       ),
     );
   return (
-    <section className="rounded-2xl border border-emerald-400/20 bg-[#061510]/55 p-5 shadow-[0_18px_50px_rgba(16,185,129,.08)]">
+    <section className="flex flex-col rounded-2xl border border-emerald-400/20 bg-[#061510]/55 p-5 shadow-[0_18px_50px_rgba(16,185,129,.08)]">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-emerald-400/10 pb-4">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-emerald-300">
@@ -207,6 +207,7 @@ export function ProductivityPanel() {
           ))}
         </div>
       </div>
+      <div className="order-2">
       <ProductivityTimeline
         rows={timelineRows}
         period={timelinePeriod}
@@ -249,6 +250,7 @@ export function ProductivityPanel() {
           ))}
         </div>
       </section>
+      </div>
       {false && (
         <OneOffTaskList
           tasks={oneOffTasks}
@@ -491,7 +493,7 @@ function UnifiedTaskList({
     return activity.date >= start.toISOString().slice(0, 10) && activity.date <= todayKey;
   });
   return (
-    <section className="mb-6 rounded-2xl border border-white/[.08] bg-card/60 p-5">
+    <section className="order-1 mb-6 rounded-2xl border border-white/[.08] bg-card/60 p-5 shadow-[0_12px_30px_rgba(16,185,129,.05)]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold">Lista de tarefas avulsas</h2>
