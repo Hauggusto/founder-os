@@ -20,9 +20,15 @@ export async function saveCloudAppData(appData: AppData) {
   const { data: userData } = await supabase.auth.getUser();
   const user = userData.user;
   if (!user) return;
-  await supabase.from("user_app_data").upsert({
-    user_id: user.id,
-    data: appData,
-    updated_at: new Date().toISOString(),
+  cloudWriteQueue = cloudWriteQueue.then(async () => {
+    const { error } = await supabase!.from("user_app_data").upsert({
+      user_id: user.id,
+      data: appData,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) console.error("Cloud save failed:", error.message);
   });
+  await cloudWriteQueue;
 }
+
+let cloudWriteQueue = Promise.resolve();
