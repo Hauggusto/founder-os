@@ -111,7 +111,8 @@ function HabitCell({
   );
 }
 
-export default function Habits() {
+export default function Habits({ mode = "habits" }: { mode?: "habits" | "productivity" }) {
+  const isProductivity = mode === "productivity";
   const {
     habits,
     addHabitEntry,
@@ -387,7 +388,7 @@ export default function Habits() {
         </p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Checklist de Hábitos</h1>
+            <h1 className="text-3xl font-bold">{isProductivity ? "Checklist de Produtividade" : "Checklist de Hábitos"}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Planeje, execute e reveja o que aconteceu em cada dia.
             </p>

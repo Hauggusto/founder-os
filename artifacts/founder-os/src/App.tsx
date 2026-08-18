@@ -33,7 +33,7 @@ function Router() {
         <Route path="/" component={Overview} />
         <Route path="/financeiro" component={Financial} />
         <Route path="/produtividade">
-          <div className="mx-auto w-full max-w-[1500px] space-y-6"><header className="rounded-2xl border border-emerald-400/25 bg-gradient-to-r from-[#061510] via-card to-[#111421] p-6 shadow-[0_16px_40px_rgba(16,185,129,.07)]"><p className="text-xs font-semibold uppercase tracking-[.25em] text-emerald-300">ROTINA / PERFORMANCE</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">Produtividade diária</h1><p className="mt-1 text-sm text-muted-foreground">Planeje ações pontuais, registre a execução e acompanhe seu ritmo por área.</p></header><div className="grid items-start gap-6 xl:grid-cols-[340px_minmax(0,1fr)]"><ProductivityGauge /><ProductivityPanel /></div></div>
+          <Habits mode="productivity" />
         </Route>
         <Route path="/financeiro/conta/:id" component={FinancialAccount} />
         <Route path="/projetos" component={Projects} />
