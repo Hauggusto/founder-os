@@ -27,8 +27,7 @@ export default function Projects() {
     useAppStore();
   const [newEcosystem, setNewEcosystem] = useState("");
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | "all">("all");
-  const queryString = typeof window !== "undefined" ? window.location.search : location.split("?")[1] || "";
-  const query = new URLSearchParams(queryString);
+  const query = new URLSearchParams(location.split("?")[1] || "");
   const selectedProject = query.get("project");
   const selectedEcosystem = query.get("ecosystem");
   const [draggedProjectId, setDraggedProjectId] = useState<string | null>(null);
@@ -90,7 +89,10 @@ export default function Projects() {
     .filter((m) => {
       if (!selectedEcosystem) return true;
       const activeEcosystem = ecosystems.find((ecosystem) => ecosystem.id === selectedEcosystem);
-      return m.ecosystem === selectedEcosystem || (!!activeEcosystem && m.category?.trim().toLowerCase() === activeEcosystem.name.trim().toLowerCase());
+      const selectedName = activeEcosystem?.name.trim().toLowerCase() || decodeURIComponent(selectedEcosystem).trim().toLowerCase();
+      return m.ecosystem === selectedEcosystem ||
+        m.ecosystem?.trim().toLowerCase() === selectedName ||
+        m.category?.trim().toLowerCase() === selectedName;
     })
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
