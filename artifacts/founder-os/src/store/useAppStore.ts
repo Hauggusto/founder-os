@@ -223,6 +223,8 @@ interface AppStore extends AppData {
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
   addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent') => void;
+  updateNextAction: (id: string, updates: Partial<AppData['nextActions'][number]>) => void;
+  deleteNextAction: (id: string) => void;
   toggleNextAction: (id: string) => void;
   setLifeAreaScore: (id: string, score: number) => void;
   setEnergyLevel: (n: number) => void;
@@ -571,6 +573,16 @@ export const useAppStore = create<AppStore>((set, get) => ({
       priority
     };
     set({ nextActions: [...get().nextActions, newAction] });
+    get().saveToStorage();
+  },
+
+  updateNextAction: (id, updates) => {
+    set({ nextActions: get().nextActions.map((action) => action.id === id ? { ...action, ...updates } : action) });
+    get().saveToStorage();
+  },
+
+  deleteNextAction: (id) => {
+    set({ nextActions: get().nextActions.filter((action) => action.id !== id) });
     get().saveToStorage();
   },
 

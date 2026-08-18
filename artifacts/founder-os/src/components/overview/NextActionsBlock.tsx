@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { CalendarCheck, Flag, Flame, Plus } from 'lucide-react';
+import { CalendarCheck, Flag, Flame, Plus, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 
 export function NextActionsBlock() {
-  const { nextActions, toggleNextAction, addNextAction } = useAppStore();
+  const { nextActions, toggleNextAction, addNextAction, updateNextAction, deleteNextAction } = useAppStore();
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState('');
   const [project, setProject] = useState('');
@@ -23,15 +22,10 @@ export function NextActionsBlock() {
             />
             {action.priority === 'urgent' ? <Flame className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" /> : <Flag className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />}
             <div className="flex-1 flex flex-col items-start gap-1.5 min-w-0">
-              <span className={`text-sm leading-snug ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                {action.text}
-              </span>
-              {action.project && (
-                <Badge variant="outline" className={`text-[9px] px-1 py-0 uppercase h-4 bg-[#ffffff05] text-muted-foreground border-[#ffffff10] ${action.done ? 'opacity-50' : ''}`}>
-                  {action.project}
-                </Badge>
-              )}
+              <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`w-full rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
+              <input value={action.project || ''} onChange={(e) => updateNextAction(action.id, { project: e.target.value })} placeholder="Adicionar tag" className={`h-5 w-full rounded border border-transparent bg-transparent px-1 text-[9px] uppercase text-muted-foreground outline-none focus:border-primary ${action.done ? 'opacity-50' : ''}`} aria-label="Editar tag da ação" />
             </div>
+            <button onClick={() => deleteNextAction(action.id)} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação"><X className="h-3.5 w-3.5" /></button>
           </div>))}</div>;
 
   return (
