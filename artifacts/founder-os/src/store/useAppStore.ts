@@ -155,6 +155,7 @@ export interface AppData {
   priorities: { id: string; text: string; done: boolean; order: number }[];
   
   habits: HabitEntry[];
+  productivityHabits: HabitEntry[];
   agenda: AgendaItem[];
   lifeAreas: LifeArea[];
   risks: RiskItem[];
@@ -209,9 +210,13 @@ interface AppStore extends AppData {
   setSidebarWidth: (width: number) => void;
   toggleHabit: (id: string) => void;
   setHabitCheck: (id: string, date: string, status: IdentityStatus | null) => void;
+  setProductivityHabitCheck: (id: string, date: string, status: IdentityStatus | null) => void;
   addHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
+  addProductivityHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
   updateHabitEntry: (id: string, updates: Partial<HabitEntry>) => void;
+  updateProductivityHabitEntry: (id: string, updates: Partial<HabitEntry>) => void;
   deleteHabitEntry: (id: string) => void;
+  deleteProductivityHabitEntry: (id: string) => void;
   addAgendaItem: (item: Omit<AgendaItem, 'id'>) => void;
   updateAgendaItem: (id: string, updates: Partial<AgendaItem>) => void;
   toggleAgendaItem: (id: string) => void;
@@ -251,6 +256,7 @@ const loadInitialData = (): AppData => {
         transactions: parsed.transactions || seedData.transactions,
         financialSummary: parsed.financialSummary || seedData.financialSummary,
         habits: parsed.habits || seedData.habits,
+        productivityHabits: parsed.productivityHabits || parsed.habits || seedData.habits,
         agenda: parsed.agenda || seedData.agenda,
         lifeAreas: parsed.lifeAreas || seedData.lifeAreas,
         risks: parsed.risks || seedData.risks,
@@ -273,7 +279,7 @@ const loadInitialData = (): AppData => {
   } catch (err) {
     console.error('Failed to load from localStorage:', err);
   }
-  return { ...seedData, learningCards: defaultLearningCards } as AppData;
+  return { ...seedData, productivityHabits: seedData.habits, learningCards: defaultLearningCards } as AppData;
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -298,6 +304,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       priorities: state.priorities,
       
       habits: state.habits,
+      productivityHabits: state.productivityHabits,
       agenda: state.agenda,
       lifeAreas: state.lifeAreas,
       risks: state.risks,
@@ -476,6 +483,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
+  setProductivityHabitCheck: (id, date, status) => {
+    set({ productivityHabits: get().productivityHabits.map((habit) => {
+      if (habit.id !== id) return habit;
+      const checks = { ...(habit.checks || {}) };
+      if (status) checks[date] = status;
+      else delete checks[date];
+      return { ...habit, checks, done: date === new Date().toISOString().slice(0, 10) ? status === 'done' : habit.done };
+    }) });
+    get().saveToStorage();
+  },
+
   addHabitEntry: (habit) => {
     const newHabit = {
       ...habit,
@@ -485,13 +503,29 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
+  addProductivityHabitEntry: (habit) => {
+    const newHabit = { ...habit, id: `ph-${Date.now()}` };
+    set({ productivityHabits: [...get().productivityHabits, newHabit] });
+    get().saveToStorage();
+  },
+
   updateHabitEntry: (id, updates) => {
     set({ habits: get().habits.map((habit) => habit.id === id ? { ...habit, ...updates } : habit) });
     get().saveToStorage();
   },
 
+  updateProductivityHabitEntry: (id, updates) => {
+    set({ productivityHabits: get().productivityHabits.map((habit) => habit.id === id ? { ...habit, ...updates } : habit) });
+    get().saveToStorage();
+  },
+
   deleteHabitEntry: (id) => {
     set({ habits: get().habits.filter((habit) => habit.id !== id) });
+    get().saveToStorage();
+  },
+
+  deleteProductivityHabitEntry: (id) => {
+    set({ productivityHabits: get().productivityHabits.filter((habit) => habit.id !== id) });
     get().saveToStorage();
   },
 
@@ -604,6 +638,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       weekFocus: state.weekFocus,
       priorities: state.priorities,
       habits: state.habits,
+      productivityHabits: state.productivityHabits,
       agenda: state.agenda,
       lifeAreas: state.lifeAreas,
       risks: state.risks,
@@ -634,6 +669,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         weekFocus: parsed.weekFocus || '',
         priorities: parsed.priorities || [],
         habits: parsed.habits || [],
+        productivityHabits: parsed.productivityHabits || parsed.habits || [],
         agenda: parsed.agenda || [],
         lifeAreas: parsed.lifeAreas || [],
         risks: parsed.risks || [],

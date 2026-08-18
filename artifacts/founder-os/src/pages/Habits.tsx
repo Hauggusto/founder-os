@@ -114,15 +114,14 @@ function HabitCell({
   );
 }
 
-export default function Habits({ mode = "habits" }: { mode?: "habits" | "productivity" }) {
+export default function Habits({ mode = "habits" }: { mode?: "habits" | "productivity"; [key: string]: unknown }) {
   const isProductivity = mode === "productivity";
-  const {
-    habits,
-    addHabitEntry,
-    updateHabitEntry,
-    deleteHabitEntry,
-    setHabitCheck,
-  } = useAppStore();
+  const store = useAppStore();
+  const habits = isProductivity ? store.productivityHabits : store.habits;
+  const addHabitEntry = isProductivity ? store.addProductivityHabitEntry : store.addHabitEntry;
+  const updateHabitEntry = isProductivity ? store.updateProductivityHabitEntry : store.updateHabitEntry;
+  const deleteHabitEntry = isProductivity ? store.deleteProductivityHabitEntry : store.deleteHabitEntry;
+  const setHabitCheck = isProductivity ? store.setProductivityHabitCheck : store.setHabitCheck;
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState<Period>("week");
   const [dailyChartPeriod, setDailyChartPeriod] = useState<Period>("week");

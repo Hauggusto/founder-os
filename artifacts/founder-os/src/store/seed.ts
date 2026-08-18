@@ -217,6 +217,11 @@ export const seedData: AppData = {
     { id: 'h-3', title: 'Leitura 30min', done: false, streak: 3, category: 'Aprendizado', order: 2 },
     { id: 'h-4', title: 'Exercício físico', done: false, streak: 5, category: 'Saúde', order: 3 },
   ],
+  productivityHabits: [
+    { id: 'ph-1', title: 'Planejar prioridades do dia', done: false, streak: 0, category: 'Foco', order: 0 },
+    { id: 'ph-2', title: 'Executar tarefa principal', done: false, streak: 0, category: 'Entrega', order: 1 },
+    { id: 'ph-3', title: 'Revisar resultados', done: false, streak: 0, category: 'Revisão', order: 2 },
+  ],
   agenda: [
     { id: 'ag-1', title: 'Call investidor — Solar Machine', time: '09:30', type: 'meeting', done: false },
     { id: 'ag-2', title: 'Revisão de deck 21GO', time: '11:00', type: 'task', done: true },
