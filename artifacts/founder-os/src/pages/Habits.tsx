@@ -682,198 +682,102 @@ export default function Habits({ mode = "habits" }: any) {
             </div>
           )}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] border-separate border-spacing-y-1">
-            <thead>
-              <tr className="border-b border-white/[.08] bg-background/25 text-xs text-muted-foreground">
-                <th className="sticky left-0 z-10 bg-card px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-lime-300/75">
-                  Tarefa / hábito
-                </th>
-                {executionDays.map((date) => (
-                  <th
-                    key={keyOf(date)}
-                    className="border-l border-border/20 px-3 py-3 text-center"
-                  >
-                    <span className="block text-xs font-semibold uppercase tracking-wide text-lime-300/85">
-                      {dayLabel(date)}
-                    </span>
-                    <span className="mt-1 block text-[11px] font-normal text-muted-foreground/70">
-                      {dateLabel(date)}
-                    </span>
-                  </th>
-                ))}
-                <th className="border-l border-lime-400/15 px-3 py-3 text-right text-[10px] font-medium uppercase tracking-wide text-lime-300/70">
-                  Semana %
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(grouped).map(
-                ([category, entries], categoryIndex) => (
-                  <>
-                    <tr key={`category-${category}`}>
-                      <td
-                        colSpan={999}
-                        style={categoryColors[category] ? { borderColor: `${categoryColors[category]}88`, boxShadow: `inset 3px 0 ${categoryColors[category]}` } : undefined}
-                        className={`border px-5 pb-3 pt-4 text-sm font-normal text-foreground/80 shadow-[0_8px_18px_rgba(0,0,0,.12)] ${categoryIndex % 3 === 0 ? "rounded-t-xl border-cyan-400/35 bg-cyan-400/[.05]" : categoryIndex % 3 === 1 ? "rounded-t-xl border-violet-400/30 bg-violet-400/[.045]" : "rounded-t-xl border-emerald-400/30 bg-emerald-400/[.04]"}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          {editingCategory === category ? (
-                            <input
-                              autoFocus
-                              value={editingCategoryName}
-                              onChange={(e) => setEditingCategoryName(e.target.value)}
-                              onBlur={() => saveEditingCategory(category)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") saveEditingCategory(category);
-                                if (e.key === "Escape") cancelEditingCategory();
-                              }}
-                              className="h-8 w-48 rounded-md border border-cyan-400/60 bg-background px-2 text-sm outline-none shadow-[0_0_12px_rgba(34,211,238,.1)]"
-                              aria-label={`Editar categoria ${category}`}
-                            />
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => startEditingCategory(category)}
-                              className="flex items-center gap-2 text-left text-sm font-semibold tracking-wide text-foreground/90 transition hover:text-cyan-300"
-                              title="Clique para editar a categoria"
-                            >
-                              <span
-                                className={`h-2 w-2 rounded-full ${categoryIndex % 3 === 0 ? "bg-cyan-300 shadow-[0_0_8px_#67e8f9]" : categoryIndex % 3 === 1 ? "bg-violet-300 shadow-[0_0_8px_#c4b5fd]" : "bg-emerald-300 shadow-[0_0_8px_#6ee7b7]"}`}
-                              />
-                              {category}
-                            </button>
-                          )}
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setAddingCategory(
-                                  addingCategory === category ? null : category,
-                                )
-                              }
-                              className="inline-flex items-center gap-1 rounded-md border border-cyan-400/20 bg-cyan-400/[.03] px-2 py-1 text-[10px] font-medium normal-case tracking-normal text-cyan-300/80 transition hover:border-cyan-400/50 hover:bg-cyan-400/[.08]"
-                            >
-                              <Plus className="h-3 w-3" />
-                              Adicionar hábito
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeCategory(category)}
-                              title={`Excluir categoria ${category}`}
-                              className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-red-400/10 hover:text-red-400"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                        {addingCategory === category && (
-                          <div className="mt-3 flex max-w-md gap-2">
-                            <input
-                              autoFocus
-                              value={categoryTitle}
-                              onChange={(e) => setCategoryTitle(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") addToCategory(category);
-                                if (e.key === "Escape") {
-                                  setCategoryTitle("");
-                                  setAddingCategory(null);
-                                }
-                              }}
-                              placeholder={`Novo item em ${category}`}
-                              className="h-8 flex-1 rounded-md border border-cyan-400/30 bg-background px-2 text-sm font-normal text-foreground/80 outline-none placeholder:text-muted-foreground/50 focus:border-cyan-400"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => addToCategory(category)}
-                              className="rounded-md bg-cyan-400 px-3 text-xs font-semibold text-slate-950"
-                            >
-                              Salvar
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                    {entries.map((habit, index) => (
-                      <tr
-                        key={habit.id}
-                        draggable
-                        onDragStart={() => setDraggedHabitId(habit.id)}
-                        onDragEnd={() => setDraggedHabitId(null)}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => reorderWithinCategory(category, habit.id)}
-                        className={`border-x border-white/[.07] bg-background/25 transition-colors hover:bg-cyan-400/[.035] ${index === entries.length - 1 ? "rounded-b-xl border-b border-cyan-400/25" : "border-b border-white/[.045]"}`}
-                      >
-                        <td className="sticky left-0 bg-card/95 px-5 py-2">
-                          <div className="flex items-center gap-2">
-                            <div className="min-w-0 flex-1">
-                              {editingHabitId === habit.id ? (
-                                <input
-                                  autoFocus
-                                  value={editingHabitTitle}
-                                  onChange={(e) => setEditingHabitTitle(e.target.value)}
-                                  onBlur={() => saveEditingHabit(habit)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") saveEditingHabit(habit);
-                                    if (e.key === "Escape") cancelEditingHabit();
-                                  }}
-                                  className="block w-full rounded-md border border-cyan-400/60 bg-background px-2 py-1 text-sm text-foreground outline-none shadow-[0_0_12px_rgba(34,211,238,.1)]"
-                                  aria-label={`Editar ${habit.title}`}
-                                />
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => startEditingHabit(habit)}
-                                  title="Clique para editar este hábito"
-                                  className="group block w-full rounded-md border border-transparent px-1 py-0.5 text-left text-sm font-normal text-foreground/80 transition hover:border-cyan-400/30 hover:bg-cyan-400/[.04] hover:text-cyan-300"
-                                >
-                                  {habit.title}
-                                </button>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeHabit(habit)}
-                              className="text-muted-foreground/50 hover:text-red-400"
-                              title="Excluir"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </td>
+        <div className="grid gap-4 p-3 sm:p-5">
+          {Object.entries(grouped).map(([category, entries], categoryIndex) => {
+            const categoryScore = categoryData.find((item) => item.name === category)?.execução ?? 0;
+            const color = categoryColors[category] || ["#22D3EE", "#A78BFA", "#34D399", "#FB923C", "#F472B6"][categoryIndex % 5];
+            return (
+              <article
+                key={category}
+                className="overflow-hidden rounded-2xl border bg-card/70 shadow-[0_12px_30px_rgba(0,0,0,.14)]"
+                style={{ borderColor: \`\${color}66\` }}
+              >
+                <div
+                  className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
+                  style={{ borderColor: \`\${color}44\`, background: \`\${color}10\` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="h-10 w-1 rounded-full" style={{ backgroundColor: color, boxShadow: \`0 0 12px \${color}99\` }} />
+                    <div>
+                      {editingCategory === category ? (
+                        <input
+                          autoFocus
+                          value={editingCategoryName}
+                          onChange={(e) => setEditingCategoryName(e.target.value)}
+                          onBlur={() => saveEditingCategory(category)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEditingCategory(category);
+                            if (e.key === "Escape") cancelEditingCategory();
+                          }}
+                          className="h-8 w-48 rounded-md border border-cyan-400/60 bg-background px-2 text-sm outline-none"
+                          aria-label={\`Editar categoria \${category}\`}
+                        />
+                      ) : (
+                        <button type="button" onClick={() => startEditingCategory(category)} className="text-left text-base font-semibold text-foreground hover:text-cyan-300">
+                          {category}
+                        </button>
+                      )}
+                      <p className="text-[11px] text-muted-foreground">{entries.length} {entries.length === 1 ? "hábito" : "hábitos"} cadastrados</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-lime-300">{categoryScore}%</span>
+                    <button type="button" onClick={() => setAddingCategory(addingCategory === category ? null : category)} className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/25 px-2.5 py-1.5 text-[11px] text-cyan-300 hover:bg-cyan-400/10">
+                      <Plus className="h-3 w-3" /> Adicionar hábito
+                    </button>
+                    <button type="button" onClick={() => removeCategory(category)} title={\`Excluir categoria \${category}\`} className="rounded-lg border border-red-400/20 px-2 py-1.5 text-[11px] text-red-300/70 hover:bg-red-400/10">
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+                {addingCategory === category && (
+                  <div className="flex gap-2 border-b border-white/[.08] bg-background/20 p-3">
+                    <input autoFocus value={categoryTitle} onChange={(e) => setCategoryTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addToCategory(category)} placeholder={\`Novo hábito em \${category}\`} className="h-9 min-w-0 flex-1 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400" />
+                    <button type="button" onClick={() => addToCategory(category)} className="rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950">Salvar</button>
+                  </div>
+                )}
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[760px] border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/[.06] text-[10px] uppercase tracking-wide text-muted-foreground">
+                        <th className="px-4 py-2.5 text-left font-medium sm:px-5">Hábito</th>
                         {executionDays.map((date) => (
-                          <td
-                            key={keyOf(date)}
-                            className="border-l border-white/[.035] px-2 py-3 text-center"
-                          >
-                            <HabitCell
-                              habit={habit}
-                              date={date}
-                              onChange={(status) =>
-                                setHabitCheck(habit.id, keyOf(date), status)
-                              }
-                            />
-                          </td>
+                          <th key={keyOf(date)} className="px-2 py-2.5 text-center font-medium">
+                            <span className="block">{dayLabel(date)}</span>
+                            <span className="mt-0.5 block font-normal normal-case opacity-60">{dateLabel(date)}</span>
+                          </th>
                         ))}
-                        <td className="border-l border-lime-400/10 px-3 py-4 text-right text-xs font-semibold text-lime-300/80">
-                          {Math.round(
-                            (days.reduce(
-                              (sum, date) =>
-                                sum + statusScore(habit.checks?.[keyOf(date)]),
-                              0,
-                            ) /
-                              days.length) *
-                              100,
-                          )}
-                          %
-                        </td>
+                        <th className="px-3 py-2.5 text-right font-medium text-lime-300/70">%</th>
                       </tr>
-                    ))}
-                  </>
-                ),
-              )}
-            </tbody>
-          </table>
+                    </thead>
+                    <tbody>
+                      {entries.map((habit) => (
+                        <tr key={habit.id} className="border-b border-white/[.05] last:border-b-0 hover:bg-white/[.025]">
+                          <td className="px-4 py-3 sm:px-5">
+                            <div className="flex items-center gap-2">
+                              <div className="min-w-0 flex-1">
+                                <button type="button" onClick={() => editHabit(habit)} className="block max-w-[210px] truncate text-left text-sm text-foreground/85 hover:text-cyan-300">{habit.title}</button>
+                                <p className="mt-0.5 text-[10px] text-muted-foreground/60">Sequência: {habit.streak} dias</p>
+                              </div>
+                              <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
+                            </div>
+                          </td>
+                          {executionDays.map((date) => (
+                            <td key={keyOf(date)} className="px-2 py-3 text-center">
+                              <HabitCell habit={habit} date={date} onChange={(status) => setHabitCheck(habit.id, keyOf(date), status)} />
+                            </td>
+                          ))}
+                          <td className="px-3 py-3 text-right text-xs font-semibold text-lime-300/80">
+                            {Math.round((executionDays.reduce((sum, date) => sum + statusScore(habit.checks?.[keyOf(date)]), 0) / executionDays.length) * 100)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
       {false && (
