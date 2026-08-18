@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { useAgents } from '@/lib/agents';
 import { useAppStore } from '@/store/useAppStore';
+const projectColors: Record<string, string> = { 'Soul Krieg': '#F59E0B', 'Solar Machine': '#10B981', 'Sollar Machine': '#10B981', Redforce: '#EF4444', Myalone: '#00C9FF', Anime: '#A855F7', Myred: '#10B981' };
 
-const projectColors: Record<string, string> = { 'Soul Krieg': '#F59E0B', Redforce: '#EF4444', Myalone: '#00C9FF', Anime: '#A855F7', Myred: '#10B981' };
 
 export function FutureVisionBlock() {
   const [agents] = useAgents();
