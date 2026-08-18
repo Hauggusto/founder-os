@@ -3,7 +3,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2 } from 'lucide-react';
+import { CalendarDays, Clock3, Plus } from 'lucide-react';
 
 export function AgendaBlock() {
   const { agenda, toggleAgendaItem, updateAgendaItem, addAgendaItem } = useAppStore();
@@ -39,9 +39,9 @@ export function AgendaBlock() {
                 isNext ? 'bg-[#ffffff0a] border border-[#ffffff10]' : 'hover:bg-[#ffffff05]'
               }`}
             >
-              <div className="flex w-[92px] flex-col gap-0.5">
-                <input type="time" value={item.time} onChange={(e) => updateAgendaItem(item.id, { time: e.target.value })} className={`w-[68px] rounded border border-transparent bg-transparent px-1 text-xs font-mono outline-none focus:border-primary ${item.done ? 'text-muted-foreground' : 'text-primary'}`} />
-                <input type="date" value={item.date || ''} onChange={(e) => updateAgendaItem(item.id, { date: e.target.value })} className="w-[88px] rounded border border-transparent bg-transparent px-1 text-[9px] text-muted-foreground outline-none focus:border-primary" aria-label="Data da agenda" />
+              <div className="flex w-[112px] flex-col gap-1">
+                <label className={`flex items-center gap-1.5 rounded-md border border-transparent px-1 text-sm font-mono outline-none focus-within:border-primary ${item.done ? 'text-muted-foreground' : 'text-white'}`}><Clock3 className="h-3.5 w-3.5 shrink-0 text-white" /><input type="time" value={item.time} onChange={(e) => updateAgendaItem(item.id, { time: e.target.value })} className="w-[78px] bg-transparent outline-none" /></label>
+                <label className="flex items-center gap-1.5 rounded-md border border-transparent px-1 text-[10px] text-white outline-none focus-within:border-primary"><CalendarDays className="h-3.5 w-3.5 shrink-0 text-white" /><input type="date" value={item.date || ''} onChange={(e) => updateAgendaItem(item.id, { date: e.target.value })} className="w-[88px] bg-transparent text-white outline-none" aria-label="Data da agenda" /></label>
               </div>
               <div className="flex-1 flex items-start gap-2">
                 <input value={item.title} onChange={(e) => updateAgendaItem(item.id, { title: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-tight outline-none focus:border-primary ${item.done ? 'line-through text-muted-foreground' : 'text-foreground font-medium'}`} />
