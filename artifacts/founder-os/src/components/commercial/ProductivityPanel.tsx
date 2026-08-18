@@ -43,6 +43,7 @@ export function ProductivityPanel() {
   const [timelinePeriod, setTimelinePeriod] = useState<
     "daily" | "weekly" | "monthly"
   >("weekly");
+  const [taskPeriod, setTaskPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const [oneOffTitle, setOneOffTitle] = useState("");
   const [oneOffArea, setOneOffArea] = useState("Soul Krieg");
   const [oneOffTasks, setOneOffTasks] = useState<OneOffTask[]>(() => {
@@ -266,6 +267,8 @@ export function ProductivityPanel() {
         addTask={addOneOff}
         saveTasks={saveOneOff}
         activities={activities}
+        taskPeriod={taskPeriod}
+        setTaskPeriod={setTaskPeriod}
         chartData={chartData}
         text={text}
         setText={setText}
@@ -276,6 +279,7 @@ export function ProductivityPanel() {
         status={status}
         setStatus={setStatus}
         addActivity={addActivity}
+        toggleActivity={cycleStatus}
         removeActivity={(id) =>
           setActivities(activities.filter((item) => item.id !== id))
         }
@@ -441,6 +445,8 @@ function UnifiedTaskList({
   addTask,
   saveTasks,
   activities,
+  taskPeriod,
+  setTaskPeriod,
   chartData,
   text,
   setText,
@@ -451,6 +457,7 @@ function UnifiedTaskList({
   status,
   setStatus,
   addActivity,
+  toggleActivity,
   removeActivity,
 }: {
   tasks: OneOffTask[];
@@ -461,6 +468,8 @@ function UnifiedTaskList({
   addTask: () => void;
   saveTasks: (tasks: OneOffTask[]) => void;
   activities: Activity[];
+  taskPeriod: "daily" | "weekly" | "monthly";
+  setTaskPeriod: (period: "daily" | "weekly" | "monthly") => void;
   chartData: { name: string; executadas: number; nãoConseguidas: number }[];
   text: string;
   setText: (value: string) => void;
@@ -471,8 +480,16 @@ function UnifiedTaskList({
   status: Activity["status"];
   setStatus: (value: Activity["status"]) => void;
   addActivity: () => void;
+  toggleActivity: (id: string) => void;
   removeActivity: (id: string) => void;
 }) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const visibleActivities = activities.filter((activity) => {
+    if (taskPeriod === "daily") return activity.date === todayKey;
+    const start = new Date();
+    start.setDate(start.getDate() - (taskPeriod === "weekly" ? 6 : 29));
+    return activity.date >= start.toISOString().slice(0, 10) && activity.date <= todayKey;
+  });
   return (
     <section className="mb-6 rounded-2xl border border-white/[.08] bg-card/60 p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -481,6 +498,18 @@ function UnifiedTaskList({
           <p className="text-xs text-muted-foreground">
             Tarefas pontuais e registros do dia, com métrica de execução.
           </p>
+        </div>
+        <div className="flex items-center gap-1 rounded-xl border border-emerald-400/20 bg-background/50 p-1">
+          {(["daily", "weekly", "monthly"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setTaskPeriod(value)}
+              className={`rounded-lg px-3 py-1.5 text-xs transition ${taskPeriod === value ? "bg-emerald-400/15 text-emerald-200" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {value === "daily" ? "Diário" : value === "weekly" ? "Semanal" : "Mensal"}
+            </button>
+          ))}
         </div>
         <div className="flex gap-2">
           <input
@@ -507,6 +536,27 @@ function UnifiedTaskList({
       </div>
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
         <div>
+          <div className="mb-3 rounded-xl border border-emerald-400/15 bg-emerald-400/[.025] p-3">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[.18em] text-emerald-300">Tarefas para executar</p>
+            <div className="space-y-2">
+              {visibleActivities.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Nenhuma tarefa registrada neste período.</p>
+              ) : visibleActivities.map((activity) => (
+                <button
+                  key={activity.id}
+                  type="button"
+                  onClick={() => toggleActivity(activity.id)}
+                  className="flex w-full items-center gap-3 rounded-lg border border-white/[.07] bg-background/45 p-3 text-left transition hover:border-emerald-400/35"
+                >
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs ${activity.status === "executed" ? "border-emerald-400/60 bg-emerald-400/15 text-emerald-300" : activity.status === "failed" ? "border-orange-400/60 bg-orange-400/15 text-orange-300" : "border-cyan-400/30 text-cyan-300"}`}>
+                    {activity.status === "executed" ? "✓" : activity.status === "failed" ? "×" : "·"}
+                  </span>
+                  <span className="flex-1 text-sm text-foreground/85">{activity.text}</span>
+                  <span className="text-[11px] text-muted-foreground">{activity.area}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="mb-3 space-y-2">
             {tasks.map((task) => (
               <div
