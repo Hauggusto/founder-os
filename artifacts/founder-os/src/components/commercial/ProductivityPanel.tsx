@@ -211,6 +211,43 @@ export function ProductivityPanel() {
         period={timelinePeriod}
         setPeriod={setTimelinePeriod}
       />
+      <section className="mb-6 rounded-2xl border border-emerald-400/15 bg-background/25 p-4">
+        <div className="mb-4 flex items-end justify-between gap-3 border-b border-emerald-400/10 pb-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[.2em] text-emerald-300">
+              ÁREAS DE EXECUÇÃO
+            </p>
+            <h2 className="mt-1 text-lg font-semibold">Foco por área</h2>
+          </div>
+          <span className="text-xs text-muted-foreground">Atualizado pelos registros</span>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {timelineRows.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-white/[.1] p-5 text-center text-xs text-muted-foreground md:col-span-2 xl:col-span-3">
+              Registre uma atividade para criar sua primeira área de execução.
+            </p>
+          ) : timelineRows.map((row, index) => (
+            <article
+              key={row.name}
+              className={`rounded-xl border p-4 ${index % 3 === 0 ? "border-cyan-400/25 bg-cyan-400/[.035]" : index % 3 === 1 ? "border-violet-400/25 bg-violet-400/[.035]" : "border-emerald-400/25 bg-emerald-400/[.035]"}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="truncate text-sm font-medium text-foreground/90">{row.name}</h3>
+                <span className="rounded-full border border-white/[.1] bg-white/[.03] px-2 py-1 text-xs font-semibold text-emerald-300">
+                  {row.percent}%
+                </span>
+              </div>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/[.07]">
+                <div
+                  className={`h-full rounded-full ${index % 3 === 0 ? "bg-cyan-400" : index % 3 === 1 ? "bg-violet-400" : "bg-emerald-400"}`}
+                  style={{ width: `${row.percent}%` }}
+                />
+              </div>
+              <p className="mt-3 text-[11px] text-muted-foreground">{row.status}</p>
+            </article>
+          ))}
+        </div>
+      </section>
       {false && (
         <OneOffTaskList
           tasks={oneOffTasks}
