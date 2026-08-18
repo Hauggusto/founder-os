@@ -136,6 +136,7 @@ export interface LearningCard {
   progress: number;
   color: string;
 }
+export interface FutureGoal { id: string; name: string; value: number; vision?: string; }
 
 const defaultLearningCards: LearningCard[] = [
   { id: 'learning-english', title: 'Curso de Inglês', category: 'Curso', description: 'Conversação, vocabulário e compreensão.', progress: 15, color: '#22D3EE' },
@@ -143,6 +144,14 @@ const defaultLearningCards: LearningCard[] = [
   { id: 'learning-santander', title: 'Curso Santander', category: 'Atualização', description: 'Atualização profissional e novas competências.', progress: 10, color: '#EF4444' },
   { id: 'learning-ai', title: 'Inteligência Artificial', category: 'IA', description: 'Ferramentas, automações e aplicações práticas.', progress: 20, color: '#10B981' },
   { id: 'learning-books', title: 'Livros para ler', category: 'Livro', description: 'Organizar leituras que fortalecem sua visão e repertório.', progress: 0, color: '#F97316' },
+];
+
+const defaultFutureGoals: FutureGoal[] = [
+  { id: 'goal-reserve', name: 'Reserva 6 meses', value: 18, vision: 'Construir estabilidade financeira.' },
+  { id: 'goal-revenue', name: 'Faturamento 10k/mês', value: 32, vision: 'Aumentar previsibilidade e liberdade.' },
+  { id: 'goal-systems', name: '5 Sistemas rodando', value: 60, vision: 'Criar operações que funcionam sem fricção.' },
+  { id: 'goal-shape', name: 'Shape 10% gordura', value: 25, vision: 'Cuidar da energia e consistência.' },
+  { id: 'goal-geography', name: 'Liberdade geográfica', value: 10, vision: 'Viver com propósito e leveza.' },
 ];
 
 export interface AppData {
@@ -163,6 +172,7 @@ export interface AppData {
   identityItems: IdentityItem[];
   identityChecks: IdentityCheck[];
   learningCards: LearningCard[];
+  futureGoals: FutureGoal[];
   nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent' }[];
   weekSummary: string;
   energyLevel: number;
@@ -237,6 +247,7 @@ interface AppStore extends AppData {
   deleteIdentityItem: (id: string) => void;
   setIdentityCheck: (itemId: string, date: string, status: IdentityStatus | null) => void;
   addLearningCard: (card: Omit<LearningCard, 'id'>) => void;
+  addFutureGoal: (goal: Omit<FutureGoal, 'id'>) => void;
 
   // Data management
   exportData: () => string;
@@ -271,6 +282,7 @@ const loadInitialData = (): AppData => {
         })(),
         identityChecks: parsed.identityChecks || seedData.identityChecks,
         learningCards: parsed.learningCards || defaultLearningCards,
+        futureGoals: parsed.futureGoals || defaultFutureGoals,
         nextActions: parsed.nextActions || seedData.nextActions,
         weekSummary: parsed.weekSummary || seedData.weekSummary,
         energyLevel: parsed.energyLevel ?? seedData.energyLevel,
@@ -282,7 +294,7 @@ const loadInitialData = (): AppData => {
   } catch (err) {
     console.error('Failed to load from localStorage:', err);
   }
-  return { ...seedData, productivityHabits: seedData.habits, learningCards: defaultLearningCards } as AppData;
+  return { ...seedData, productivityHabits: seedData.habits, learningCards: defaultLearningCards, futureGoals: defaultFutureGoals } as AppData;
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -314,6 +326,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       identityItems: state.identityItems,
       identityChecks: state.identityChecks,
       learningCards: state.learningCards,
+      futureGoals: state.futureGoals,
       nextActions: state.nextActions,
       weekSummary: state.weekSummary,
       energyLevel: state.energyLevel,
@@ -641,6 +654,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
+  addFutureGoal: (goal) => {
+    set({ futureGoals: [...get().futureGoals, { ...goal, id: `goal-${Date.now()}` }] });
+    get().saveToStorage();
+  },
+
   exportData: () => {
     const state = get();
     const data: AppData = {
@@ -660,6 +678,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       identityItems: state.identityItems,
       identityChecks: state.identityChecks,
       learningCards: state.learningCards,
+      futureGoals: state.futureGoals,
       nextActions: state.nextActions,
       weekSummary: state.weekSummary,
       energyLevel: state.energyLevel,
@@ -691,6 +710,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         identityItems: parsed.identityItems || [],
         identityChecks: parsed.identityChecks || [],
         learningCards: parsed.learningCards || defaultLearningCards,
+        futureGoals: parsed.futureGoals || defaultFutureGoals,
         nextActions: parsed.nextActions || [],
         weekSummary: parsed.weekSummary || '',
         energyLevel: parsed.energyLevel ?? 50,

@@ -244,6 +244,13 @@ export const seedData: AppData = {
   identityItems: identitySeedItems,
   identityChecks: identitySeedChecks,
   learningCards: [],
+  futureGoals: [
+    { id: 'goal-reserve', name: 'Reserva 6 meses', value: 18, vision: 'Construir estabilidade financeira.' },
+    { id: 'goal-revenue', name: 'Faturamento 10k/mês', value: 32, vision: 'Aumentar previsibilidade e liberdade.' },
+    { id: 'goal-systems', name: '5 Sistemas rodando', value: 60, vision: 'Criar operações que funcionam sem fricção.' },
+    { id: 'goal-shape', name: 'Shape 10% gordura', value: 25, vision: 'Cuidar da energia e consistência.' },
+    { id: 'goal-geography', name: 'Liberdade geográfica', value: 10, vision: 'Viver com propósito e leveza.' },
+  ],
   nextActions: [
     { id: 'na-1', text: 'Enviar proposta revisada — Solar Machine', done: false, project: 'Solar Machine' },
     { id: 'na-2', text: 'Contratar dev sênior para Soul Krieg', done: false, project: 'Soul Krieg' },
