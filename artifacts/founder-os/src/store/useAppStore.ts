@@ -227,6 +227,9 @@ interface AppStore extends AppData {
   // Week focus
   setWeekFocus: (focus: string) => void;
   setFinancialSummary: (summary: Partial<FinancialSummaryOverrides>) => void;
+  addTransaction: (transaction: Omit<FinancialTransaction, 'id'>) => void;
+  updateTransaction: (id: string, updates: Partial<FinancialTransaction>) => void;
+  deleteTransaction: (id: string) => void;
   
   // Modal actions
   openAddModal: (type?: ModuleType, editing?: Module) => void;
@@ -508,6 +511,21 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setFinancialSummary: (summary) => {
     set({ financialSummary: { ...get().financialSummary, ...summary } });
+    get().saveToStorage();
+  },
+
+  addTransaction: (transaction) => {
+    set({ transactions: [{ ...transaction, id: `transaction-${Date.now()}` }, ...get().transactions] });
+    get().saveToStorage();
+  },
+
+  updateTransaction: (id, updates) => {
+    set({ transactions: get().transactions.map((transaction) => transaction.id === id ? { ...transaction, ...updates } : transaction) });
+    get().saveToStorage();
+  },
+
+  deleteTransaction: (id) => {
+    set({ transactions: get().transactions.filter((transaction) => transaction.id !== id) });
     get().saveToStorage();
   },
 

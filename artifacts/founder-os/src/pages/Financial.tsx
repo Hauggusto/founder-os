@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAppStore, type FinancialTransaction } from '@/store/useAppStore';
 import { FinancialChart } from '@/components/charts/FinancialChart';
 import { FinancialInsightsCharts } from '@/components/charts/FinancialInsightsCharts';
 import { PortfolioPanel } from '@/components/financial/PortfolioPanel';
 import { Button } from '@/components/ui/button';
-import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, CalendarDays, Check, MoreVertical, Pencil, Plus, ReceiptText, X } from 'lucide-react';
+import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, CalendarDays, Check, MoreVertical, Pencil, Plus, ReceiptText, Trash2, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +13,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function Financial() {
-  const { modules, weeklyData, transactions, financialSummary, setFinancialSummary, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
+  const { modules, weeklyData, transactions, addTransaction, updateTransaction, deleteTransaction, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
+  const [period, setPeriod] = useState<'all' | 'month' | 'week'>('all');
 
   const accounts = modules.filter(m => m.type === 'financial_account');
 
-  const totalRevenue = transactions.filter((transaction) => transaction.type === 'income').reduce((sum, transaction) => sum + transaction.amount, 0);
-  const totalExpenses = transactions.filter((transaction) => transaction.type === 'expense').reduce((sum, transaction) => sum + transaction.amount, 0);
+  const filteredTransactions = useMemo(() => {
+    if (period === 'all') return transactions;
+    const days = period === 'week' ? 7 : 30;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    return transactions.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
+  }, [period, transactions]);
+  const totalRevenue = filteredTransactions.filter((transaction) => transaction.type === 'income').reduce((sum, transaction) => sum + transaction.amount, 0);
+  const totalExpenses = filteredTransactions.filter((transaction) => transaction.type === 'expense').reduce((sum, transaction) => sum + transaction.amount, 0);
   const balance = totalRevenue - totalExpenses;
   const comparisonWindow = Math.max(1, Math.min(4, Math.floor(weeklyData.length / 2)));
   const currentMonthBalance = weeklyData.slice(-comparisonWindow).reduce((sum, week) => sum + week.revenue - week.expenses, 0);
@@ -29,17 +37,24 @@ export default function Financial() {
   const previousWeekBalance = (previousWeek?.revenue || 0) - (previousWeek?.expenses || 0);
 
   const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
-  const revenues = transactions.filter((transaction) => transaction.type === 'income');
-  const expenses = transactions.filter((transaction) => transaction.type === 'expense');
-  const recentTransactions = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+  const revenues = filteredTransactions.filter((transaction) => transaction.type === 'income');
+  const expenses = filteredTransactions.filter((transaction) => transaction.type === 'expense');
+  const recentTransactions = [...filteredTransactions].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <div className="max-w-[1600px]">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-1">Financeiro</h1>
-        <p className="text-sm text-muted-foreground">
-          VisÃ£o completa das suas finanÃ§as
-        </p>
+        <p className="text-sm text-muted-foreground">Tudo calculado a partir dos lançamentos registrados.</p>
+      </div>
+
+      <FinancialQuickAdd onAdd={addTransaction} />
+
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/70 px-4 py-3">
+        <div><p className="text-xs font-semibold text-foreground">Período dos indicadores</p><p className="mt-0.5 text-[10px] text-muted-foreground">Altere o recorte sem editar os totais manualmente.</p></div>
+        <div className="flex rounded-lg border border-border bg-background/70 p-1">
+          {([['all', 'Todo o período'], ['month', 'Últimos 30 dias'], ['week', 'Últimos 7 dias']] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setPeriod(value)} className={`rounded-md px-3 py-1.5 text-[10px] font-medium transition ${period === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{label}</button>)}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-2 xl:grid-cols-4">
@@ -63,6 +78,8 @@ export default function Financial() {
           transactions={revenues}
           accent="#10B981"
           icon={<ArrowDownLeft className="h-4 w-4" />}
+          onUpdate={updateTransaction}
+          onDelete={deleteTransaction}
         />
         <TransactionPanel
           title="Despesas da conta"
@@ -70,6 +87,8 @@ export default function Financial() {
           transactions={expenses}
           accent="#F97316"
           icon={<ArrowUpRight className="h-4 w-4" />}
+          onUpdate={updateTransaction}
+          onDelete={deleteTransaction}
         />
       </div>
 
@@ -92,7 +111,7 @@ export default function Financial() {
               <span>DescriÃ§Ã£o</span><span>Categoria</span><span>Conta</span><span>Valor</span><span>Status</span><span />
             </div>
             <div className="divide-y divide-[#ffffff08]">
-              {recentTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} />)}
+              {recentTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} onUpdate={updateTransaction} onDelete={deleteTransaction} />)}
             </div>
           </div>
         </div>
@@ -157,6 +176,28 @@ export default function Financial() {
       </div>
     </div>
   );
+}
+
+function FinancialQuickAdd({ onAdd }: { onAdd: (transaction: Omit<FinancialTransaction, 'id'>) => void }) {
+  const [form, setForm] = useState({ type: 'income' as FinancialTransaction['type'], description: '', amount: '', category: 'Geral', account: 'Conta principal', date: new Date().toISOString().slice(0, 10), status: 'paid' as FinancialTransaction['status'] });
+  const submit = () => {
+    const amount = Number(form.amount.replace(',', '.'));
+    if (!form.description.trim() || !Number.isFinite(amount) || amount <= 0) return;
+    onAdd({ ...form, description: form.description.trim(), amount });
+    setForm((current) => ({ ...current, description: '', amount: '' }));
+  };
+  return <section className="mb-5 rounded-xl border border-primary/20 bg-card/70 p-4 shadow-[0_0_24px_#00c9ff08]">
+    <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold">Novo lançamento</h2><p className="mt-0.5 text-[10px] text-muted-foreground">Registre uma entrada ou saída e os indicadores serão recalculados.</p></div><ReceiptText className="h-4 w-4 text-primary" /></div>
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[130px_minmax(180px,1.3fr)_130px_minmax(130px,.8fr)_minmax(150px,.9fr)_145px_auto]">
+      <select value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value as FinancialTransaction['type'] })} className="h-10 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary"><option value="income">Receita</option><option value="expense">Despesa</option></select>
+      <input value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') submit(); }} placeholder="Descrição" className="h-10 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary" />
+      <input value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') submit(); }} inputMode="decimal" placeholder="Valor R$" className="h-10 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary" />
+      <input value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} placeholder="Categoria" className="h-10 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary" />
+      <input value={form.account} onChange={(event) => setForm({ ...form, account: event.target.value })} placeholder="Conta" className="h-10 rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary" />
+      <input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="h-10 rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-primary" />
+      <button type="button" onClick={submit} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground transition hover:opacity-90"><Plus className="h-3.5 w-3.5" /> Adicionar</button>
+    </div>
+  </section>;
 }
 
 function SummaryCard({ label, value, accent }: { label: string; value: number; accent: string }) {
@@ -242,10 +283,9 @@ function getPercentageChange(current: number, previous: number) {
   return ((current - previous) / Math.abs(previous)) * 100;
 }
 
-function TransactionPanel({ title, subtitle, transactions, accent, icon }: { title: string; subtitle: string; transactions: FinancialTransaction[]; accent: string; icon: React.ReactNode }) {
+function TransactionPanel({ title, subtitle, transactions, accent, icon, onUpdate, onDelete }: { title: string; subtitle: string; transactions: FinancialTransaction[]; accent: string; icon: React.ReactNode; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
   const total = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
   const latest = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
-  const updateTransaction = (id: string, patch: Partial<FinancialTransaction>) => useAppStore.setState((state) => ({ transactions: state.transactions.map((item) => item.id === id ? { ...item, ...patch } : item) }));
 
   return (
     <section className="overflow-hidden rounded-lg border border-card-border bg-card">
@@ -257,7 +297,7 @@ function TransactionPanel({ title, subtitle, transactions, accent, icon }: { tit
         <p className="text-base font-bold" style={{ color: accent }}>R$ {total.toLocaleString('pt-BR')}</p>
       </div>
       <div className="divide-y divide-[#ffffff08]">
-        {latest.map((transaction) => <div key={transaction.id} className="flex items-center justify-between gap-4 px-5 py-3 transition-colors hover:bg-white/[0.02]"><div className="min-w-0"><input value={transaction.description} onChange={(event) => updateTransaction(transaction.id, { description: event.target.value })} className="w-full truncate bg-transparent text-xs font-medium text-foreground outline-none focus:border-b focus:border-primary" /><p className="mt-1 text-[10px] text-muted-foreground">{transaction.category} Â· {transaction.account}</p></div><div className="shrink-0 text-right"><input type="number" min="0" value={transaction.amount} onChange={(event) => updateTransaction(transaction.id, { amount: Math.max(0, Number(event.target.value) || 0) })} className="w-28 bg-transparent text-right text-xs font-semibold outline-none focus:border-b focus:border-primary" style={{ color: accent }} /><p className="mt-1 text-[10px] text-muted-foreground">{formatTransactionDate(transaction.date)}</p></div></div>)}
+        {latest.map((transaction) => <div key={transaction.id} className="flex items-center justify-between gap-4 px-5 py-3 transition-colors hover:bg-white/[0.02]"><div className="min-w-0"><input value={transaction.description} onChange={(event) => onUpdate(transaction.id, { description: event.target.value })} className="w-full truncate bg-transparent text-xs font-medium text-foreground outline-none focus:border-b focus:border-primary" /><p className="mt-1 text-[10px] text-muted-foreground">{transaction.category} · {transaction.account}</p></div><div className="flex shrink-0 items-center gap-2 text-right"><div><input type="number" min="0" value={transaction.amount} onChange={(event) => onUpdate(transaction.id, { amount: Math.max(0, Number(event.target.value) || 0) })} className="w-28 bg-transparent text-right text-xs font-semibold outline-none focus:border-b focus:border-primary" style={{ color: accent }} /><p className="mt-1 text-[10px] text-muted-foreground">{formatTransactionDate(transaction.date)}</p></div><button type="button" onClick={() => onDelete(transaction.id)} className="rounded-md p-1.5 text-muted-foreground transition hover:bg-red-500/10 hover:text-red-300" aria-label={`Excluir ${transaction.description}`}><Trash2 className="h-3.5 w-3.5" /></button></div></div>)}
         {latest.length === 0 && <p className="px-5 py-6 text-xs text-muted-foreground">Nenhuma movimentaÃ§Ã£o registrada.</p>}
       </div>
       <div className="border-t border-[#ffffff0a] px-5 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Ver todas as {title.toLowerCase()} <span className="ml-1 text-primary">â†’</span></div>
@@ -265,7 +305,7 @@ function TransactionPanel({ title, subtitle, transactions, accent, icon }: { tit
   );
 }
 
-function StatementRow({ transaction }: { transaction: FinancialTransaction }) {
+function StatementRow({ transaction, onUpdate, onDelete }: { transaction: FinancialTransaction; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
   const isIncome = transaction.type === 'income';
   const statusStyles = transaction.status === 'paid'
     ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20'
@@ -274,7 +314,7 @@ function StatementRow({ transaction }: { transaction: FinancialTransaction }) {
       : 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20';
   const statusLabels = { paid: 'Pago', pending: 'Pendente', refunded: 'Estornado' };
 
-  return <div className="grid grid-cols-[1.6fr_0.8fr_0.85fr_0.8fr_0.8fr_28px] items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.02]"><div className="flex items-center gap-2.5"><span className={`flex h-7 w-7 items-center justify-center rounded-full ${isIncome ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#F97316]/10 text-[#F97316]'}`}>{isIncome ? <ArrowDownLeft className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}</span><div><p className="text-xs font-medium text-foreground">{transaction.description}</p><p className="mt-0.5 text-[10px] text-muted-foreground">{formatTransactionDate(transaction.date)}</p></div></div><span className="truncate text-[11px] text-muted-foreground">{transaction.category}</span><span className="truncate text-[11px] text-muted-foreground">{transaction.account}</span><span className={`text-xs font-semibold ${isIncome ? 'text-[#10B981]' : 'text-[#F97316]'}`}>{isIncome ? '+' : '-'} R$ {transaction.amount.toLocaleString('pt-BR')}</span><span className={`w-fit rounded border px-2 py-1 text-[10px] font-medium ${statusStyles}`}>{statusLabels[transaction.status]}</span><button className="text-muted-foreground hover:text-foreground" aria-label={`OpÃ§Ãµes de ${transaction.description}`}><MoreVertical className="h-4 w-4" /></button></div>;
+  return <div className="grid grid-cols-[1.6fr_0.8fr_0.85fr_0.8fr_0.8fr_28px] items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.02]"><div className="flex items-center gap-2.5"><span className={`flex h-7 w-7 items-center justify-center rounded-full ${isIncome ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#F97316]/10 text-[#F97316]'}`}>{isIncome ? <ArrowDownLeft className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}</span><div><input value={transaction.description} onChange={(event) => onUpdate(transaction.id, { description: event.target.value })} className="w-full bg-transparent text-xs font-medium text-foreground outline-none focus:border-b focus:border-primary" /><p className="mt-0.5 text-[10px] text-muted-foreground">{formatTransactionDate(transaction.date)}</p></div></div><input value={transaction.category} onChange={(event) => onUpdate(transaction.id, { category: event.target.value })} className="min-w-0 truncate bg-transparent text-[11px] text-muted-foreground outline-none focus:border-b focus:border-primary" /><input value={transaction.account} onChange={(event) => onUpdate(transaction.id, { account: event.target.value })} className="min-w-0 truncate bg-transparent text-[11px] text-muted-foreground outline-none focus:border-b focus:border-primary" /><input type="number" min="0" value={transaction.amount} onChange={(event) => onUpdate(transaction.id, { amount: Math.max(0, Number(event.target.value) || 0) })} className={`w-full bg-transparent text-xs font-semibold outline-none focus:border-b focus:border-primary ${isIncome ? 'text-[#10B981]' : 'text-[#F97316]'}`} /><select value={transaction.status} onChange={(event) => onUpdate(transaction.id, { status: event.target.value as FinancialTransaction['status'] })} className={`w-fit rounded border bg-transparent px-2 py-1 text-[10px] font-medium outline-none ${statusStyles}`}><option value="paid">Pago</option><option value="pending">Pendente</option><option value="refunded">Estornado</option></select><button type="button" onClick={() => onDelete(transaction.id)} className="text-muted-foreground hover:text-red-300" aria-label={`Excluir ${transaction.description}`}><Trash2 className="h-4 w-4" /></button></div>;
 }
 
 function formatTransactionDate(date: string) {
