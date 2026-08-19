@@ -52,8 +52,8 @@ export default function Financial() {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/70 px-4 py-3">
         <div><p className="text-xs font-semibold text-foreground">Período dos indicadores</p><p className="mt-0.5 text-[10px] text-muted-foreground">Altere o recorte sem editar os totais manualmente.</p></div>
-        <div className="flex rounded-lg border border-border bg-background/70 p-1">
-          {([['all', 'Todo o período'], ['month', 'Últimos 30 dias'], ['week', 'Últimos 7 dias']] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setPeriod(value)} className={`rounded-md px-3 py-1.5 text-[10px] font-medium transition ${period === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>{label}</button>)}
+        <div className="flex rounded-xl bg-background/35 p-1 shadow-inner shadow-black/10">
+          {([['all', 'Todo o período'], ['month', 'Últimos 30 dias'], ['week', 'Últimos 7 dias']] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setPeriod(value)} className={`rounded-lg px-3 py-1.5 text-[10px] font-medium transition ${period === value ? 'bg-primary/15 text-primary shadow-[0_0_12px_#00c9ff12]' : 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground'}`}>{label}</button>)}
         </div>
       </div>
 
