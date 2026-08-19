@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { LogIn, ShieldCheck } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { loadCloudAppData } from '@/lib/cloudSync';
+import { applyLocalPreferences, loadCloudAppData } from '@/lib/cloudSync';
 import { useAppStore } from '@/store/useAppStore';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -76,10 +76,30 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     let active = true;
     void loadCloudAppData().then((cloudData) => {
       if (!active) return;
-      if (cloudData) useAppStore.setState(cloudData);
+      if (cloudData) {
+        applyLocalPreferences(cloudData.localPreferences);
+        useAppStore.setState(cloudData);
+      }
       else useAppStore.getState().saveToStorage();
     });
     return () => { active = false; };
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) return;
+    let active = true;
+    const sync = async () => {
+      const cloudData = await loadCloudAppData();
+      if (!active) return;
+      if (cloudData) {
+        applyLocalPreferences(cloudData.localPreferences);
+        useAppStore.setState(cloudData);
+      }
+      // Also captures legacy local-only fields and sends them to the cloud.
+      useAppStore.getState().saveToStorage();
+    };
+    const timer = window.setInterval(() => void sync(), 30_000);
+    return () => { active = false; window.clearInterval(timer); };
   }, [session]);
 
   if (!isSupabaseConfigured) {

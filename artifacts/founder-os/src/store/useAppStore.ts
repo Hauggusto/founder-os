@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { seedData } from './seed';
-import { saveCloudAppData } from '@/lib/cloudSync';
+import { readLocalPreferences, saveCloudAppData } from '@/lib/cloudSync';
 
 const STORAGE_KEY = 'founder-os-data';
 
@@ -189,6 +189,7 @@ export interface AppData {
   focusLevel: number;
   disciplineLevel: number;
   clarityLevel: number;
+  localPreferences?: Record<string, string | null>;
   
   version: '1.0';
 }
@@ -352,6 +353,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       focusLevel: state.focusLevel,
       disciplineLevel: state.disciplineLevel,
       clarityLevel: state.clarityLevel,
+      localPreferences: readLocalPreferences(),
       
       version: '1.0',
     };
