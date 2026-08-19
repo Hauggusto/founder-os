@@ -176,7 +176,7 @@ export interface AppData {
   identityChecks: IdentityCheck[];
   learningCards: LearningCard[];
   futureGoals: FutureGoal[];
-  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; time?: string; executionStatus?: 'pending' | 'executed' | 'failed' }[];
+  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; time?: string; completedAt?: string; executionStatus?: 'pending' | 'executed' | 'failed' }[];
   weekSummary: string;
   energyLevel: number;
   focusLevel: number;
@@ -624,7 +624,11 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   toggleNextAction: (id) => {
     set({
-      nextActions: get().nextActions.map((n) => n.id === id ? { ...n, done: !n.done, executionStatus: n.done ? 'pending' : 'executed' } : n)
+      nextActions: get().nextActions.map((n) => {
+        if (n.id !== id) return n;
+        const done = !n.done;
+        return { ...n, done, executionStatus: done ? 'executed' as const : 'pending' as const, completedAt: done ? new Date().toISOString().slice(0, 10) : undefined };
+      })
     });
     get().saveToStorage();
   },

@@ -150,7 +150,7 @@ export default function Identity() {
         )
       : null;
     const entries = productivity.filter((item) => item.date === keyOf(date));
-    const actionEntries = nextActions.filter((item) => item.date === keyOf(date));
+    const actionEntries = nextActions.filter((item) => item.date === keyOf(date) || item.completedAt === keyOf(date));
     const oneOffDone = oneOffTasks.filter(
       (item) => item.done && item.completedAt === keyOf(date),
     ).length;
@@ -234,7 +234,7 @@ export default function Identity() {
   const selectedFailed = selectedProductivity
     .filter((item) => item.status === "failed")
     .reduce((sum, item) => sum + item.quantity, 0);
-  const selectedActions = nextActions.filter((item) => item.date === selectedDate);
+  const selectedActions = nextActions.filter((item) => item.date === selectedDate || item.completedAt === selectedDate);
   const selectedActionDone = selectedActions.filter((item) => item.done).length;
   const selectedActionFailed = selectedActions.filter((item) => item.executionStatus === 'failed').length;
   const selectedHabitScore = selectedHabits.length
