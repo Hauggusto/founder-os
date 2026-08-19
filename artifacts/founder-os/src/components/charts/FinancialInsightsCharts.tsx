@@ -62,10 +62,10 @@ export function FinancialInsightsCharts() {
               <Tooltip content={<BreakdownTooltip />} />
             </PieChart>
           </ResponsiveContainer>
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><span className="text-xl font-bold text-foreground">R$ {totalRevenue.toLocaleString('pt-BR')}</span><span className="mt-1 text-[10px] text-muted-foreground">Receita total</span></div>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"><span className="text-xl font-bold text-foreground">{formatCurrency(totalRevenue)}</span><span className="mt-1 text-[10px] text-muted-foreground">Receita total</span></div>
         </div>
         <div className="space-y-2">
-          {breakdown.map((item, index) => <div key={item.name} className="flex items-center justify-between gap-3 text-xs"><span className="flex min-w-0 items-center gap-2 text-foreground/80"><span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length], boxShadow: `0 0 7px ${CHART_COLORS[index % CHART_COLORS.length]}` }} /> <span className="truncate">{item.name}</span></span><span className="shrink-0 font-medium text-muted-foreground">R$ {item.value.toLocaleString('pt-BR')} ({totalRevenue ? Math.round(item.value / totalRevenue * 100) : 0}%)</span></div>)}
+          {breakdown.map((item, index) => <div key={item.name} className="flex items-center justify-between gap-3 text-xs"><span className="flex min-w-0 items-center gap-2 text-foreground/80"><span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length], boxShadow: `0 0 7px ${CHART_COLORS[index % CHART_COLORS.length]}` }} /> <span className="truncate">{item.name}</span></span><span className="shrink-0 font-medium text-muted-foreground">{formatCurrency(item.value)} ({totalRevenue ? Math.round(item.value / totalRevenue * 100) : 0}%)</span></div>)}
           {breakdown.length === 0 && <p className="text-xs text-muted-foreground">Nenhuma receita registrada ainda.</p>}
         </div>
       </section>
@@ -79,10 +79,14 @@ function formatDay(date: string) {
 
 function RevenueTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
-  return <div className="rounded-md border border-card-border bg-popover px-3 py-2 shadow-lg"><p className="text-[10px] text-muted-foreground">Receita</p><p className="text-xs font-semibold text-[#10B981]">R$ {Number(payload[0].value).toLocaleString('pt-BR')}</p></div>;
+  return <div className="rounded-md border border-card-border bg-popover px-3 py-2 shadow-lg"><p className="text-[10px] text-muted-foreground">Receita</p><p className="text-xs font-semibold text-[#10B981]">{formatCurrency(Number(payload[0].value))}</p></div>;
 }
 
 function BreakdownTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
-  return <div className="rounded-md border border-card-border bg-popover px-3 py-2 shadow-lg"><p className="text-xs font-semibold text-foreground">{payload[0].name}</p><p className="text-xs text-[#10B981]">R$ {Number(payload[0].value).toLocaleString('pt-BR')}</p></div>;
+  return <div className="rounded-md border border-card-border bg-popover px-3 py-2 shadow-lg"><p className="text-xs font-semibold text-foreground">{payload[0].name}</p><p className="text-xs text-[#10B981]">{formatCurrency(Number(payload[0].value))}</p></div>;
+}
+
+function formatCurrency(value: number) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }

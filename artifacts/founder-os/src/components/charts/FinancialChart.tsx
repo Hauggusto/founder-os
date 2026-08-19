@@ -22,7 +22,7 @@ export function FinancialChart() {
           </p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-xs" style={{ color: entry.dataKey === 'revenue' ? '#5B9DB8' : '#C28A62' }}>
-              {entry.name}: R$ {entry.value.toLocaleString('pt-BR')}
+              {entry.name}: {formatCurrency(entry.value)}
             </p>
           ))}
         </div>
@@ -89,4 +89,8 @@ export function FinancialChart() {
       </ResponsiveContainer>
     </div>
   );
+}
+
+function formatCurrency(value: number) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }

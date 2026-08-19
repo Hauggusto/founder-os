@@ -83,7 +83,7 @@ function parseCsv(text: string, account: string): ImportedTransaction[] {
     const rawAmount = amountIndex >= 0 ? parseMoney(values[amountIndex]) : credit || -debit;
     const expense = debit > 0 || rawAmount < 0;
     const amount = Math.abs(rawAmount || credit || debit);
-    return { description: (values[descriptionIndex] || 'Lançamento importado').trim(), amount, type: expense ? 'expense' : 'income', category: 'Importado', account, status: 'paid', date: parseDate(values[dateIndex]) };
+    return { description: (values[descriptionIndex] || 'Lançamento importado').trim(), amount, type: expense ? 'expense' : 'income', category: 'Importado', account, status: 'paid', date: parseDate(values[dateIndex]) } as ImportedTransaction;
   }).filter((row) => row.amount > 0 && row.date);
 }
 
@@ -92,7 +92,7 @@ function parseOfx(text: string, account: string): ImportedTransaction[] {
     const block = match[1];
     const read = (tag: string) => block.match(new RegExp(`<${tag}>([^<\\r\\n]+)`, 'i'))?.[1]?.trim() || '';
     const amount = parseMoney(read('TRNAMT'));
-    return { description: read('NAME') || read('MEMO') || 'Lançamento importado', amount: Math.abs(amount), type: amount < 0 ? 'expense' : 'income', category: 'Importado', account, status: 'paid', date: parseDate(read('DTPOSTED')) };
+    return { description: read('NAME') || read('MEMO') || 'Lançamento importado', amount: Math.abs(amount), type: amount < 0 ? 'expense' : 'income', category: 'Importado', account, status: 'paid', date: parseDate(read('DTPOSTED')) } as ImportedTransaction;
   }).filter((row) => row.amount > 0 && row.date);
 }
 

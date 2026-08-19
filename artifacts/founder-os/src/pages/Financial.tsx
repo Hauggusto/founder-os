@@ -75,6 +75,14 @@ export default function Financial() {
         />
       </div>
 
+      <UpcomingFinanceCards
+        transactions={filteredTransactions.filter((transaction) => transaction.status === 'pending' && transaction.date >= new Date().toISOString().slice(0, 10))}
+        accounts={accounts.map((account) => account.title).filter(Boolean)}
+        onAdd={addTransaction}
+        onUpdate={updateTransaction}
+        onDelete={deleteTransaction}
+      />
+
       <FinancialInsightsCharts />
 
       <div className="mb-8 grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -213,6 +221,29 @@ function FinancialQuickAdd({ onAdd }: { onAdd: (transaction: Omit<FinancialTrans
       <input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="h-10 rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-primary" />
       <button type="button" onClick={submit} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground transition hover:opacity-90"><Plus className="h-3.5 w-3.5" /> Adicionar</button>
     </div>
+  </section>;
+}
+
+function UpcomingFinanceCards({ transactions, accounts, onAdd, onUpdate, onDelete }: { transactions: FinancialTransaction[]; accounts: string[]; onAdd: (transaction: Omit<FinancialTransaction, 'id'>) => void; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
+  return <section className="mb-8 grid gap-4 xl:grid-cols-2">
+    <UpcomingFinanceCard kind="income" title="A receber" subtitle="Entradas previstas e recebimentos futuros" accent="#10B981" transactions={transactions.filter((transaction) => transaction.type === 'income')} accounts={accounts} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} />
+    <UpcomingFinanceCard kind="expense" title="A pagar" subtitle="Contas, compromissos e pagamentos futuros" accent="#F97316" transactions={transactions.filter((transaction) => transaction.type === 'expense')} accounts={accounts} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} />
+  </section>;
+}
+
+function UpcomingFinanceCard({ kind, title, subtitle, accent, transactions, accounts, onAdd, onUpdate, onDelete }: { kind: FinancialTransaction['type']; title: string; subtitle: string; accent: string; transactions: FinancialTransaction[]; accounts: string[]; onAdd: (transaction: Omit<FinancialTransaction, 'id'>) => void; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
+  const [form, setForm] = useState({ description: '', amount: '', date: new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10), account: accounts[0] || 'Conta principal' });
+  const total = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const submit = () => {
+    const amount = Number(form.amount.replace(',', '.'));
+    if (!form.description.trim() || !Number.isFinite(amount) || amount <= 0 || !form.date) return;
+    onAdd({ description: form.description.trim(), amount, type: kind, category: 'Planejado', account: form.account, status: 'pending', date: form.date });
+    setForm((current) => ({ ...current, description: '', amount: '' }));
+  };
+  return <section className="overflow-hidden rounded-xl border border-card-border bg-card/80" style={{ boxShadow: `0 0 22px ${accent}08` }}>
+    <div className="flex items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>Planejamento financeiro</p><h2 className="mt-1 text-base font-semibold text-foreground">{title}</h2><p className="mt-0.5 text-[10px] text-muted-foreground">{subtitle}</p></div><div className="text-right"><p className="text-lg font-bold" style={{ color: accent }}>{formatCurrency(total)}</p><p className="text-[10px] text-muted-foreground">{transactions.length} previsto(s)</p></div></div>
+    <div className="grid gap-2 border-b border-white/[0.06] p-4 sm:grid-cols-[1.5fr_100px_125px_1fr_auto]"><input value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter') submit(); }} placeholder={kind === 'income' ? 'Ex.: recebimento Solar Machine' : 'Ex.: boleto Nubank'} className="h-9 rounded-md border border-border bg-background px-2.5 text-[10px] outline-none focus:border-primary" /><label className="flex h-9 items-center rounded-md border border-border bg-background px-2 focus-within:border-primary"><span className="mr-1 text-[10px] text-muted-foreground">R$</span><input value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} placeholder="0,00" inputMode="decimal" className="min-w-0 flex-1 bg-transparent text-[10px] outline-none" /></label><input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="h-9 rounded-md border border-border bg-background px-2 text-[10px] outline-none focus:border-primary" /><select value={form.account} onChange={(event) => setForm({ ...form, account: event.target.value })} className="h-9 rounded-md border border-border bg-background px-2 text-[10px] outline-none focus:border-primary"><option value="Conta principal">Conta principal</option>{accounts.map((account) => <option key={account} value={account}>{account}</option>)}</select><button type="button" onClick={submit} className="h-9 rounded-md px-3 text-[10px] font-semibold text-primary-foreground transition hover:opacity-90" style={{ backgroundColor: accent }}>Adicionar</button></div>
+    <div className="max-h-56 overflow-y-auto divide-y divide-white/[0.05]">{transactions.length ? transactions.map((transaction) => <div key={transaction.id} className="flex items-center gap-3 px-5 py-3"><div className="min-w-0 flex-1"><input value={transaction.description} onChange={(event) => onUpdate(transaction.id, { description: event.target.value })} className="w-full truncate bg-transparent text-xs text-foreground outline-none focus:border-b focus:border-primary" /><p className="mt-1 text-[10px] text-muted-foreground">{transaction.account} · vence em {formatTransactionDate(transaction.date)}</p></div><label className="flex items-center gap-1"><span className="text-[10px] text-muted-foreground">R$</span><input type="number" value={transaction.amount} onChange={(event) => onUpdate(transaction.id, { amount: Math.max(0, Number(event.target.value) || 0) })} className="w-24 bg-transparent text-right text-xs font-semibold outline-none focus:border-b focus:border-primary" style={{ color: accent }} /></label><select value={transaction.status} onChange={(event) => onUpdate(transaction.id, { status: event.target.value as FinancialTransaction['status'] })} className="rounded bg-background px-1.5 py-1 text-[9px] text-muted-foreground outline-none"><option value="pending">Pendente</option><option value="paid">Baixado</option></select><button type="button" onClick={() => onDelete(transaction.id)} className="text-muted-foreground hover:text-red-300" aria-label={`Excluir ${transaction.description}`}><Trash2 className="h-3.5 w-3.5" /></button></div>) : <p className="px-5 py-6 text-xs text-muted-foreground">Nenhum compromisso futuro registrado.</p>}</div>
   </section>;
 }
 
