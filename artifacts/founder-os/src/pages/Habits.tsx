@@ -617,10 +617,10 @@ export default function Habits({ mode = "habits" }: any) {
               </div>
               <div>
                 <h2 className="font-semibold tracking-wide">
-                  {isProductivity ? "Acompanhamento das entregas" : "Acompanhamento dos hábitos"}
+                  {isProductivity ? "Rotinas recorrentes" : "Acompanhamento dos hábitos"}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  {isProductivity ? "Marque o avanço de cada frente e veja sua consistência." : "Clique em cada dia para registrar feito, parcial ou não feito."}
+                  {isProductivity ? "Itens que se repetem e precisam de acompanhamento contínuo." : "Clique em cada dia para registrar feito, parcial ou não feito."}
                 </p>
               </div>
             </div>
