@@ -86,6 +86,26 @@ select optgroup {
   background: #10151c;
 }
 
+select[aria-label='Status da execução'] {
+  min-height: 28px;
+  border: 1px solid hsl(var(--primary) / .28);
+  border-radius: .55rem;
+  background: #0d1218;
+  color: hsl(var(--foreground));
+  padding: 0 .5rem;
+  font-size: 10px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .16);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+select[aria-label='Status da execução']:hover,
+select[aria-label='Status da execução']:focus {
+  border-color: hsl(var(--primary) / .7);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / .1);
+  outline: none;
+}
+
 input[type='date']::-webkit-calendar-picker-indicator,
 input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(1) sepia(1) saturate(2) hue-rotate(155deg);
