@@ -171,7 +171,7 @@ export default function Financial() {
             <div className="grid grid-cols-[1.6fr_0.85fr_0.9fr_0.85fr_0.9fr_28px] gap-4 border-b border-[#ffffff08] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {([['description', 'Descrição'], ['date', 'Data'], ['category', 'Categoria'], ['account', 'Conta'], ['amount', 'Valor']] as const).map(([sort, label]) => <button key={sort} type="button" onClick={() => toggleStatementSort(sort)} className="text-left transition-colors hover:text-primary">{label}{statementSort === sort ? <span className="ml-1 text-primary">{statementSortDirection === 'asc' ? '↑' : '↓'}</span> : null}</button>)}<span />
             </div>
-            <div className="divide-y divide-[#ffffff08]">
+            <div className="max-h-[560px] overflow-y-auto overscroll-contain divide-y divide-[#ffffff08] [scrollbar-color:rgba(0,201,255,.45)_rgba(255,255,255,.04)] [scrollbar-width:thin]">
               {statementTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} onUpdate={updateTransaction} onDelete={deleteTransaction} />)}
             </div>
           </div>
