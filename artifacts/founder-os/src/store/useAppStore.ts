@@ -232,6 +232,7 @@ interface AppStore extends AppData {
   setWeekFocus: (focus: string) => void;
   setFinancialSummary: (summary: Partial<FinancialSummaryOverrides>) => void;
   addTransaction: (transaction: Omit<FinancialTransaction, 'id'>) => void;
+  addTransactions: (transactions: Omit<FinancialTransaction, 'id'>[]) => void;
   updateTransaction: (id: string, updates: Partial<FinancialTransaction>) => void;
   deleteTransaction: (id: string) => void;
   
@@ -522,6 +523,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addTransaction: (transaction) => {
     set({ transactions: [{ ...transaction, id: `transaction-${Date.now()}` }, ...get().transactions] });
+    get().saveToStorage();
+  },
+
+  addTransactions: (transactions) => {
+    if (!transactions.length) return;
+    const existing = new Set(get().transactions.map((item) => `${item.date}|${item.amount}|${item.type}|${item.description.trim().toLowerCase()}|${item.account.trim().toLowerCase()}`));
+    const fresh = transactions.filter((item) => {
+      const signature = `${item.date}|${item.amount}|${item.type}|${item.description.trim().toLowerCase()}|${item.account.trim().toLowerCase()}`;
+      if (existing.has(signature)) return false;
+      existing.add(signature);
+      return true;
+    }).map((item, index) => ({ ...item, id: `transaction-${Date.now()}-${index}` }));
+    if (!fresh.length) return;
+    set({ transactions: [...fresh, ...get().transactions] });
     get().saveToStorage();
   },
 

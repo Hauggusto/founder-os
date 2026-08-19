@@ -3,6 +3,7 @@ import { useAppStore, type FinancialTransaction } from '@/store/useAppStore';
 import { FinancialChart } from '@/components/charts/FinancialChart';
 import { FinancialInsightsCharts } from '@/components/charts/FinancialInsightsCharts';
 import { PortfolioPanel } from '@/components/financial/PortfolioPanel';
+import { BankStatementImporter } from '@/components/financial/BankStatementImporter';
 import { Button } from '@/components/ui/button';
 import { ArrowDownLeft, ArrowDownRight, ArrowUpRight, CalendarDays, Check, MoreVertical, Pencil, Plus, ReceiptText, Trash2, X } from 'lucide-react';
 import {
@@ -13,18 +14,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function Financial() {
-  const { modules, weeklyData, transactions, addTransaction, updateTransaction, deleteTransaction, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
+  const { modules, weeklyData, transactions, addTransaction, addTransactions, updateTransaction, deleteTransaction, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
   const [period, setPeriod] = useState<'all' | 'month' | 'week'>('all');
+  const [accountFilter, setAccountFilter] = useState('all');
 
   const accounts = modules.filter(m => m.type === 'financial_account');
 
   const filteredTransactions = useMemo(() => {
-    if (period === 'all') return transactions;
+    const byAccount = accountFilter === 'all' ? transactions : transactions.filter((transaction) => transaction.account === accountFilter);
+    if (period === 'all') return byAccount;
     const days = period === 'week' ? 7 : 30;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
-    return transactions.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
-  }, [period, transactions]);
+    return byAccount.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
+  }, [accountFilter, period, transactions]);
   const totalRevenue = filteredTransactions.filter((transaction) => transaction.type === 'income').reduce((sum, transaction) => sum + transaction.amount, 0);
   const totalExpenses = filteredTransactions.filter((transaction) => transaction.type === 'expense').reduce((sum, transaction) => sum + transaction.amount, 0);
   const balance = totalRevenue - totalExpenses;
@@ -52,8 +55,11 @@ export default function Financial() {
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-card/70 px-4 py-3">
         <div><p className="text-xs font-semibold text-foreground">Período dos indicadores</p><p className="mt-0.5 text-[10px] text-muted-foreground">Altere o recorte sem editar os totais manualmente.</p></div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <select value={accountFilter} onChange={(event) => setAccountFilter(event.target.value)} className="h-8 rounded-lg bg-transparent px-2 text-[10px] text-muted-foreground outline-none hover:text-foreground focus:text-foreground"><option value="all">Todas as contas</option>{accounts.map((account) => <option key={account.id} value={account.title}>{account.title}</option>)}</select>
         <div className="flex rounded-xl bg-background/35 p-1 shadow-inner shadow-black/10">
           {([['all', 'Todo o período'], ['month', 'Últimos 30 dias'], ['week', 'Últimos 7 dias']] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setPeriod(value)} className={`rounded-lg px-3 py-1.5 text-[10px] font-medium transition ${period === value ? 'bg-primary/15 text-primary shadow-[0_0_12px_#00c9ff12]' : 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground'}`}>{label}</button>)}
+        </div>
         </div>
       </div>
 
@@ -150,6 +156,9 @@ export default function Financial() {
                     <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{account.accountType || 'Conta financeira'} · {account.currency || 'BRL'}</p>
                   </div>
                   <span className="shrink-0 rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[9px] text-primary">Ativa</span>
+                </div>
+                <div className="px-3.5">
+                  <BankStatementImporter accountName={account.title || 'Conta financeira'} onImport={addTransactions} />
                 </div>
                 <div className="flex justify-end p-1.5">
                 <DropdownMenu>
