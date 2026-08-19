@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Check, FileSpreadsheet, Loader2, Upload, X } from 'lucide-react';
-import type { FinancialTransaction } from '@/store/useAppStore';
+import { FINANCIAL_CATEGORIES, type FinancialTransaction } from '@/store/useAppStore';
 
 type ImportedTransaction = Omit<FinancialTransaction, 'id'>;
 
@@ -43,7 +43,7 @@ export function BankStatementImporter({ accountName, onImport }: { accountName: 
       <div className="max-h-64 space-y-1.5 overflow-y-auto pr-1">
         {rows.map((row, index) => <div key={`${row.date}-${index}`} className="grid gap-1.5 rounded-md border border-border/60 bg-background/60 p-2 sm:grid-cols-[1.5fr_0.7fr_0.7fr_0.85fr]">
           <input value={row.description} onChange={(event) => updateRow(index, { description: event.target.value })} aria-label="Descrição" className="min-w-0 rounded border border-border bg-background px-2 py-1.5 text-[10px] text-foreground outline-none focus:border-primary" />
-          <input value={row.category} onChange={(event) => updateRow(index, { category: event.target.value })} aria-label="Categoria" className="min-w-0 rounded border border-border bg-background px-2 py-1.5 text-[10px] text-foreground outline-none focus:border-primary" />
+          <select value={row.category} onChange={(event) => updateRow(index, { category: event.target.value })} aria-label="Categoria" className="min-w-0 rounded border border-border bg-background px-2 py-1.5 text-[10px] text-foreground outline-none focus:border-primary">{FINANCIAL_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select>
           <label className="flex min-w-0 items-center rounded border border-border bg-background px-2 focus-within:border-primary"><span className="mr-1 text-[10px] text-muted-foreground">R$</span><input value={row.amount} onChange={(event) => updateRow(index, { amount: Math.abs(Number(event.target.value.replace(',', '.')) || 0) })} type="number" min="0" step="0.01" aria-label="Valor" className="min-w-0 w-full bg-transparent py-1.5 text-[10px] text-foreground outline-none" /></label>
           <div className="flex gap-1.5"><select value={row.type} onChange={(event) => updateRow(index, { type: event.target.value as FinancialTransaction['type'] })} aria-label="Tipo" className="min-w-0 flex-1 rounded border border-border bg-background px-1.5 py-1.5 text-[10px] text-foreground outline-none focus:border-primary"><option value="expense">Despesa</option><option value="income">Receita</option></select><input value={row.date} onChange={(event) => updateRow(index, { date: event.target.value })} type="date" aria-label="Data" className="min-w-0 w-[105px] rounded border border-border bg-background px-1.5 py-1.5 text-[10px] text-foreground outline-none focus:border-primary" /></div>
         </div>)}

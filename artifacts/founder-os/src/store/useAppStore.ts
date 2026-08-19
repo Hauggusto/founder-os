@@ -78,6 +78,13 @@ export interface FinancialTransaction {
   date: string;
 }
 
+export const FINANCIAL_CATEGORIES = [
+  'Animais de estimação', 'Assinatura de serviços', 'Comidas e bebidas', 'Compras', 'Contas',
+  'Cuidados pessoais', 'Doações', 'Educação', 'Empréstimo', 'Entretenimento', 'Esporte',
+  'Gastos diversos', 'Impostos', 'Investimentos', 'Mercado', 'Moradia', 'Não categorizado',
+  'Renda', 'Saúde', 'Seguros', 'Serviços', 'Tarifas financeiras', 'Transferências', 'Transporte', 'Viagem',
+] as const;
+
 export interface FinancialSummaryOverrides {
   revenue?: number;
   expenses?: number;
