@@ -437,6 +437,7 @@ function ProjectEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const [thumbnailError, setThumbnailError] = useState("");
   const update = (
     key: keyof ReturnType<typeof emptyProjectForm>,
     value: string | number,
@@ -444,26 +445,38 @@ function ProjectEditor({
   const upload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const image = new Image();
-      image.onload = () => {
-        const targetWidth = 1280;
-        const targetHeight = 720;
-        const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-        const context = canvas.getContext("2d");
-        if (!context) return;
-        const scale = Math.max(targetWidth / image.width, targetHeight / image.height);
-        const width = image.width * scale;
-        const height = image.height * scale;
-        context.drawImage(image, (targetWidth - width) / 2, (targetHeight - height) / 2, width, height);
-        update("thumbnail", canvas.toDataURL("image/jpeg", 0.88));
-      };
-      image.src = String(reader.result);
+    setThumbnailError("");
+    if (!file.type.startsWith("image/")) {
+      setThumbnailError("Escolha um arquivo de imagem válido.");
+      event.target.value = "";
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const targetWidth = 1280;
+      const targetHeight = 720;
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        setThumbnailError("Não foi possível preparar essa imagem.");
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      const scale = Math.max(targetWidth / image.width, targetHeight / image.height);
+      const width = image.width * scale;
+      const height = image.height * scale;
+      context.drawImage(image, (targetWidth - width) / 2, (targetHeight - height) / 2, width, height);
+      update("thumbnail", canvas.toDataURL("image/jpeg", 0.88));
+      URL.revokeObjectURL(objectUrl);
     };
-    reader.readAsDataURL(file);
+    image.onerror = () => {
+      setThumbnailError("Esse formato de imagem não pôde ser lido pelo navegador.");
+      URL.revokeObjectURL(objectUrl);
+    };
+    image.src = objectUrl;
     event.target.value = "";
   };
   const statuses = [
@@ -638,6 +651,7 @@ function ProjectEditor({
                 className="hidden"
               />
             </label>
+            {thumbnailError && <p className="mt-2 text-xs text-destructive">{thumbnailError}</p>}
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-2">
