@@ -12,11 +12,12 @@ import { DashboardInsights } from '@/components/overview/DashboardInsights';
 import { FutureVisionBlock } from '@/components/overview/FutureVisionBlock';
 import { ModernCalendar } from '@/components/overview/ModernCalendar';
 import { WeatherWidget } from '@/components/overview/WeatherWidget';
+import { FocusOfDayCard } from '@/components/overview/FocusOfDayCard';
 
 export default function Overview() {
   return (
     <div className="max-w-[1400px] mx-auto w-full animate-in fade-in duration-500">
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div className="min-w-0 flex-1"><CockpitHeader /></div><div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row"><ModernCalendar /><WeatherWidget /></div></div>
+      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div className="min-w-0 flex-1"><CockpitHeader /><FocusOfDayCard /></div><div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row"><ModernCalendar /><WeatherWidget /></div></div>
 
       <section className="mb-8"><div className="mb-3 flex items-end justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[.2em] text-primary">Visão rápida</p><h2 className="mt-1 text-lg font-semibold">Como está o seu dia</h2></div><span className="text-[10px] text-muted-foreground">Atualizado pelos módulos do dashboard</span></div><KPICards /></section>
 
