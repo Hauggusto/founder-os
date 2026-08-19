@@ -22,6 +22,7 @@ export default function Financial() {
   const [period, setPeriod] = useState<'all' | 'month' | 'week'>('all');
   const [statementPeriod, setStatementPeriod] = useState<'all' | 'month' | 'week'>('all');
   const [statementSort, setStatementSort] = useState<'date' | 'description' | 'category' | 'account' | 'amount'>('date');
+  const [statementSortDirection, setStatementSortDirection] = useState<'asc' | 'desc'>('desc');
   const [accountFilter, setAccountFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
@@ -59,13 +60,26 @@ export default function Financial() {
       scoped = recentTransactions.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
     }
     return [...scoped].sort((a, b) => {
-      if (statementSort === 'amount') return b.amount - a.amount;
-      if (statementSort === 'description') return a.description.localeCompare(b.description, 'pt-BR');
-      if (statementSort === 'category') return a.category.localeCompare(b.category, 'pt-BR');
-      if (statementSort === 'account') return a.account.localeCompare(b.account, 'pt-BR');
-      return b.date.localeCompare(a.date);
+      const result = statementSort === 'amount'
+        ? a.amount - b.amount
+        : statementSort === 'description'
+          ? a.description.localeCompare(b.description, 'pt-BR')
+          : statementSort === 'category'
+            ? a.category.localeCompare(b.category, 'pt-BR')
+            : statementSort === 'account'
+              ? a.account.localeCompare(b.account, 'pt-BR')
+              : a.date.localeCompare(b.date);
+      return statementSortDirection === 'asc' ? result : -result;
     });
-  }, [recentTransactions, statementPeriod, statementSort]);
+  }, [recentTransactions, statementPeriod, statementSort, statementSortDirection]);
+
+  const toggleStatementSort = (sort: typeof statementSort) => {
+    if (sort === statementSort) setStatementSortDirection((direction) => direction === 'asc' ? 'desc' : 'asc');
+    else {
+      setStatementSort(sort);
+      setStatementSortDirection('asc');
+    }
+  };
 
   return (
     <div className="max-w-[1600px]">
@@ -141,12 +155,12 @@ export default function Financial() {
               <p className="mt-0.5 text-[11px] text-muted-foreground">Movimentações recentes de todas as contas</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-1.5 text-xs text-primary"><CalendarDays className="h-3.5 w-3.5" /><StyledSelect value={statementPeriod} onChange={(value) => setStatementPeriod(value as typeof statementPeriod)} options={[["all", "Todo o período"], ["month", "Últimos 30 dias"], ["week", "Últimos 7 dias"]]} /><StyledSelect value={statementSort} onChange={(value) => setStatementSort(value as typeof statementSort)} options={[["date", "Ordenar por data"], ["description", "Ordenar por descrição"], ["category", "Ordenar por categoria"], ["account", "Ordenar por conta"], ["amount", "Ordenar por valor"]]} /></div>
+          <div className="flex items-center gap-1.5 text-xs text-primary"><CalendarDays className="h-3.5 w-3.5" /><StyledSelect value={statementPeriod} onChange={(value) => setStatementPeriod(value as typeof statementPeriod)} options={[["all", "Todo o período"], ["month", "Últimos 30 dias"], ["week", "Últimos 7 dias"]]} /></div>
         </div>
         <div className="overflow-x-auto">
           <div className="min-w-[760px]">
             <div className="grid grid-cols-[1.6fr_0.85fr_0.9fr_0.85fr_0.9fr_28px] gap-4 border-b border-[#ffffff08] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>Descrição</span><span>Data</span><span>Categoria</span><span>Conta</span><span>Valor</span><span />
+              {([['description', 'Descrição'], ['date', 'Data'], ['category', 'Categoria'], ['account', 'Conta'], ['amount', 'Valor']] as const).map(([sort, label]) => <button key={sort} type="button" onClick={() => toggleStatementSort(sort)} className="text-left transition-colors hover:text-primary">{label}{statementSort === sort ? <span className="ml-1 text-primary">{statementSortDirection === 'asc' ? '↑' : '↓'}</span> : null}</button>)}<span />
             </div>
             <div className="divide-y divide-[#ffffff08]">
               {statementTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} onUpdate={updateTransaction} onDelete={deleteTransaction} />)}
