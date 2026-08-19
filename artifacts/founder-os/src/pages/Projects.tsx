@@ -438,6 +438,7 @@ function ProjectEditor({
   onSave: () => void;
 }) {
   const [thumbnailError, setThumbnailError] = useState("");
+  const [thumbnailPreview, setThumbnailPreview] = useState(form.thumbnail);
   const update = (
     key: keyof ReturnType<typeof emptyProjectForm>,
     value: string | number,
@@ -451,12 +452,8 @@ function ProjectEditor({
       event.target.value = "";
       return;
     }
-    // Keep a direct preview immediately; the normalized version replaces it
-    // as soon as the browser finishes decoding the image.
-    const reader = new FileReader();
-    reader.onload = () => update("thumbnail", String(reader.result));
-    reader.readAsDataURL(file);
     const objectUrl = URL.createObjectURL(file);
+    setThumbnailPreview(objectUrl);
     const image = new Image();
     image.onload = () => {
       const targetWidth = 1280;
@@ -474,7 +471,9 @@ function ProjectEditor({
       const width = image.width * scale;
       const height = image.height * scale;
       context.drawImage(image, (targetWidth - width) / 2, (targetHeight - height) / 2, width, height);
-      update("thumbnail", canvas.toDataURL("image/jpeg", 0.88));
+      const normalizedImage = canvas.toDataURL("image/jpeg", 0.78);
+      setThumbnailPreview(normalizedImage);
+      update("thumbnail", normalizedImage);
       URL.revokeObjectURL(objectUrl);
     };
     image.onerror = () => {
@@ -638,9 +637,9 @@ function ProjectEditor({
               Thumbnail horizontal
             </label>
             <label className="mt-2 flex min-h-36 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-primary/40 bg-background/50 text-xs text-muted-foreground hover:border-primary">
-              {form.thumbnail ? (
+              {thumbnailPreview ? (
                 <img
-                  src={form.thumbnail}
+                  src={thumbnailPreview}
                   alt="Preview"
                   className="h-36 w-full object-cover"
                 />
