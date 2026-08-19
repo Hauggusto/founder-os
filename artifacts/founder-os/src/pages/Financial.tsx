@@ -144,6 +144,13 @@ export default function Financial() {
                 <a href={`/financeiro/conta/${account.id}`} className="flex aspect-[1.58/1] w-full items-center justify-center overflow-hidden border-b border-primary/20 bg-card text-[10px] text-muted-foreground">
                   {account.thumbnail ? <img src={account.thumbnail} alt={`CartÃ£o de ${account.title}`} className="h-full w-full object-cover" /> : 'FaÃ§a upload do cartÃ£o'}
                 </a>
+                <div className="flex items-start justify-between gap-3 border-b border-border/60 px-3.5 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{account.title || 'Conta sem nome'}</p>
+                    <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{account.accountType || 'Conta financeira'} · {account.currency || 'BRL'}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[9px] text-primary">Ativa</span>
+                </div>
                 <div className="flex justify-end p-1.5">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
