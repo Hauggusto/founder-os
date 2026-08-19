@@ -176,7 +176,7 @@ export interface AppData {
   identityChecks: IdentityCheck[];
   learningCards: LearningCard[];
   futureGoals: FutureGoal[];
-  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; executionStatus?: 'pending' | 'executed' | 'failed' }[];
+  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; time?: string; executionStatus?: 'pending' | 'executed' | 'failed' }[];
   weekSummary: string;
   energyLevel: number;
   focusLevel: number;
@@ -237,7 +237,7 @@ interface AppStore extends AppData {
   updateAgendaItem: (id: string, updates: Partial<AgendaItem>) => void;
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
-  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent', date?: string) => void;
+  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent', date?: string, time?: string) => void;
   updateNextAction: (id: string, updates: Partial<AppData['nextActions'][number]>) => void;
   deleteNextAction: (id: string) => void;
   toggleNextAction: (id: string) => void;
@@ -597,7 +597,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     get().saveToStorage();
   },
 
-  addNextAction: (text, project, priority, date) => {
+  addNextAction: (text, project, priority, date, time) => {
     const newAction = {
       id: `na-${Date.now()}`,
       text,
@@ -605,6 +605,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       project,
       priority,
       date: date || new Date().toISOString().slice(0, 10),
+      time,
       executionStatus: 'pending' as const
     };
     set({ nextActions: [...get().nextActions, newAction] });
