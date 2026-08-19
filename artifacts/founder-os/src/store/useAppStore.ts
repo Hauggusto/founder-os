@@ -143,6 +143,10 @@ export interface LearningCard {
   description: string;
   progress: number;
   color: string;
+  status?: 'Em andamento' | 'Pausado' | 'Concluído';
+  nextStep?: string;
+  dueDate?: string;
+  hours?: number;
 }
 export interface FutureGoal { id: string; name: string; value: number; vision?: string; }
 
@@ -266,6 +270,8 @@ interface AppStore extends AppData {
   deleteIdentityItem: (id: string) => void;
   setIdentityCheck: (itemId: string, date: string, status: IdentityStatus | null) => void;
   addLearningCard: (card: Omit<LearningCard, 'id'>) => void;
+  updateLearningCard: (id: string, updates: Partial<LearningCard>) => void;
+  deleteLearningCard: (id: string) => void;
   addFutureGoal: (goal: Omit<FutureGoal, 'id'>) => void;
 
   // Data management
@@ -734,6 +740,16 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addLearningCard: (card) => {
     set({ learningCards: [...get().learningCards, { ...card, id: `learning-${Date.now()}` }] });
+    get().saveToStorage();
+  },
+
+  updateLearningCard: (id, updates) => {
+    set({ learningCards: get().learningCards.map((card) => card.id === id ? { ...card, ...updates } : card) });
+    get().saveToStorage();
+  },
+
+  deleteLearningCard: (id) => {
+    set({ learningCards: get().learningCards.filter((card) => card.id !== id) });
     get().saveToStorage();
   },
 
