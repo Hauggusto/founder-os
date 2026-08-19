@@ -98,6 +98,8 @@ select[aria-label='Tipo da agenda'] {
   font-weight: 600;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .16);
   transition: border-color .18s ease, box-shadow .18s ease;
+  outline: none !important;
+  -webkit-appearance: auto;
 }
 
 select[aria-label='Status da execução']:hover,
@@ -107,6 +109,12 @@ select[aria-label='Tipo da agenda']:focus {
   border-color: hsl(var(--primary) / .7);
   box-shadow: 0 0 0 3px hsl(var(--primary) / .1);
   outline: none;
+}
+
+select[aria-label='Status da execução'] option:checked,
+select[aria-label='Tipo da agenda'] option:checked {
+  background: #183044;
+  color: #f8fbff;
 }
 
 input[type='date']::-webkit-calendar-picker-indicator,
