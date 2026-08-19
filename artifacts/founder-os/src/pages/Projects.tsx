@@ -445,8 +445,26 @@ function ProjectEditor({
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => update("thumbnail", String(reader.result));
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const targetWidth = 1280;
+        const targetHeight = 720;
+        const canvas = document.createElement("canvas");
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const context = canvas.getContext("2d");
+        if (!context) return;
+        const scale = Math.max(targetWidth / image.width, targetHeight / image.height);
+        const width = image.width * scale;
+        const height = image.height * scale;
+        context.drawImage(image, (targetWidth - width) / 2, (targetHeight - height) / 2, width, height);
+        update("thumbnail", canvas.toDataURL("image/jpeg", 0.88));
+      };
+      image.src = String(reader.result);
+    };
     reader.readAsDataURL(file);
+    event.target.value = "";
   };
   const statuses = [
     { value: "active", label: "Ativo", hint: "Em execução", color: "#10B981" },
@@ -615,7 +633,7 @@ function ProjectEditor({
               )}
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/webp"
+                accept="image/*"
                 onChange={upload}
                 className="hidden"
               />
