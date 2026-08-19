@@ -86,7 +86,8 @@ select optgroup {
   background: #10151c;
 }
 
-select[aria-label='Status da execução'] {
+select[aria-label='Status da execução'],
+select[aria-label='Tipo da agenda'] {
   min-height: 28px;
   border: 1px solid hsl(var(--primary) / .28);
   border-radius: .55rem;
@@ -100,7 +101,9 @@ select[aria-label='Status da execução'] {
 }
 
 select[aria-label='Status da execução']:hover,
-select[aria-label='Status da execução']:focus {
+select[aria-label='Status da execução']:focus,
+select[aria-label='Tipo da agenda']:hover,
+select[aria-label='Tipo da agenda']:focus {
   border-color: hsl(var(--primary) / .7);
   box-shadow: 0 0 0 3px hsl(var(--primary) / .1);
   outline: none;

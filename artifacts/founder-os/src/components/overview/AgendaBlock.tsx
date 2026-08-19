@@ -49,7 +49,7 @@ export function AgendaBlock() {
                   item.type === 'meeting' ? 'bg-[#8B5CF6]/10 text-[#8B5CF6]' :
                   item.type === 'task' ? 'bg-[#00C9FF]/10 text-[#00C9FF]' :
                   item.type === 'presencial' ? 'bg-amber-500/10 text-amber-300' : 'bg-muted text-muted-foreground'
-                }`}><option value="meeting">Reunião</option><option value="task">Tarefa</option><option value="reminder">Lembrete</option><option value="presencial">Presencial</option></select>
+                }`} aria-label="Tipo da agenda"><option value="meeting">Reunião</option><option value="task">Tarefa</option><option value="reminder">Lembrete</option><option value="presencial">Presencial</option></select>
               </div>
               <Checkbox 
                 checked={item.done} 
