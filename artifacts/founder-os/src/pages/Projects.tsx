@@ -439,6 +439,7 @@ function ProjectEditor({
 }) {
   const [thumbnailError, setThumbnailError] = useState("");
   const [thumbnailPreview, setThumbnailPreview] = useState(form.thumbnail);
+  const [thumbnailProcessing, setThumbnailProcessing] = useState(false);
   const update = (
     key: keyof ReturnType<typeof emptyProjectForm>,
     value: string | number,
@@ -447,8 +448,10 @@ function ProjectEditor({
     const file = event.target.files?.[0];
     if (!file) return;
     setThumbnailError("");
+    setThumbnailProcessing(true);
     if (file.type && !file.type.startsWith("image/")) {
       setThumbnailError("Escolha um arquivo de imagem válido.");
+      setThumbnailProcessing(false);
       event.target.value = "";
       return;
     }
@@ -464,6 +467,7 @@ function ProjectEditor({
       const context = canvas.getContext("2d");
       if (!context) {
         setThumbnailError("Não foi possível preparar essa imagem.");
+        setThumbnailProcessing(false);
         URL.revokeObjectURL(objectUrl);
         return;
       }
@@ -474,10 +478,12 @@ function ProjectEditor({
       const normalizedImage = canvas.toDataURL("image/jpeg", 0.78);
       setThumbnailPreview(normalizedImage);
       update("thumbnail", normalizedImage);
+      setThumbnailProcessing(false);
       URL.revokeObjectURL(objectUrl);
     };
     image.onerror = () => {
       setThumbnailError("Esse formato de imagem não pôde ser lido pelo navegador.");
+      setThumbnailProcessing(false);
       URL.revokeObjectURL(objectUrl);
     };
     image.src = objectUrl;
@@ -667,10 +673,10 @@ function ProjectEditor({
           </button>
           <button
             onClick={onSave}
-            disabled={!form.title.trim()}
+            disabled={!form.title.trim() || thumbnailProcessing}
             className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
-            Salvar projeto
+            {thumbnailProcessing ? "Preparando imagem..." : "Salvar projeto"}
           </button>
         </div>
       </div>
