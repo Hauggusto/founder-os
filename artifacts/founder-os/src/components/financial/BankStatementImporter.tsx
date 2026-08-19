@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Check, FileSpreadsheet, Loader2, Upload, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FINANCIAL_CATEGORIES, type FinancialTransaction } from '@/store/useAppStore';
 
 type ImportedTransaction = Omit<FinancialTransaction, 'id'>;
@@ -43,9 +44,9 @@ export function BankStatementImporter({ accountName, onImport }: { accountName: 
       <div className="max-h-64 space-y-1.5 overflow-y-auto pr-1">
         {rows.map((row, index) => <div key={`${row.date}-${index}`} className="grid gap-1.5 rounded-md border border-border/60 bg-background/60 p-2 sm:grid-cols-[1.5fr_0.7fr_0.7fr_0.85fr]">
           <input value={row.description} onChange={(event) => updateRow(index, { description: event.target.value })} aria-label="Descrição" className="min-w-0 rounded border border-border bg-background px-2 py-1.5 text-[10px] text-foreground outline-none focus:border-primary" />
-          <select value={row.category} onChange={(event) => updateRow(index, { category: event.target.value })} aria-label="Categoria" className="min-w-0 rounded border border-border bg-background px-2 py-1.5 text-[10px] text-foreground outline-none focus:border-primary">{FINANCIAL_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select>
+          <StatementSelect value={row.category} onChange={(value) => updateRow(index, { category: value })} options={FINANCIAL_CATEGORIES.map((category) => [category, category] as [string, string])} />
           <label className="flex min-w-0 items-center rounded border border-border bg-background px-2 focus-within:border-primary"><span className="mr-1 text-[10px] text-muted-foreground">R$</span><input value={row.amount} onChange={(event) => updateRow(index, { amount: Math.abs(Number(event.target.value.replace(',', '.')) || 0) })} type="number" min="0" step="0.01" aria-label="Valor" className="min-w-0 w-full bg-transparent py-1.5 text-[10px] text-foreground outline-none" /></label>
-          <div className="flex gap-1.5"><select value={row.type} onChange={(event) => updateRow(index, { type: event.target.value as FinancialTransaction['type'] })} aria-label="Tipo" className="min-w-0 flex-1 rounded border border-border bg-background px-1.5 py-1.5 text-[10px] text-foreground outline-none focus:border-primary"><option value="expense">Despesa</option><option value="income">Receita</option></select><input value={row.date} onChange={(event) => updateRow(index, { date: event.target.value })} type="date" aria-label="Data" className="min-w-0 w-[105px] rounded border border-border bg-background px-1.5 py-1.5 text-[10px] text-foreground outline-none focus:border-primary" /></div>
+          <div className="flex gap-1.5"><StatementSelect value={row.type} onChange={(value) => updateRow(index, { type: value as FinancialTransaction['type'] })} options={[["expense", "Despesa"], ["income", "Receita"]]} /><input value={row.date} onChange={(event) => updateRow(index, { date: event.target.value })} type="date" aria-label="Data" className="min-w-0 w-[105px] rounded border border-border bg-background px-1.5 py-1.5 text-[10px] text-foreground outline-none focus:border-primary" /></div>
         </div>)}
       </div>
       <div className="mt-3 flex justify-end gap-2"><button type="button" onClick={reset} className="rounded-md px-3 py-1.5 text-[10px] text-muted-foreground hover:bg-white/[0.05]">Cancelar</button><button type="button" onClick={() => { onImport(rows); reset(); }} className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[10px] font-semibold text-primary-foreground hover:opacity-90"><Check className="h-3.5 w-3.5" /> Importar lançamentos</button></div>
@@ -116,4 +117,8 @@ function parseDate(value = '') {
   if (ofx) return `${ofx[1]}-${ofx[2]}-${ofx[3]}`;
   const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   return iso ? raw.slice(0, 10) : '';
+}
+
+function StatementSelect({ value, onChange, options }: { value: string; onChange: (value: string) => void; options: [string, string][] }) {
+  return <Select value={value} onValueChange={onChange}><SelectTrigger className="h-7 min-w-0 flex-1 border-primary/20 bg-[#0b1118] px-1.5 text-[9px] text-foreground shadow-none"><SelectValue /></SelectTrigger><SelectContent className="border-primary/25 bg-[#0b1118] text-foreground">{options.map(([optionValue, label]) => <SelectItem key={optionValue} value={optionValue} className="text-[9px] focus:bg-primary/20">{label}</SelectItem>)}</SelectContent></Select>;
 }
