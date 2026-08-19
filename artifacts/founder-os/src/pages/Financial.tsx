@@ -27,9 +27,19 @@ export default function Financial() {
   const [categoryFilter, setCategoryFilter] = useState('all');
 
   const accounts = modules.filter(m => m.type === 'financial_account');
+  const accountBalances = useMemo(() => new Map(accounts.map((account) => {
+    const accountTransactions = transactions.filter((transaction) => transaction.accountId === account.id || (!transaction.accountId && transaction.account === account.title));
+    const movementTotal = accountTransactions.reduce((sum, transaction) => {
+      if (transaction.status === 'pending') return sum;
+      if (transaction.type === 'income') return sum + transaction.amount;
+      return sum + (transaction.status === 'refunded' ? transaction.amount : -transaction.amount);
+    }, 0);
+    return [account.id, (account.balance || 0) + movementTotal] as const;
+  })), [accounts, transactions]);
 
   const filteredTransactions = useMemo(() => {
-    const byAccount = accountFilter === 'all' ? transactions : transactions.filter((transaction) => transaction.account === accountFilter);
+    const selectedAccount = accounts.find((account) => account.title === accountFilter);
+    const byAccount = accountFilter === 'all' ? transactions : transactions.filter((transaction) => selectedAccount && (transaction.accountId === selectedAccount.id || transaction.account === selectedAccount.title));
     const byCategory = categoryFilter === 'all' ? byAccount : byAccount.filter((transaction) => transaction.category === categoryFilter);
     if (period === 'all') return byCategory;
     const days = period === 'week' ? 7 : 30;
@@ -48,7 +58,6 @@ export default function Financial() {
   const currentWeekBalance = (currentWeek?.revenue || 0) - (currentWeek?.expenses || 0);
   const previousWeekBalance = (previousWeek?.revenue || 0) - (previousWeek?.expenses || 0);
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
   const revenues = filteredTransactions.filter((transaction) => transaction.type === 'income');
   const expenses = filteredTransactions.filter((transaction) => transaction.type === 'expense');
   const recentTransactions = [...filteredTransactions].sort((a, b) => b.date.localeCompare(a.date));
@@ -201,7 +210,7 @@ export default function Financial() {
                     <p className="truncate text-sm font-semibold text-foreground">{account.title || 'Conta sem nome'}</p>
                     <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{account.accountType || 'Conta financeira'} · {account.currency || 'BRL'}</p>
                   </div>
-                  <span className="shrink-0 rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[9px] text-primary">Ativa</span>
+                  <div className="shrink-0 text-right"><p className="text-sm font-bold text-primary">{formatCurrency(accountBalances.get(account.id) || 0)}</p><span className="text-[9px] uppercase tracking-wider text-muted-foreground">Saldo atual</span></div>
                 </div>
                 <div className="px-3.5">
                   <BankStatementImporter accountName={account.title || 'Conta financeira'} onImport={addTransactions} />

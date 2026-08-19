@@ -74,6 +74,8 @@ export interface FinancialTransaction {
   type: 'income' | 'expense';
   category: string;
   account: string;
+  /** Identificador estável da conta de origem; account mantém o nome para compatibilidade. */
+  accountId?: string;
   status: 'paid' | 'pending' | 'refunded';
   date: string;
 }
@@ -404,10 +406,17 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   updateModule: (id, updates) => {
+    const currentModule = get().modules.find((module) => module.id === id);
+    const renamedAccount = currentModule?.type === 'financial_account' && typeof updates.title === 'string' && updates.title.trim() && updates.title !== currentModule.title;
     set({
       modules: get().modules.map((m) =>
         m.id === id ? { ...m, ...updates, updatedAt: new Date().toISOString() } : m
       ),
+      ...(renamedAccount ? {
+        transactions: get().transactions.map((transaction) => transaction.accountId === id || (!transaction.accountId && transaction.account === currentModule.title)
+          ? { ...transaction, accountId: id, account: updates.title!.trim() }
+          : transaction),
+      } : {}),
     });
     get().saveToStorage();
   },
@@ -529,14 +538,21 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   addTransaction: (transaction) => {
-    set({ transactions: [{ ...transaction, id: `transaction-${Date.now()}` }, ...get().transactions] });
+    const account = get().modules.find((module) => module.type === 'financial_account' && (module.id === transaction.accountId || module.title === transaction.account));
+    const normalized = account ? { ...transaction, accountId: account.id, account: account.title } : transaction;
+    set({ transactions: [{ ...normalized, id: `transaction-${Date.now()}` }, ...get().transactions] });
     get().saveToStorage();
   },
 
   addTransactions: (transactions) => {
     if (!transactions.length) return;
+    const accountModules = get().modules.filter((module) => module.type === 'financial_account');
+    const normalizedTransactions = transactions.map((transaction) => {
+      const account = accountModules.find((module) => module.id === transaction.accountId || module.title === transaction.account);
+      return account ? { ...transaction, accountId: account.id, account: account.title } : transaction;
+    });
     const existing = new Set(get().transactions.map((item) => `${item.date}|${item.amount}|${item.type}|${item.description.trim().toLowerCase()}|${item.account.trim().toLowerCase()}`));
-    const fresh = transactions.filter((item) => {
+    const fresh = normalizedTransactions.filter((item) => {
       const signature = `${item.date}|${item.amount}|${item.type}|${item.description.trim().toLowerCase()}|${item.account.trim().toLowerCase()}`;
       if (existing.has(signature)) return false;
       existing.add(signature);
