@@ -23,7 +23,7 @@ import {
 
 export default function Projects() {
   const [location, setLocation] = useLocation();
-  const { modules, ecosystems, productivityHabits, addModule, updateModule, addEcosystem, deleteEcosystem, duplicateModule, deleteModule } =
+  const { modules, ecosystems, productivityHabits, nextActions, addModule, updateModule, addEcosystem, deleteEcosystem, duplicateModule, deleteModule } =
     useAppStore();
   const [newEcosystem, setNewEcosystem] = useState("");
   const [newEcosystemColor, setNewEcosystemColor] = useState("#00C9FF");
@@ -99,6 +99,18 @@ export default function Projects() {
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
   const allProjects = modules.filter((module) => module.type === "project");
+  const activeCount = allProjects.filter((project) => project.status === "active").length;
+  const pausedCount = allProjects.filter((project) => project.status === "paused").length;
+  const completedCount = allProjects.filter((project) => project.status === "done").length;
+  const averageProgress = allProjects.length ? Math.round(allProjects.reduce((total, project) => total + (project.progress || 0), 0) / allProjects.length) : 0;
+  const projectProgress = (project: (typeof allProjects)[number]) => {
+    const linkedHabits = productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === project.title.trim().toLowerCase());
+    const linkedActions = nextActions.filter((action) => (action.project || '').trim().toLowerCase() === project.title.trim().toLowerCase());
+    const total = linkedHabits.length + linkedActions.length;
+    if (!total) return project.progress || 0;
+    const done = linkedHabits.filter((habit) => habit.done || Object.values(habit.checks || {}).some((status) => status === 'done')).length + linkedActions.filter((action) => action.done).length;
+    return Math.round((done / total) * 100);
+  };
   const createEcosystem = () => { if (!newEcosystem.trim()) return; addEcosystem({ name: newEcosystem.trim(), color: newEcosystemColor }); setNewEcosystem(""); };
   const clearProjectFilter = () => { setSelectedEcosystemId(null); setLocation("/projetos"); };
 
@@ -158,6 +170,9 @@ export default function Projects() {
           Novo Projeto
         </Button>
       </div>
+      <section className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {[['Ativos', activeCount, 'text-emerald-300'], ['Pausados', pausedCount, 'text-orange-300'], ['Concluídos', completedCount, 'text-cyan-300'], ['Projetos', allProjects.length, 'text-primary'], ['Progresso médio', `${averageProgress}%`, 'text-violet-300']].map(([label, value, tone]) => <article key={String(label)} className="rounded-xl border border-white/[.08] bg-card/70 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,.12)]"><p className="text-[10px] uppercase tracking-[.14em] text-muted-foreground">{label}</p><p className={`mt-1 text-2xl font-semibold ${tone}`}>{value}</p></article>)}
+      </section>
       <div className="flex gap-2 mb-6">
         {(["all", "active", "paused", "done", "archived"] as const).map(
           (status) => (
@@ -283,10 +298,10 @@ export default function Projects() {
                     <div className="mb-1 flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground">Progresso</span>
                       <span className="font-semibold text-foreground">
-                        {project.progress || 0}%
+                        {projectProgress(project)}%
                       </span>
                     </div>
-                    <Progress value={project.progress || 0} className="h-1.5" />
+                    <Progress value={projectProgress(project)} className="h-1.5" />
                   </div>
 
                   {project.description && (
