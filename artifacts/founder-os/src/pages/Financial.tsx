@@ -21,6 +21,7 @@ export default function Financial() {
   const { modules, weeklyData, transactions, addTransaction, addTransactions, updateTransaction, deleteTransaction, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
   const [period, setPeriod] = useState<'all' | 'month' | 'week'>('all');
   const [statementPeriod, setStatementPeriod] = useState<'all' | 'month' | 'week'>('all');
+  const [statementSort, setStatementSort] = useState<'date' | 'description' | 'category' | 'account' | 'amount'>('date');
   const [accountFilter, setAccountFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
@@ -51,11 +52,20 @@ export default function Financial() {
   const expenses = filteredTransactions.filter((transaction) => transaction.type === 'expense');
   const recentTransactions = [...filteredTransactions].sort((a, b) => b.date.localeCompare(a.date));
   const statementTransactions = useMemo(() => {
-    if (statementPeriod === 'all') return recentTransactions;
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - (statementPeriod === 'week' ? 7 : 30));
-    return recentTransactions.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
-  }, [recentTransactions, statementPeriod]);
+    let scoped = recentTransactions;
+    if (statementPeriod !== 'all') {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - (statementPeriod === 'week' ? 7 : 30));
+      scoped = recentTransactions.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
+    }
+    return [...scoped].sort((a, b) => {
+      if (statementSort === 'amount') return b.amount - a.amount;
+      if (statementSort === 'description') return a.description.localeCompare(b.description, 'pt-BR');
+      if (statementSort === 'category') return a.category.localeCompare(b.category, 'pt-BR');
+      if (statementSort === 'account') return a.account.localeCompare(b.account, 'pt-BR');
+      return b.date.localeCompare(a.date);
+    });
+  }, [recentTransactions, statementPeriod, statementSort]);
 
   return (
     <div className="max-w-[1600px]">
@@ -131,12 +141,12 @@ export default function Financial() {
               <p className="mt-0.5 text-[11px] text-muted-foreground">Movimentações recentes de todas as contas</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-primary"><CalendarDays className="h-3.5 w-3.5" /><StyledSelect value={statementPeriod} onChange={(value) => setStatementPeriod(value as typeof statementPeriod)} options={[["all", "Todo o período"], ["month", "Últimos 30 dias"], ["week", "Últimos 7 dias"]]} /></div>
+          <div className="flex flex-wrap items-center justify-end gap-1.5 text-xs text-primary"><CalendarDays className="h-3.5 w-3.5" /><StyledSelect value={statementPeriod} onChange={(value) => setStatementPeriod(value as typeof statementPeriod)} options={[["all", "Todo o período"], ["month", "Últimos 30 dias"], ["week", "Últimos 7 dias"]]} /><StyledSelect value={statementSort} onChange={(value) => setStatementSort(value as typeof statementSort)} options={[["date", "Ordenar por data"], ["description", "Ordenar por descrição"], ["category", "Ordenar por categoria"], ["account", "Ordenar por conta"], ["amount", "Ordenar por valor"]]} /></div>
         </div>
         <div className="overflow-x-auto">
           <div className="min-w-[760px]">
-            <div className="grid grid-cols-[1.6fr_0.8fr_0.85fr_0.8fr_0.8fr_28px] gap-4 border-b border-[#ffffff08] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>DescriÃ§Ã£o</span><span>Categoria</span><span>Conta</span><span>Valor</span><span>Status</span><span />
+            <div className="grid grid-cols-[1.6fr_0.85fr_0.9fr_0.85fr_0.9fr_28px] gap-4 border-b border-[#ffffff08] px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span>Descrição</span><span>Data</span><span>Categoria</span><span>Conta</span><span>Valor</span><span />
             </div>
             <div className="divide-y divide-[#ffffff08]">
               {statementTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} onUpdate={updateTransaction} onDelete={deleteTransaction} />)}
@@ -384,14 +394,7 @@ function TransactionPanel({ title, subtitle, transactions, accent, icon, categor
 
 function StatementRow({ transaction, onUpdate, onDelete }: { transaction: FinancialTransaction; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
   const isIncome = transaction.type === 'income';
-  const statusStyles = transaction.status === 'paid'
-    ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20'
-    : transaction.status === 'pending'
-      ? 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20'
-      : 'bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/20';
-  const statusLabels = { paid: 'Pago', pending: 'Pendente', refunded: 'Estornado' };
-
-  return <div className="grid grid-cols-[1.6fr_0.8fr_0.85fr_0.8fr_0.8fr_28px] items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.02]"><div className="flex items-center gap-2.5"><span className={`flex h-7 w-7 items-center justify-center rounded-full ${isIncome ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#F97316]/10 text-[#F97316]'}`}>{isIncome ? <ArrowDownLeft className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}</span><div><input value={transaction.description} onChange={(event) => onUpdate(transaction.id, { description: event.target.value })} className="w-full bg-transparent text-xs font-medium text-foreground outline-none focus:border-b focus:border-primary" /><p className="mt-0.5 text-[10px] text-muted-foreground">{formatTransactionDate(transaction.date)}</p></div></div><input value={transaction.category} onChange={(event) => onUpdate(transaction.id, { category: event.target.value })} className="min-w-0 truncate bg-transparent text-[11px] text-muted-foreground outline-none focus:border-b focus:border-primary" /><input value={transaction.account} onChange={(event) => onUpdate(transaction.id, { account: event.target.value })} className="min-w-0 truncate bg-transparent text-[11px] text-muted-foreground outline-none focus:border-b focus:border-primary" /><label className="flex items-center gap-1"><span className="text-[10px] text-muted-foreground">R$</span><input type="number" min="0" value={transaction.amount} onChange={(event) => onUpdate(transaction.id, { amount: Math.max(0, Number(event.target.value) || 0) })} className={`w-full bg-transparent text-xs font-semibold outline-none focus:border-b focus:border-primary ${isIncome ? 'text-[#10B981]' : 'text-[#F97316]'}`} /></label><StyledSelect value={transaction.status} onChange={(value) => onUpdate(transaction.id, { status: value as FinancialTransaction['status'] })} options={[["paid", "Pago"], ["pending", "Pendente"], ["refunded", "Estornado"]]} compact /><button type="button" onClick={() => onDelete(transaction.id)} className="text-muted-foreground hover:text-red-300" aria-label={`Excluir ${transaction.description}`}><Trash2 className="h-4 w-4" /></button></div>;
+  return <div className="grid grid-cols-[1.6fr_0.85fr_0.9fr_0.85fr_0.9fr_28px] items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.02]"><div className="flex min-w-0 items-center gap-2.5"><span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${isIncome ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#F97316]/10 text-[#F97316]'}`}>{isIncome ? <ArrowDownLeft className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}</span><input value={transaction.description} onChange={(event) => onUpdate(transaction.id, { description: event.target.value })} className="min-w-0 w-full truncate bg-transparent text-xs font-medium text-foreground outline-none focus:border-b focus:border-primary" /></div><span className="text-[10px] text-muted-foreground">{formatTransactionDate(transaction.date)}</span><input value={transaction.category} onChange={(event) => onUpdate(transaction.id, { category: event.target.value })} className="min-w-0 truncate bg-transparent text-[11px] text-muted-foreground outline-none focus:border-b focus:border-primary" /><input value={transaction.account} onChange={(event) => onUpdate(transaction.id, { account: event.target.value })} className="min-w-0 truncate bg-transparent text-[11px] text-muted-foreground outline-none focus:border-b focus:border-primary" /><label className="flex items-center justify-end gap-1"><span className="text-[10px] text-muted-foreground">R$</span><input type="text" inputMode="decimal" value={formatCurrency(transaction.amount)} onFocus={(event) => event.currentTarget.select()} onChange={(event) => onUpdate(transaction.id, { amount: parseCurrency(event.target.value) })} className={`min-w-0 w-full bg-transparent text-right text-xs font-semibold outline-none focus:border-b focus:border-primary ${isIncome ? 'text-[#10B981]' : 'text-[#F97316]'}`} /></label><button type="button" onClick={() => onDelete(transaction.id)} className="text-muted-foreground hover:text-red-300" aria-label={`Excluir ${transaction.description}`}><Trash2 className="h-4 w-4" /></button></div>;
 }
 
 function formatTransactionDate(date: string) {
