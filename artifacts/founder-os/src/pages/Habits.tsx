@@ -377,6 +377,10 @@ export default function Habits({ mode = "habits" }: any) {
     });
     return row;
   });
+  const todayKey = keyOf(new Date());
+  const todayActions = store.nextActions.filter((action) => !action.date || action.date === todayKey);
+  const todayAgenda = store.agenda.filter((item) => !item.date || item.date === todayKey);
+  const todayHabitDone = habits.filter((habit) => habit.checks?.[todayKey] === "done").length;
   const tip = {
     background: "#10141d",
     border: "1px solid #00c9ff55",
@@ -403,6 +407,20 @@ export default function Habits({ mode = "habits" }: any) {
       </header>
       {isProductivity && (
         <section className="space-y-4 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              { label: "Ações abertas", value: todayActions.filter((action) => !action.done).length, tone: "text-orange-300", note: "para executar hoje" },
+              { label: "Concluídas hoje", value: todayActions.filter((action) => action.done).length + todayHabitDone, tone: "text-emerald-300", note: "entregas registradas" },
+              { label: "Agenda de hoje", value: todayAgenda.length, tone: "text-cyan-300", note: "compromissos" },
+              { label: "Foco do dia", value: `${score}%`, tone: "text-amber-300", note: "execução atual" },
+            ].map((metric) => (
+              <article key={metric.label} className="rounded-xl border border-amber-300/15 bg-[#0d0b12]/80 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,.16)]">
+                <p className="text-[10px] uppercase tracking-[.16em] text-muted-foreground">{metric.label}</p>
+                <p className={`mt-1 text-2xl font-semibold ${metric.tone}`}>{metric.value}</p>
+                <p className="mt-1 text-[10px] text-muted-foreground">{metric.note}</p>
+              </article>
+            ))}
+          </div>
           <NextActionsBlock />
           <div className="grid gap-4 lg:grid-cols-2 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
             <div className="[&>div>section:first-child]:hidden [&>div>section:last-child]:lg:col-span-2"><FutureVisionBlock /></div>
@@ -690,14 +708,14 @@ export default function Habits({ mode = "habits" }: any) {
               <article
                 key={category}
                 className="overflow-hidden rounded-2xl border bg-card/70 shadow-[0_12px_30px_rgba(0,0,0,.14)]"
-                style={{ borderColor: \`\${color}66\` }}
+                style={{ borderColor: `${color}66` }}
               >
                 <div
                   className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
-                  style={{ borderColor: \`\${color}44\`, background: \`\${color}10\` }}
+                  style={{ borderColor: `${color}44`, background: `${color}10` }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="h-10 w-1 rounded-full" style={{ backgroundColor: color, boxShadow: \`0 0 12px \${color}99\` }} />
+                    <span className="h-10 w-1 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 12px ${color}99` }} />
                     <div>
                       {editingCategory === category ? (
                         <input
@@ -710,7 +728,7 @@ export default function Habits({ mode = "habits" }: any) {
                             if (e.key === "Escape") cancelEditingCategory();
                           }}
                           className="h-8 w-48 rounded-md border border-cyan-400/60 bg-background px-2 text-sm outline-none"
-                          aria-label={\`Editar categoria \${category}\`}
+                          aria-label={`Editar categoria ${category}`}
                         />
                       ) : (
                         <button type="button" onClick={() => startEditingCategory(category)} className="text-left text-base font-semibold text-foreground hover:text-cyan-300">
@@ -725,14 +743,14 @@ export default function Habits({ mode = "habits" }: any) {
                     <button type="button" onClick={() => setAddingCategory(addingCategory === category ? null : category)} className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/25 px-2.5 py-1.5 text-[11px] text-cyan-300 hover:bg-cyan-400/10">
                       <Plus className="h-3 w-3" /> Adicionar hábito
                     </button>
-                    <button type="button" onClick={() => removeCategory(category)} title={\`Excluir categoria \${category}\`} className="rounded-lg border border-red-400/20 px-2 py-1.5 text-[11px] text-red-300/70 hover:bg-red-400/10">
+                    <button type="button" onClick={() => removeCategory(category)} title={`Excluir categoria ${category}`} className="rounded-lg border border-red-400/20 px-2 py-1.5 text-[11px] text-red-300/70 hover:bg-red-400/10">
                       Excluir
                     </button>
                   </div>
                 </div>
                 {addingCategory === category && (
                   <div className="flex gap-2 border-b border-white/[.08] bg-background/20 p-3">
-                    <input autoFocus value={categoryTitle} onChange={(e) => setCategoryTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addToCategory(category)} placeholder={\`Novo hábito em \${category}\`} className="h-9 min-w-0 flex-1 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400" />
+                    <input autoFocus value={categoryTitle} onChange={(e) => setCategoryTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addToCategory(category)} placeholder={`Novo hábito em ${category}`} className="h-9 min-w-0 flex-1 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400" />
                     <button type="button" onClick={() => addToCategory(category)} className="rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950">Salvar</button>
                   </div>
                 )}
