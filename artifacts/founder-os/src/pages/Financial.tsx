@@ -145,7 +145,7 @@ export default function Financial() {
         />
         <TransactionPanel
           title="Despesas da conta"
-          subtitle={`${expenses.length} saÃ­das registradas`}
+          subtitle={`${expenses.length} saídas registradas`}
           transactions={expenses}
           accent="#F97316"
           icon={<ArrowUpRight className="h-4 w-4" />}
@@ -203,7 +203,7 @@ export default function Financial() {
                 data-testid={`account-${account.id}`}
               >
                 <a href={`/financeiro/conta/${account.id}`} className="flex aspect-[1.58/1] w-full items-center justify-center overflow-hidden border-b border-primary/20 bg-card text-[10px] text-muted-foreground">
-                  {account.thumbnail ? <img src={account.thumbnail} alt={`CartÃ£o de ${account.title}`} className="h-full w-full object-cover" /> : 'FaÃ§a upload do cartÃ£o'}
+                  {account.thumbnail ? <img src={account.thumbnail} alt={`Cartão de ${account.title}`} className="h-full w-full object-cover" /> : 'Faça upload do cartão'}
                 </a>
                 <div className="flex items-start justify-between gap-3 border-b border-border/60 px-3.5 py-3">
                   <div className="min-w-0">
@@ -303,7 +303,7 @@ function UpcomingFinanceCard({ kind, title, subtitle, accent, transactions, acco
 }
 
 function SummaryCard({ label, value, accent }: { label: string; value: number; accent: string }) {
-  return <div className="rounded-lg border border-card-border bg-card p-5" style={{ boxShadow: `0 0 16px ${accent}08` }}><p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p><p className="text-2xl font-bold" style={{ color: accent }}>{formatCurrency(value)}</p><p className="mt-2 text-[10px] text-muted-foreground">Calculado pelos lanÃ§amentos registrados</p></div>;
+  return <div className="rounded-lg border border-card-border bg-card p-5" style={{ boxShadow: `0 0 16px ${accent}08` }}><p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p><p className="text-2xl font-bold" style={{ color: accent }}>{formatCurrency(value)}</p><p className="mt-2 text-[10px] text-muted-foreground">Calculado pelos lançamentos registrados</p></div>;
 }
 
 function EditableSummaryCard({ label, value, accent, onSave }: { label: string; value: number; accent: string; onSave: (value: number) => void }) {
@@ -332,7 +332,7 @@ function EditableSummaryCard({ label, value, accent, onSave }: { label: string; 
           <span className="text-sm text-muted-foreground">R$</span>
           <input autoFocus type="text" inputMode="decimal" value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') save(); if (event.key === 'Escape') setEditing(false); }} className="min-w-0 flex-1 rounded border border-primary/50 bg-background px-2 py-1 text-lg font-bold text-foreground outline-none" />
           <button type="button" onClick={save} className="text-[#10B981]" aria-label="Salvar valor"><Check className="h-4 w-4" /></button>
-          <button type="button" onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground" aria-label="Cancelar ediÃ§Ã£o"><X className="h-4 w-4" /></button>
+          <button type="button" onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground" aria-label="Cancelar edição"><X className="h-4 w-4" /></button>
         </div>
       ) : (
         <button type="button" onClick={startEditing} className="text-left text-2xl font-bold transition-colors hover:text-primary" style={{ color: accent }}>
@@ -356,7 +356,7 @@ function ComparisonCard({ currentWeek, previousWeek, currentMonth, previousMonth
   return (
     <div className="rounded-lg border border-card-border bg-card p-5" style={{ boxShadow: `0 0 16px ${accent}08` }}>
       <div className="flex items-start justify-between gap-2">
-        <div><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Comparativo</p><p className="mt-1 text-[10px] text-muted-foreground">Saldo combinado do perÃ­odo</p></div>
+        <div><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Comparativo</p><p className="mt-1 text-[10px] text-muted-foreground">Saldo combinado do período</p></div>
         <div className="flex rounded-md border border-[#ffffff10] bg-background p-0.5">
           <button type="button" onClick={() => setPeriod('week')} className={`rounded px-2 py-1 text-[10px] ${period === 'week' ? 'bg-primary/15 text-primary' : 'text-muted-foreground'}`}>Semanal</button>
           <button type="button" onClick={() => setPeriod('month')} className={`rounded px-2 py-1 text-[10px] ${period === 'month' ? 'bg-primary/15 text-primary' : 'text-muted-foreground'}`}>Mensal</button>
@@ -366,7 +366,7 @@ function ComparisonCard({ currentWeek, previousWeek, currentMonth, previousMonth
         <span className="text-2xl font-bold">{isPositive ? '+' : ''}{change.toFixed(1)}%</span>
         {!isNeutral && (isPositive ? <ArrowUpRight className="mb-1 h-5 w-5" /> : <ArrowDownRight className="mb-1 h-5 w-5" />)}
       </div>
-      <p className="mt-1 text-[10px] text-muted-foreground">vs. {period === 'week' ? 'semana' : 'mÃªs'} anterior</p>
+      <p className="mt-1 text-[10px] text-muted-foreground">vs. {period === 'week' ? 'semana' : 'mês'} anterior</p>
       <div className="mt-3 flex items-center justify-between border-t border-[#ffffff0a] pt-3 text-[10px] text-muted-foreground"><span>Atual <strong className="ml-1 text-foreground">{formatCurrency(current)}</strong></span><span>Anterior <strong className="ml-1 text-foreground">{formatCurrency(previous)}</strong></span></div>
     </div>
   );
@@ -408,9 +408,9 @@ function TransactionPanel({ title, subtitle, transactions, accent, icon, categor
       </div>
       <div className="divide-y divide-[#ffffff08]">
         {latest.map((transaction) => <TransactionPanelRow key={transaction.id} transaction={transaction} accent={accent} editableCategories={editableCategories} onUpdate={onUpdate} onDelete={onDelete} onAddCategory={addCategory} />)}
-        {latest.length === 0 && <p className="px-5 py-6 text-xs text-muted-foreground">Nenhuma movimentaÃ§Ã£o registrada.</p>}
+        {latest.length === 0 && <p className="px-5 py-6 text-xs text-muted-foreground">Nenhuma movimentação registrada.</p>}
       </div>
-      <div className="border-t border-[#ffffff0a] px-5 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Ver todas as {title.toLowerCase()} <span className="ml-1 text-primary">â†’</span></div>
+      <div className="border-t border-[#ffffff0a] px-5 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Ver todas as {title.toLowerCase()} <span className="ml-1 text-primary">→</span></div>
     </section>
   );
 }
