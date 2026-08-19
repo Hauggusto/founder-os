@@ -410,8 +410,16 @@ export const useAppStore = create<AppStore>((set, get) => ({
       
       version: '1.0',
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    void saveCloudAppData(data);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      // Imagens de projetos podem fazer o snapshot ultrapassar o limite local.
+      // O dado ainda deve seguir para a nuvem mesmo quando o cache local falhar.
+      console.warn('Local storage limit reached; keeping the latest data in the cloud.', error);
+    }
+    void saveCloudAppData(data).catch((error) => {
+      console.error('Cloud save failed:', error);
+    });
   },
 
   addModule: (moduleData) => {
