@@ -52,6 +52,7 @@ export default function Projects() {
             id: project.id,
             title: project.title,
             category: project.category || "",
+            ecosystem: project.ecosystem || "",
             status: project.status,
             progress: project.progress || 0,
             phase: project.phase || "",
@@ -61,7 +62,7 @@ export default function Projects() {
             url: project.url || "",
             thumbnail: project.thumbnail || "",
           }
-        : emptyProjectForm(),
+        : { ...emptyProjectForm(), ecosystem: selectedEcosystem || "" },
     );
   const saveProject = () => {
     if (!projectEditor?.title.trim()) return;
@@ -69,6 +70,7 @@ export default function Projects() {
       type: "project" as const,
       title: projectEditor.title.trim(),
       category: projectEditor.category.trim() || "Sem grupo",
+      ecosystem: projectEditor.ecosystem || undefined,
       status: projectEditor.status,
       progress: projectEditor.progress,
       phase: projectEditor.phase.trim(),
@@ -402,6 +404,7 @@ export default function Projects() {
         <ProjectEditor
           form={projectEditor}
           setForm={setProjectEditor}
+          ecosystems={ecosystems}
           onClose={() => setProjectEditor(null)}
           onSave={saveProject}
         />
@@ -415,6 +418,7 @@ function emptyProjectForm() {
     id: "",
     title: "",
     category: "",
+    ecosystem: "",
     status: "active" as ModuleStatus,
     progress: 0,
     phase: "",
@@ -429,11 +433,13 @@ function emptyProjectForm() {
 function ProjectEditor({
   form,
   setForm,
+  ecosystems,
   onClose,
   onSave,
 }: {
   form: ReturnType<typeof emptyProjectForm>;
   setForm: React.Dispatch<React.SetStateAction<ReturnType<typeof emptyProjectForm>>>;
+  ecosystems: { id: string; name: string; color?: string }[];
   onClose: () => void;
   onSave: () => void;
 }) {
@@ -537,6 +543,20 @@ function ProjectEditor({
               onChange={(e) => update("category", e.target.value)}
               placeholder="Ex.: Canais, Produto, Cliente"
             />
+          </Field>
+          <Field label="Ecossistema">
+            <select
+              value={form.ecosystem}
+              onChange={(e) => update("ecosystem", e.target.value)}
+              className="h-10 w-full rounded-lg border border-border bg-background px-3 text-xs outline-none focus:border-primary"
+            >
+              <option value="">Sem ecossistema</option>
+              {ecosystems.map((ecosystem) => (
+                <option key={ecosystem.id} value={ecosystem.id}>
+                  {ecosystem.name}
+                </option>
+              ))}
+            </select>
           </Field>
           <div className="md:col-span-2">
             <label className="block text-xs font-medium text-muted-foreground">
