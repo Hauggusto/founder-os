@@ -68,6 +68,30 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Controles de agenda: menus e calendários acompanham o tema escuro do dashboard. */
+select,
+input[type='date'],
+input[type='time'] {
+  color-scheme: dark;
+}
+
+select {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+}
+
+select option,
+select optgroup {
+  color: #e5edf7;
+  background: #10151c;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(2) hue-rotate(155deg);
+  opacity: .82;
+}
+
 /* Seletores compactos no padrão neon do Founder OS */
 input[type='checkbox'].accent-orange-400 {
   appearance: none;
