@@ -13,6 +13,7 @@ export function NextActionsBlock() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
   
   const sortedActions = [...nextActions].sort((a, b) => Number(a.done) - Number(b.done));
   const today = new Date().toISOString().slice(0, 10);
@@ -20,6 +21,7 @@ export function NextActionsBlock() {
 
   const pendingActions = sortedActions.filter((action) => !action.done);
   const completedToday = sortedActions.filter((action) => action.done && action.completedAt === today).length;
+  const completedActions = sortedActions.filter((action) => action.done);
   const save = () => { if (!text.trim()) return; addNextAction(text.trim(), project.trim() || undefined, priority, date, time || undefined, selectedTags); setText(''); setProject(''); setSelectedTags([]); setDate(new Date().toISOString().slice(0, 10)); setTime(''); setAdding(false); };
   const renderActions = (items: typeof sortedActions) => <div className="space-y-2">{items.length ? items.map((action) => (
           <div key={action.id} className="flex items-start gap-3 rounded-lg border border-white/[.06] bg-background/25 p-2.5 transition-colors hover:border-primary/20 hover:bg-[#ffffff05] group">
@@ -49,7 +51,7 @@ export function NextActionsBlock() {
         <section><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground"><Flag className="h-4 w-4 text-emerald-400" /> Importantes <span className="rounded bg-emerald-400/10 px-1.5 py-0.5 text-[9px] text-emerald-300">PRIORIDADE</span></div>{renderActions(pendingActions.filter((a) => a.priority !== 'urgent'))}</section>
         </div>
       </div>
-      {completedToday > 0 && <p className="mt-3 border-t border-white/[.06] pt-2 text-[10px] text-emerald-300">{completedToday} concluída(s) hoje — registrada(s) no histórico e nas métricas.</p>}
+      {completedActions.length > 0 && <div className="mt-3 border-t border-white/[.06] pt-3"><button onClick={() => setShowCompleted((value) => !value)} className="flex w-full items-center justify-between rounded-lg border border-emerald-400/15 bg-emerald-400/[.04] px-3 py-2 text-left text-[10px] text-emerald-300 hover:bg-emerald-400/[.08]"><span>✓ Concluídas hoje <span className="ml-1 opacity-70">{completedToday} hoje · {completedActions.length} no histórico</span></span><span>{showCompleted ? 'Ocultar' : 'Ver concluídas'}</span></button>{showCompleted && <div className="mt-2 max-h-48 space-y-2 overflow-y-auto pr-1 [scrollbar-color:rgba(52,211,153,.45)_rgba(255,255,255,.04)] [scrollbar-width:thin]">{renderActions(completedActions)}</div>}</div>}
     </div>
   );
 }
