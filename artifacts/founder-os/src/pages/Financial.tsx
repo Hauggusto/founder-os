@@ -20,6 +20,7 @@ const EXPENSE_CATEGORIES = ['Alimentação', 'Animais de estimação', 'Assinatu
 export default function Financial() {
   const { modules, weeklyData, transactions, addTransaction, addTransactions, updateTransaction, deleteTransaction, openAddModal, duplicateModule, updateModule, deleteModule } = useAppStore();
   const [period, setPeriod] = useState<'all' | 'month' | 'week'>('all');
+  const [statementPeriod, setStatementPeriod] = useState<'all' | 'month' | 'week'>('all');
   const [accountFilter, setAccountFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
@@ -49,6 +50,12 @@ export default function Financial() {
   const revenues = filteredTransactions.filter((transaction) => transaction.type === 'income');
   const expenses = filteredTransactions.filter((transaction) => transaction.type === 'expense');
   const recentTransactions = [...filteredTransactions].sort((a, b) => b.date.localeCompare(a.date));
+  const statementTransactions = useMemo(() => {
+    if (statementPeriod === 'all') return recentTransactions;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - (statementPeriod === 'week' ? 7 : 30));
+    return recentTransactions.filter((transaction) => new Date(`${transaction.date}T12:00:00`) >= cutoff);
+  }, [recentTransactions, statementPeriod]);
 
   return (
     <div className="max-w-[1600px]">
@@ -121,12 +128,10 @@ export default function Financial() {
             <ReceiptText className="h-4 w-4 text-primary" />
             <div>
               <h2 className="text-sm font-semibold text-foreground">Extrato da conta</h2>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">MovimentaÃ§Ãµes recentes de todas as contas</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">Movimentações recentes de todas as contas</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-primary">
-            <CalendarDays className="h-3.5 w-3.5" /> Filtrar perÃ­odo
-          </Button>
+          <div className="flex items-center gap-1.5 text-xs text-primary"><CalendarDays className="h-3.5 w-3.5" /><StyledSelect value={statementPeriod} onChange={(value) => setStatementPeriod(value as typeof statementPeriod)} options={[["all", "Todo o período"], ["month", "Últimos 30 dias"], ["week", "Últimos 7 dias"]]} /></div>
         </div>
         <div className="overflow-x-auto">
           <div className="min-w-[760px]">
@@ -134,7 +139,7 @@ export default function Financial() {
               <span>DescriÃ§Ã£o</span><span>Categoria</span><span>Conta</span><span>Valor</span><span>Status</span><span />
             </div>
             <div className="divide-y divide-[#ffffff08]">
-              {recentTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} onUpdate={updateTransaction} onDelete={deleteTransaction} />)}
+              {statementTransactions.map((transaction) => <StatementRow key={transaction.id} transaction={transaction} onUpdate={updateTransaction} onDelete={deleteTransaction} />)}
             </div>
           </div>
         </div>
