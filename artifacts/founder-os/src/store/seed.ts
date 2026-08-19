@@ -199,6 +199,7 @@ export const seedData: AppData = {
     { id: 'tx-7', description: 'Impostos do mês', amount: 740, type: 'expense', category: 'Impostos', account: 'Conta PJ', status: 'paid', date: '2024-06-04T10:05:00' },
     { id: 'tx-8', description: 'Reembolso de viagem', amount: 320, type: 'expense', category: 'Deslocamento', account: 'Conta PF', status: 'refunded', date: '2024-06-03T13:40:00' },
   ],
+  financialCategoryRules: [],
   financialSummary: {},
   quickCaptures: [
     {

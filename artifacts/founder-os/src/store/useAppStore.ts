@@ -93,6 +93,12 @@ export interface FinancialSummaryOverrides {
   balance?: number;
 }
 
+export interface FinancialCategoryRule {
+  id: string;
+  keyword: string;
+  category: string;
+}
+
 export interface HabitEntry {
   id: string;
   title: string;
@@ -182,6 +188,7 @@ export interface AppData {
   ecosystems: EcosystemGroup[];
   weeklyData: WeeklyEntry[];
   transactions: FinancialTransaction[];
+  financialCategoryRules: FinancialCategoryRule[];
   financialSummary: FinancialSummaryOverrides;
   quickCaptures: { id: string; text: string; createdAt: string }[];
   weekFocus: string;
@@ -290,6 +297,31 @@ interface AppStore extends AppData {
   saveToStorage: () => void;
 }
 
+const FINANCIAL_RULE_STOP_WORDS = new Set(['para', 'com', 'sem', 'uma', 'uns', 'das', 'dos', 'conta', 'contas', 'saída', 'saida', 'entrada', 'receita', 'despesa']);
+
+function normalizeFinancialRuleText(value: string) {
+  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function addCategoryRule(rules: FinancialCategoryRule[], description: string, category: string) {
+  const keywords = normalizeFinancialRuleText(description).split(/[^a-z0-9]+/).filter((word) => word.length >= 4 && !FINANCIAL_RULE_STOP_WORDS.has(word));
+  if (!keywords.length) return rules;
+  const next = [...rules];
+  keywords.forEach((keyword) => {
+    const existing = next.find((rule) => rule.keyword === keyword);
+    if (existing) existing.category = category;
+    else next.push({ id: `financial-rule-${Date.now()}-${keyword}`, keyword, category });
+  });
+  return next;
+}
+
+function applyFinancialCategoryRule<T extends { description: string; category: string }>(transaction: T, rules: FinancialCategoryRule[]) {
+  if (!['Importado', 'Não categorizado', ''].includes(transaction.category)) return transaction;
+  const description = normalizeFinancialRuleText(transaction.description);
+  const matched = rules.find((rule) => description.includes(normalizeFinancialRuleText(rule.keyword)));
+  return matched ? { ...transaction, category: matched.category } : transaction;
+}
+
 // Load from localStorage or use seed
 const loadInitialData = (): AppData => {
   try {
@@ -303,6 +335,7 @@ const loadInitialData = (): AppData => {
         modules: (parsed.modules || seedData.modules).map((module: Module) => module.id === '8' && module.type === 'financial_account' && module.balance === 32000 ? { ...module, balance: 300 } : module),
         // Fallbacks for new fields
         transactions: parsed.transactions || seedData.transactions,
+        financialCategoryRules: parsed.financialCategoryRules || [],
         tags: parsed.tags || seedData.tags,
         ecosystems: parsed.ecosystems || seedData.ecosystems,
         financialSummary: parsed.financialSummary || seedData.financialSummary,
@@ -352,6 +385,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       ecosystems: state.ecosystems,
       weeklyData: state.weeklyData,
       transactions: state.transactions,
+      financialCategoryRules: state.financialCategoryRules,
       financialSummary: state.financialSummary,
       quickCaptures: state.quickCaptures,
       weekFocus: state.weekFocus,
@@ -539,7 +573,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addTransaction: (transaction) => {
     const account = get().modules.find((module) => module.type === 'financial_account' && (module.id === transaction.accountId || module.title === transaction.account));
-    const normalized = account ? { ...transaction, accountId: account.id, account: account.title } : transaction;
+    const normalized = applyFinancialCategoryRule(account ? { ...transaction, accountId: account.id, account: account.title } : transaction, get().financialCategoryRules);
     set({ transactions: [{ ...normalized, id: `transaction-${Date.now()}` }, ...get().transactions] });
     get().saveToStorage();
   },
@@ -549,7 +583,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const accountModules = get().modules.filter((module) => module.type === 'financial_account');
     const normalizedTransactions = transactions.map((transaction) => {
       const account = accountModules.find((module) => module.id === transaction.accountId || module.title === transaction.account);
-      return account ? { ...transaction, accountId: account.id, account: account.title } : transaction;
+      return applyFinancialCategoryRule(account ? { ...transaction, accountId: account.id, account: account.title } : transaction, get().financialCategoryRules);
     });
     const existing = new Set(get().transactions.map((item) => `${item.date}|${item.amount}|${item.type}|${item.description.trim().toLowerCase()}|${item.account.trim().toLowerCase()}`));
     const fresh = normalizedTransactions.filter((item) => {
@@ -564,7 +598,14 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   updateTransaction: (id, updates) => {
-    set({ transactions: get().transactions.map((transaction) => transaction.id === id ? { ...transaction, ...updates } : transaction) });
+    const current = get().transactions.find((transaction) => transaction.id === id);
+    const next = current ? { ...current, ...updates } : null;
+    const shouldLearnCategory = Boolean(current && updates.category && updates.category !== current.category && next?.description);
+    const financialCategoryRules = shouldLearnCategory ? addCategoryRule(get().financialCategoryRules, next!.description, updates.category!) : get().financialCategoryRules;
+    set({
+      transactions: get().transactions.map((transaction) => transaction.id === id ? { ...transaction, ...updates } : transaction),
+      financialCategoryRules,
+    });
     get().saveToStorage();
   },
 
@@ -804,6 +845,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       ecosystems: state.ecosystems,
       weeklyData: state.weeklyData,
       transactions: state.transactions,
+      financialCategoryRules: state.financialCategoryRules,
       financialSummary: state.financialSummary,
       quickCaptures: state.quickCaptures,
       weekFocus: state.weekFocus,
@@ -837,6 +879,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         ecosystems: parsed.ecosystems || [],
         weeklyData: parsed.weeklyData || [],
         transactions: parsed.transactions || [],
+        financialCategoryRules: parsed.financialCategoryRules || [],
         financialSummary: parsed.financialSummary || {},
         quickCaptures: parsed.quickCaptures || [],
         weekFocus: parsed.weekFocus || '',
