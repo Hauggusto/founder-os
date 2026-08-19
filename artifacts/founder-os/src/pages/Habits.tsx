@@ -383,7 +383,7 @@ export default function Habits({ mode = "habits" }: any) {
     borderRadius: 8,
   };
   return (
-    <div className={`mx-auto w-full max-w-[1500px] space-y-6 ${isProductivity ? "productivity-workspace" : ""}`}>
+    <div className={`mx-auto w-full max-w-[1500px] space-y-6 ${isProductivity ? "productivity-workspace font-mono" : ""}`}>
       <header className={`rounded-2xl border p-6 ${isProductivity ? "border-amber-400/30 bg-gradient-to-r from-[#1b1308] via-card to-[#17111d] shadow-[0_18px_45px_rgba(245,158,11,.08)]" : "border-cyan-400/25 bg-gradient-to-r from-[#07151d] via-card to-[#111421]"}`}>
         <p className={`text-xs font-semibold uppercase tracking-[.25em] ${isProductivity ? "text-amber-300" : "text-cyan-400"}`}>
           {isProductivity ? "FOCO / ENTREGA" : "ROTINA / EXECUÇÃO"}
