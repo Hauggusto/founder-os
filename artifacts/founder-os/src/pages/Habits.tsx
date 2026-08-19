@@ -30,6 +30,7 @@ import {
 import { FutureVisionBlock } from "@/components/overview/FutureVisionBlock";
 import { NextActionsBlock } from "@/components/overview/NextActionsBlock";
 import { AgendaBlock } from "@/components/overview/AgendaBlock";
+import { TagManager } from "@/components/overview/TagManager";
 
 type Period = "day" | "week" | "fortnight" | "month" | "previousMonth";
 const keyOf = (date: Date) => date.toISOString().slice(0, 10);
@@ -405,6 +406,7 @@ export default function Habits({ mode = "habits" }: any) {
           </div>
         </div>
       </header>
+      <TagManager />
       {isProductivity && (
         <section className="space-y-4 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

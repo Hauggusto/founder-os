@@ -53,6 +53,11 @@ export interface Category {
   parentId?: string;
   order: number;
 }
+export interface DashboardTag {
+  id: string;
+  name: string;
+  color: string;
+}
 export interface EcosystemGroup { id: string; name: string; color: string; }
 
 export interface WeeklyEntry {
@@ -88,6 +93,7 @@ export interface HabitEntry {
   order: number;
   categoryColor?: string;
   checks?: Record<string, IdentityStatus>;
+  tags?: string[];
 }
 
 export interface AgendaItem {
@@ -159,6 +165,7 @@ const defaultFutureGoals: FutureGoal[] = [
 export interface AppData {
   modules: Module[];
   categories: Category[];
+  tags: DashboardTag[];
   ecosystems: EcosystemGroup[];
   weeklyData: WeeklyEntry[];
   transactions: FinancialTransaction[];
@@ -176,7 +183,7 @@ export interface AppData {
   identityChecks: IdentityCheck[];
   learningCards: LearningCard[];
   futureGoals: FutureGoal[];
-  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; time?: string; completedAt?: string; executionStatus?: 'pending' | 'executed' | 'failed' }[];
+  nextActions: { id: string; text: string; done: boolean; project?: string; priority?: 'important' | 'urgent'; date?: string; time?: string; completedAt?: string; executionStatus?: 'pending' | 'executed' | 'failed'; tags?: string[] }[];
   weekSummary: string;
   energyLevel: number;
   focusLevel: number;
@@ -202,6 +209,9 @@ interface AppStore extends AppData {
   
   // Category actions
   addCategory: (cat: Omit<Category, 'id'>) => void;
+  addTag: (tag: Omit<DashboardTag, 'id'>) => void;
+  updateTag: (id: string, updates: Partial<Omit<DashboardTag, 'id'>>) => void;
+  deleteTag: (id: string) => void;
   addEcosystem: (ecosystem: Omit<EcosystemGroup, 'id'>) => void;
   deleteEcosystem: (id: string) => void;
   
@@ -273,6 +283,7 @@ const loadInitialData = (): AppData => {
         modules: (parsed.modules || seedData.modules).map((module: Module) => module.id === '8' && module.type === 'financial_account' && module.balance === 32000 ? { ...module, balance: 300 } : module),
         // Fallbacks for new fields
         transactions: parsed.transactions || seedData.transactions,
+        tags: parsed.tags || seedData.tags,
         ecosystems: parsed.ecosystems || seedData.ecosystems,
         financialSummary: parsed.financialSummary || seedData.financialSummary,
         habits: parsed.habits || seedData.habits,
@@ -317,6 +328,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     const data: AppData = {
       modules: state.modules,
       categories: state.categories,
+      tags: state.tags,
       ecosystems: state.ecosystems,
       weeklyData: state.weeklyData,
       transactions: state.transactions,
@@ -420,6 +432,29 @@ export const useAppStore = create<AppStore>((set, get) => ({
       id: `cat-${Date.now()}`,
     };
     set({ categories: [...get().categories, newCat] });
+    get().saveToStorage();
+  },
+
+  addTag: (tag) => {
+    const name = tag.name.trim();
+    if (!name || get().tags.some((item) => item.name.toLowerCase() === name.toLowerCase())) return;
+    set({ tags: [...get().tags, { ...tag, name, id: `tag-${Date.now()}` }] });
+    get().saveToStorage();
+  },
+
+  updateTag: (id, updates) => {
+    set({ tags: get().tags.map((tag) => tag.id === id ? { ...tag, ...updates, name: updates.name?.trim() || tag.name } : tag) });
+    get().saveToStorage();
+  },
+
+  deleteTag: (id) => {
+    set({
+      tags: get().tags.filter((tag) => tag.id !== id),
+      modules: get().modules.map((module) => module.tags ? { ...module, tags: module.tags.filter((tag) => tag !== id) } : module),
+      habits: get().habits.map((habit) => habit.tags ? { ...habit, tags: habit.tags.filter((tag) => tag !== id) } : habit),
+      productivityHabits: get().productivityHabits.map((habit) => habit.tags ? { ...habit, tags: habit.tags.filter((tag) => tag !== id) } : habit),
+      nextActions: get().nextActions.map((action) => action.tags ? { ...action, tags: action.tags.filter((tag) => tag !== id) } : action),
+    });
     get().saveToStorage();
   },
 
