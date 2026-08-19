@@ -395,7 +395,7 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-mono antialiased bg-background text-foreground;
   }
 }
 
