@@ -433,7 +433,7 @@ function ProjectEditor({
   onSave,
 }: {
   form: ReturnType<typeof emptyProjectForm>;
-  setForm: (form: ReturnType<typeof emptyProjectForm>) => void;
+  setForm: React.Dispatch<React.SetStateAction<ReturnType<typeof emptyProjectForm>>>;
   onClose: () => void;
   onSave: () => void;
 }) {
@@ -441,16 +441,21 @@ function ProjectEditor({
   const update = (
     key: keyof ReturnType<typeof emptyProjectForm>,
     value: string | number,
-  ) => setForm({ ...form, [key]: value });
+  ) => setForm((current) => ({ ...current, [key]: value }));
   const upload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     setThumbnailError("");
-    if (!file.type.startsWith("image/")) {
+    if (file.type && !file.type.startsWith("image/")) {
       setThumbnailError("Escolha um arquivo de imagem válido.");
       event.target.value = "";
       return;
     }
+    // Keep a direct preview immediately; the normalized version replaces it
+    // as soon as the browser finishes decoding the image.
+    const reader = new FileReader();
+    reader.onload = () => update("thumbnail", String(reader.result));
+    reader.readAsDataURL(file);
     const objectUrl = URL.createObjectURL(file);
     const image = new Image();
     image.onload = () => {
