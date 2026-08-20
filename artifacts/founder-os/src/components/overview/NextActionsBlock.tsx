@@ -65,7 +65,7 @@ export function NextActionsBlock() {
   const completedActions = sortedActions.filter((action) => action.done);
   const save = () => { if (!text.trim()) return; addNextAction(text.trim(), project.trim() || undefined, priority, undefined, undefined, selectedTags); setText(''); setProject(''); setSelectedTags([]); setAdding(false); };
   const renderActions = (items: typeof sortedActions) => <div className="space-y-2">{items.length ? items.map((action) => (
-          <div key={action.id} className="flex items-start gap-3 rounded-lg border border-white/[.06] bg-background/25 p-2.5 transition-colors hover:border-primary/20 hover:bg-[#ffffff05] group">
+          <div key={action.id} className="next-action-row flex items-start gap-3 rounded-lg border border-white/[.06] bg-background/25 p-2.5 transition-colors hover:border-primary/20 hover:bg-[#ffffff05] group">
             {action.priority === 'urgent' ? <Flame className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" /> : <Flag className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />}
             <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
             <div className="flex shrink-0 items-center gap-1.5">
