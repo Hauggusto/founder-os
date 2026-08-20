@@ -1292,3 +1292,20 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     white-space: nowrap;
   }
 }
+
+
+/* Produtividade: os quatro indicadores ficam em 2x2 somente no mobile. */
+@media (max-width: 767px) {
+  .mobile-main section.space-y-4 > div.grid.grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .5rem !important;
+    width: 100% !important;
+  }
+
+  .mobile-main section.space-y-4 > div.grid.grid-cols-2 > article {
+    min-width: 0 !important;
+    width: auto !important;
+    padding: .65rem .55rem !important;
+  }
+}
