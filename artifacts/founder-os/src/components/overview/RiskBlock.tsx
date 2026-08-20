@@ -30,7 +30,7 @@ export function RiskBlock() {
             <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">Alertas que merecem direção</h2>
             <p className="mt-1 text-xs text-muted-foreground">Não é sobre culpa. É sobre enxergar cedo e agir com clareza.</p>
           </div>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="risk-summary-grid grid grid-cols-3 gap-2 sm:gap-3">
             <RiskSummary icon={<Flame className="h-4 w-4" />} label="Críticos" value={counts.high} color="#EF4444" />
             <RiskSummary icon={<CircleAlert className="h-4 w-4" />} label="Atenção" value={counts.medium} color="#F59E0B" />
             <RiskSummary icon={<CheckCircle2 className="h-4 w-4" />} label="OK" value={counts.low} color="#10B981" />
