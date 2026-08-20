@@ -1130,3 +1130,35 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     flex: 0 0 74px;
   }
 }
+
+/* Correção final dos resumos da aba Alertas no mobile.
+   Fica no fim do arquivo para vencer a regra geral que empilha todos os grids. */
+@media (max-width: 767px) {
+  .mobile-main .alert-summary-grid.alert-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: .5rem !important;
+  }
+
+  .mobile-main .alert-summary-grid.alert-summary-grid > * {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .mobile-main .risk-summary-grid.risk-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: .5rem !important;
+  }
+
+  .mobile-main .risk-summary-grid.risk-summary-grid > * {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+}
