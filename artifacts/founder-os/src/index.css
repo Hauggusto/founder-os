@@ -1309,3 +1309,48 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     padding: .65rem .55rem !important;
   }
 }
+
+
+@media (max-width: 767px) {
+  .mobile-main .next-action-row {
+    align-items: center !important;
+    gap: .5rem !important;
+    padding: .65rem .6rem !important;
+  }
+
+  .mobile-main .next-action-row > svg {
+    flex: 0 0 auto;
+  }
+
+  .mobile-main .next-action-controls {
+    margin-left: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: .25rem !important;
+  }
+
+  .mobile-main .next-action-controls > button,
+  .mobile-main .next-action-controls > a {
+    display: inline-flex !important;
+    width: 1.8rem !important;
+    height: 1.8rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: .25rem !important;
+    opacity: 1 !important;
+  }
+
+  .mobile-main .next-action-controls [role="checkbox"] {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .mobile-main .next-action-controls > a {
+    order: 2;
+  }
+
+  .mobile-main .next-action-controls > button:last-child {
+    order: 3;
+  }
+}
