@@ -4,6 +4,50 @@ import { Flag, Flame, Plus, Tag, X } from 'lucide-react';
 import { Link } from 'wouter';
 import { Checkbox } from '@/components/ui/checkbox';
 
+function ProjectPicker({
+  value,
+  projects,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  projects: { id: string; title: string }[];
+  onChange: (value: string) => void;
+  ariaLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = value || 'Sem projeto';
+
+  return (
+    <div className="relative min-w-0" onBlur={() => window.setTimeout(() => setOpen(false), 120)}>
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="flex h-7 max-w-full items-center gap-2 rounded-full bg-white/[.035] px-2.5 text-[10px] text-muted-foreground outline-none transition hover:bg-primary/[.08] hover:text-primary focus-visible:ring-1 focus-visible:ring-primary/60"
+        aria-label={ariaLabel}
+        aria-expanded={open}
+      >
+        <span className="max-w-[150px] truncate">{selected}</span>
+        <span className="text-[9px] opacity-60">⌄</span>
+      </button>
+      {open && (
+        <div className="absolute left-0 top-8 z-30 max-h-56 min-w-[170px] overflow-y-auto rounded-xl border border-primary/20 bg-[#0b1016] p-1 shadow-[0_12px_30px_rgba(0,0,0,.45)]">
+          {['', ...projects.map((project) => project.title)].map((option) => (
+            <button
+              key={option || 'none'}
+              type="button"
+              onClick={() => { onChange(option); setOpen(false); }}
+              className={`block w-full rounded-lg px-2.5 py-2 text-left text-[10px] transition ${option === value ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-white/[.06] hover:text-foreground'}`}
+            >
+              {option || 'Sem projeto'}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function NextActionsBlock() {
   const { nextActions, tags, modules, toggleNextAction, addNextAction, updateNextAction, deleteNextAction } = useAppStore();
   const projects = modules.filter((module) => module.type === 'project').sort((a, b) => a.title.localeCompare(b.title));
@@ -11,19 +55,15 @@ export function NextActionsBlock() {
   const [text, setText] = useState('');
   const [project, setProject] = useState('');
   const [priority, setPriority] = useState<'important' | 'urgent'>('important');
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [time, setTime] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showCompleted, setShowCompleted] = useState(false);
   
   const sortedActions = [...nextActions].sort((a, b) => Number(a.done) - Number(b.done));
   const today = new Date().toISOString().slice(0, 10);
-  const dateState = (action: typeof sortedActions[number]) => action.done ? 'Concluída' : action.date && action.date < today ? 'Atrasada' : action.date === today ? 'Hoje' : 'Próxima';
-
   const pendingActions = sortedActions.filter((action) => !action.done);
   const completedToday = sortedActions.filter((action) => action.done && action.completedAt === today).length;
   const completedActions = sortedActions.filter((action) => action.done);
-  const save = () => { if (!text.trim()) return; addNextAction(text.trim(), project.trim() || undefined, priority, date, time || undefined, selectedTags); setText(''); setProject(''); setSelectedTags([]); setDate(new Date().toISOString().slice(0, 10)); setTime(''); setAdding(false); };
+  const save = () => { if (!text.trim()) return; addNextAction(text.trim(), project.trim() || undefined, priority, undefined, undefined, selectedTags); setText(''); setProject(''); setSelectedTags([]); setAdding(false); };
   const renderActions = (items: typeof sortedActions) => <div className="space-y-2">{items.length ? items.map((action) => (
           <div key={action.id} className="flex items-start gap-3 rounded-lg border border-white/[.06] bg-background/25 p-2.5 transition-colors hover:border-primary/20 hover:bg-[#ffffff05] group">
             <Checkbox 
@@ -34,7 +74,7 @@ export function NextActionsBlock() {
             {action.priority === 'urgent' ? <Flame className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" /> : <Flag className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />}
               <div className="flex-1 flex flex-col items-start gap-1.5 min-w-0">
                 <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`w-full rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
-              <div className="flex flex-wrap items-center gap-1"><select value={action.project || ''} onChange={(e) => updateNextAction(action.id, { project: e.target.value || undefined })} className={`h-5 min-w-0 max-w-[140px] flex-1 rounded border border-transparent bg-transparent px-1 text-[9px] uppercase text-muted-foreground outline-none focus:border-primary ${action.done ? 'opacity-50' : ''}`} aria-label="Projeto da ação"><option value="">Sem projeto</option>{projects.map((project) => <option key={project.id} value={project.title}>{project.title}</option>)}</select><input type="date" value={action.date || ''} onChange={(e) => updateNextAction(action.id, { date: e.target.value })} className="h-5 rounded border border-transparent bg-transparent px-1 text-[9px] text-muted-foreground outline-none focus:border-primary" aria-label="Data da execução" /><select value={action.executionStatus || (action.done ? 'executed' : 'pending')} onChange={(e) => { const executionStatus = e.target.value as 'pending' | 'executed' | 'failed'; updateNextAction(action.id, { executionStatus, done: executionStatus === 'executed', completedAt: executionStatus === 'executed' ? new Date().toISOString().slice(0, 10) : undefined }); }} className="h-5 rounded border border-transparent bg-transparent px-1 text-[9px] text-muted-foreground outline-none focus:border-primary" aria-label="Status da execução"><option value="pending">Pendente</option><option value="executed">Executada</option><option value="failed">Não executada</option></select><span className={`rounded-full px-1.5 py-0.5 text-[9px] ${action.done ? 'bg-emerald-400/10 text-emerald-300' : action.date && action.date < today ? 'bg-red-400/10 text-red-300' : 'bg-primary/[.06] text-primary'}`}>{dateState(action)}</span>{action.project && <Link href={`/projetos?project=${encodeURIComponent(action.project)}`} className="shrink-0 rounded bg-primary/[.06] px-1.5 py-0.5 text-[9px] uppercase text-primary hover:bg-primary/15">Abrir projeto</Link>}</div>
+              <div className="flex flex-wrap items-center gap-1.5"><ProjectPicker value={action.project || ''} projects={projects} onChange={(value) => updateNextAction(action.id, { project: value || undefined })} ariaLabel="Projeto da ação" />{action.project && <Link href={`/projetos?project=${encodeURIComponent(action.project)}`} className="shrink-0 rounded-full bg-primary/[.06] px-2 py-1 text-[9px] uppercase text-primary hover:bg-primary/15">Abrir projeto</Link>}</div>
             </div>
             <button onClick={() => deleteNextAction(action.id)} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação"><X className="h-3.5 w-3.5" /></button>
           </div>)) : <p className="rounded-lg border border-dashed border-white/10 p-3 text-center text-[11px] text-muted-foreground">Nenhuma ação nesta prioridade.</p>}</div>;
@@ -45,7 +85,7 @@ export function NextActionsBlock() {
         <div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-orange-300">ENTREGAS PONTUAIS</p><h3 className="mt-1 text-sm font-semibold text-foreground">Tarefas avulsas</h3><p className="mt-1 text-[10px] text-muted-foreground">Ações com data ou horário específico, sem repetição automática.</p></div>
         <div className="flex items-center gap-2"><button onClick={() => setAdding((value) => !value)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-primary/30 text-primary hover:bg-primary/10" aria-label="Adicionar próxima ação"><Plus className="h-4 w-4" /></button><span className="rounded-full border border-primary/20 bg-primary/[.06] px-2 py-1 text-[10px] text-primary">{pendingActions.length} abertas</span></div>
       </div>
-      {adding && <div className="mb-4 grid gap-2 rounded-xl border border-primary/20 bg-primary/[.04] p-2 sm:grid-cols-[1fr_1fr_auto_auto_auto_auto]"><input autoFocus value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setAdding(false); }} placeholder="Próxima ação avulsa" className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs outline-none focus:border-primary" /><select value={project} onChange={(e) => setProject(e.target.value)} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs" aria-label="Projeto da nova ação"><option value="">Sem projeto</option>{projects.map((item) => <option key={item.id} value={item.title}>{item.title}</option>)}</select><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs outline-none focus:border-primary" /><input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs outline-none focus:border-primary" aria-label="Horário opcional" /><select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="rounded-md border border-white/10 bg-background px-2 py-1.5 text-xs"><option value="important">Importante</option><option value="urgent">Urgente</option></select><button onClick={save} className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">Salvar</button><div className="flex flex-wrap items-center gap-1 sm:col-span-full"><Tag className="h-3.5 w-3.5 text-primary" />{tags.map((tag) => <button key={tag.id} type="button" onClick={() => setSelectedTags((current) => current.includes(tag.id) ? current.filter((id) => id !== tag.id) : [...current, tag.id])} className={`rounded-full border px-2 py-0.5 text-[9px] ${selectedTags.includes(tag.id) ? 'text-foreground' : 'text-muted-foreground'}`} style={{ borderColor: `${tag.color}88`, backgroundColor: selectedTags.includes(tag.id) ? `${tag.color}25` : 'transparent' }}>{tag.name}</button>)}</div></div>}
+      {adding && <div className="mb-4 grid gap-2 rounded-xl border border-primary/20 bg-primary/[.04] p-2 sm:grid-cols-[1fr_1fr_auto_auto]"><input autoFocus value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setAdding(false); }} placeholder="Próxima ação avulsa" className="rounded-full border-0 bg-background px-3 py-2 text-xs outline-none ring-1 ring-white/10 focus:ring-primary/60" /><ProjectPicker value={project} projects={projects} onChange={setProject} ariaLabel="Projeto da nova ação" /><select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="h-8 rounded-full border-0 bg-background px-3 text-xs outline-none ring-1 ring-white/10 focus:ring-primary/60"><option value="important">Importante</option><option value="urgent">Urgente</option></select><button onClick={save} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">Salvar</button><div className="flex flex-wrap items-center gap-1 sm:col-span-full"><Tag className="h-3.5 w-3.5 text-primary" />{tags.map((tag) => <button key={tag.id} type="button" onClick={() => setSelectedTags((current) => current.includes(tag.id) ? current.filter((id) => id !== tag.id) : [...current, tag.id])} className={`rounded-full border px-2 py-0.5 text-[9px] ${selectedTags.includes(tag.id) ? 'text-foreground' : 'text-muted-foreground'}`} style={{ borderColor: `${tag.color}88`, backgroundColor: selectedTags.includes(tag.id) ? `${tag.color}25` : 'transparent' }}>{tag.name}</button>)}</div></div>}
       <div className="max-h-[28rem] overflow-y-auto overscroll-contain pr-2 [scrollbar-color:rgba(245,158,11,.55)_rgba(255,255,255,.04)] [scrollbar-width:thin]">
         <div className="grid gap-4 lg:grid-cols-2">
         <section><div className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground"><Flame className="h-4 w-4 text-orange-400" /> Urgentes <span className="rounded bg-orange-400/10 px-1.5 py-0.5 text-[9px] text-orange-300">FOGO</span></div>{renderActions(pendingActions.filter((a) => a.priority === 'urgent'))}</section>
