@@ -23,6 +23,7 @@ import Analysis from '@/pages/Analysis';
 import Learning from '@/pages/Learning';
 import Opportunities from '@/pages/Opportunities';
 import { AuthGate } from '@/components/auth/AuthGate';
+import { RemoteSync } from '@/components/auth/RemoteSync';
 
 const queryClient = new QueryClient();
 
@@ -84,7 +85,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthGate><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter></AuthGate>
+        <AuthGate><RemoteSync /><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter></AuthGate>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
