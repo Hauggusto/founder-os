@@ -142,7 +142,7 @@ export function Sidebar() {
               transition={{ duration: 0.2 }}
               className="flex flex-col items-center gap-1"
             >
-              <label className="h-24 w-24 translate-y-8 cursor-pointer overflow-hidden rounded-full border-2 border-primary/60 bg-primary flex items-center justify-center" title="Alterar foto do perfil"><ProfileMark photo={profilePhoto} /><input type="file" accept="image/*" className="sr-only" onChange={(event) => uploadProfile(event.target.files?.[0])} /></label>
+              <label className="mobile-profile-mark h-24 w-24 translate-y-8 cursor-pointer overflow-hidden rounded-full border-2 border-primary/60 bg-primary flex items-center justify-center" title="Alterar foto do perfil"><ProfileMark photo={profilePhoto} /><input type="file" accept="image/*" className="sr-only" onChange={(event) => uploadProfile(event.target.files?.[0])} /></label>
               <span className="neuron-wordmark mt-8 text-[18px] font-light tracking-[.2em] text-sidebar-foreground">Neuron</span>
               <span className="-mt-1 text-[9px] font-light uppercase tracking-[.28em] text-sidebar-foreground/55">dashboard</span>
             </motion.div>
