@@ -130,6 +130,10 @@ export default function Projects() {
   const tagLabel = (tagIdOrName: string) => tags.find((tag) => tag.id === tagIdOrName)?.name || tagIdOrName;
   const openTag = (name: string) => setLocation(`/projetos?tag=${encodeURIComponent(name)}`);
   const clearTag = () => setLocation('/projetos');
+  const enterProject = (projectTitle: string) => {
+    setLocation(`/projetos?project=${encodeURIComponent(projectTitle)}`);
+    window.setTimeout(() => document.getElementById("project-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  };
   const addTaskToProject = () => {
     if (!selectedProjectRecord || !newProjectTask.trim()) return;
     addProductivityHabitEntry({
@@ -224,7 +228,7 @@ export default function Projects() {
       {selectedTag && <section className="mb-6 grid gap-3 lg:grid-cols-2"><article className="rounded-xl border border-primary/20 bg-card/60 p-4"><p className="text-[10px] uppercase tracking-[.16em] text-primary">Tag selecionada</p><h2 className="mt-1 text-lg font-semibold" style={{ color: selectedTagRecord?.color }}>{selectedTag}</h2><p className="mt-1 text-xs text-muted-foreground">Tudo que está relacionado a este assunto aparece nesta visão.</p><div className="mt-3 text-xs text-muted-foreground">{projects.length} projetos · {relatedActions.length} ações · {relatedHabits.length} hábitos</div></article><article className="rounded-xl border border-white/[.08] bg-card/60 p-4"><p className="mb-2 text-[10px] uppercase tracking-[.16em] text-muted-foreground">Atividade relacionada</p>{[...relatedActions.map((item) => ({ id: item.id, title: item.text, type: 'Ação' })), ...relatedHabits.map((item) => ({ id: item.id, title: item.title, type: 'Hábito' }))].slice(0, 6).map((item) => <div key={`${item.type}-${item.id}`} className="flex items-center justify-between border-b border-white/[.06] py-1.5 text-xs"><span>{item.title}</span><span className="text-[9px] uppercase text-muted-foreground">{item.type}</span></div>)}{!relatedActions.length && !relatedHabits.length && <p className="text-xs text-muted-foreground">Nenhuma tarefa ou hábito foi associado a esta tag ainda.</p>}</article></section>}
       {(selectedEcosystem || selectedProject) && <button type="button" onClick={clearProjectFilter} className="mb-4 inline-flex items-center rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/20">← Todos os projetos</button>}
       {selectedProjectRecord && (
-        <section className="mb-6 rounded-2xl border border-primary/20 bg-card/70 p-4 shadow-[0_12px_30px_rgba(0,0,0,.16)]">
+        <section id="project-workspace" className="mb-6 scroll-mt-4 rounded-2xl border border-primary/20 bg-card/70 p-4 shadow-[0_12px_30px_rgba(0,0,0,.16)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[10px] uppercase tracking-[.16em] text-primary">Área do projeto</p>
@@ -238,7 +242,7 @@ export default function Projects() {
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="rounded-xl border border-amber-400/15 bg-amber-400/[.035] p-3">
-              <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-amber-300">Rotinas vinculadas</p><span className="text-[10px] text-muted-foreground">{productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).length}</span></div>
+              <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-amber-300">Tarefas do projeto</p><span className="text-[10px] text-muted-foreground">{productivityHabits.filter((habit) => isHabitLinkedToProject(habit, selectedProjectRecord)).length}</span></div>
               <div className="space-y-1.5">
                 {productivityHabits.filter((habit) => isHabitLinkedToProject(habit, selectedProjectRecord)).map((habit) => <div key={habit.id} className="group flex items-center gap-2 text-xs text-foreground/85"><CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${habit.done || Object.values(habit.checks || {}).some((status) => status === 'done') ? 'text-emerald-400' : 'text-muted-foreground'}`} /><input value={habit.title} onChange={(event) => updateProductivityHabitEntry(habit.id, { title: event.target.value })} className="min-w-0 flex-1 bg-transparent outline-none ring-0 focus:text-primary" aria-label={`Editar tarefa ${habit.title}`} /><button type="button" onClick={() => deleteProductivityHabitEntry(habit.id)} className="opacity-0 transition group-hover:opacity-100 text-muted-foreground hover:text-red-400" title="Excluir tarefa" aria-label={`Excluir tarefa ${habit.title}`}><Trash2 className="h-3.5 w-3.5" /></button></div>)}
                 {!productivityHabits.some((habit) => isHabitLinkedToProject(habit, selectedProjectRecord)) && <p className="text-[11px] text-muted-foreground">Nenhuma tarefa vinculada ainda.</p>}
@@ -395,12 +399,14 @@ export default function Projects() {
                   )}
                 </div>
                 <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2">
-                  <Link
-                    href={`/projetos?project=${encodeURIComponent(project.title)}`}
+                  <button
+                    type="button"
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => { event.stopPropagation(); enterProject(project.title); }}
                     className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"
                   >
                     Entrar <ExternalLink className="h-3.5 w-3.5" />
-                  </Link>
+                  </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
