@@ -409,7 +409,7 @@ export default function Habits({ mode = "habits" }: any) {
       <TagManager />
       {isProductivity && (
         <section className="space-y-4 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             {[
               { label: "Ações abertas", value: todayActions.filter((action) => !action.done).length, tone: "text-orange-300", note: "para executar hoje" },
               { label: "Concluídas hoje", value: todayActions.filter((action) => action.done).length + todayHabitDone, tone: "text-emerald-300", note: "entregas registradas" },
