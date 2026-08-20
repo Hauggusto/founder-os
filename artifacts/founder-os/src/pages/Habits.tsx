@@ -782,7 +782,7 @@ export default function Habits({ mode = "habits" }: any) {
                             .filter((entry) => (entry.category || "Rotina") === category)
                             .forEach((entry) => updateHabitEntry(entry.id, { project }));
                         }}
-                        className="h-8 max-w-40 rounded-full border-0 bg-background/60 px-3 text-[11px] text-muted-foreground outline-none ring-1 ring-orange-400/25 focus:ring-orange-300/70"
+                        className="h-8 min-w-32 max-w-44 appearance-none rounded-full border-0 bg-[#101923] px-3 text-[11px] font-medium text-foreground outline-none shadow-[0_0_14px_rgba(245,158,11,.08)] ring-1 ring-orange-400/30 transition hover:ring-orange-300/60 focus:ring-orange-300/80"
                         aria-label={`Projeto da categoria ${category}`}
                         title="Projeto vinculado"
                       >
@@ -790,10 +790,13 @@ export default function Habits({ mode = "habits" }: any) {
                         {productivityProjects.map((project) => <option key={project.id} value={project.title}>{project.title}</option>)}
                       </select>
                     )}
-                    <span className="text-sm font-semibold text-lime-300">{categoryScore}%</span>
                     <button type="button" onClick={() => setAddingCategory(addingCategory === category ? null : category)} className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/25 px-2.5 py-1.5 text-[11px] text-cyan-300 hover:bg-cyan-400/10">
                       <Plus className="h-3 w-3" /> {isProductivity ? "Tarefa" : "Adicionar hábito"}
                     </button>
+                    <button type="button" onClick={() => removeCategory(category)} title={`Excluir categoria ${category}`} className="rounded-lg border border-red-400/20 px-2 py-1.5 text-[11px] text-red-300/70 hover:bg-red-400/10">
+                      Excluir
+                    </button>
+                    <span className="text-sm font-semibold text-lime-300">{categoryScore}%</span>
                     {isProductivity && linkedProject && (
                       <Link
                         href={`/projetos?project=${encodeURIComponent(linkedProject)}`}
@@ -804,9 +807,6 @@ export default function Habits({ mode = "habits" }: any) {
                         <ArrowUpRight className="h-3.5 w-3.5" />
                       </Link>
                     )}
-                    <button type="button" onClick={() => removeCategory(category)} title={`Excluir categoria ${category}`} className="rounded-lg border border-red-400/20 px-2 py-1.5 text-[11px] text-red-300/70 hover:bg-red-400/10">
-                      Excluir
-                    </button>
                   </div>
                 </div>
                 {addingCategory === category && (
@@ -815,7 +815,7 @@ export default function Habits({ mode = "habits" }: any) {
                     <button type="button" onClick={() => addToCategory(category)} className="rounded-lg bg-cyan-400 px-3 text-xs font-semibold text-slate-950">Salvar</button>
                   </div>
                 )}
-                <div className="overflow-x-auto">
+                <div className="max-h-[360px] overflow-auto">
                   <table className="w-full min-w-[760px] border-collapse">
                     <thead>
                       <tr className="border-b border-white/[.06] text-[10px] uppercase tracking-wide text-muted-foreground">
