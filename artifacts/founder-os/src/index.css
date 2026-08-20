@@ -1234,3 +1234,30 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     max-width: none !important;
   }
 }
+
+
+@media (max-width: 767px) {
+  .mobile-main .projects-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .5rem !important;
+    width: 100% !important;
+  }
+
+  .mobile-main .projects-summary-grid > * {
+    min-width: 0 !important;
+    width: auto !important;
+    padding: .7rem .65rem !important;
+  }
+
+  .mobile-main .projects-summary-grid > * p:first-child {
+    overflow: hidden;
+    font-size: .5rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-main .projects-summary-grid > * p:last-child {
+    font-size: 1.15rem;
+  }
+}
