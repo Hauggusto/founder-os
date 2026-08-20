@@ -76,7 +76,7 @@ export function NextActionsBlock() {
                 <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`w-full rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
               <div className="flex flex-wrap items-center gap-1.5"><ProjectPicker value={action.project || ''} projects={projects} onChange={(value) => updateNextAction(action.id, { project: value || undefined })} ariaLabel="Projeto da ação" />{action.project && <Link href={`/projetos?project=${encodeURIComponent(action.project)}`} className="shrink-0 rounded-full bg-primary/[.06] px-2 py-1 text-[9px] uppercase text-primary hover:bg-primary/15">Abrir projeto</Link>}</div>
             </div>
-            <button onClick={() => deleteNextAction(action.id)} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação"><X className="h-3.5 w-3.5" /></button>
+            <button type="button" onClick={(event) => { event.stopPropagation(); deleteNextAction(action.id); }} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação" title="Excluir tarefa"><X className="h-3.5 w-3.5" /></button>
           </div>)) : <p className="rounded-lg border border-dashed border-white/10 p-3 text-center text-[11px] text-muted-foreground">Nenhuma ação nesta prioridade.</p>}</div>;
 
   return (
