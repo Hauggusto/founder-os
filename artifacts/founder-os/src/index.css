@@ -68,76 +68,59 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Controles de agenda: menus e calendários acompanham o tema escuro do dashboard. */
-select,
-input[type='date'],
-input[type='time'] {
-  color-scheme: dark;
-}
+/* Alertas: os indicadores-resumo permanecem lado a lado no mobile. */
+@media (max-width: 767px) {
+  /* Área de risco: os três indicadores permanecem lado a lado. */
+  .mobile-main .risk-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100%;
+    gap: .4rem;
+  }
 
-select {
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--background));
-}
+  .mobile-main .risk-summary-grid > * {
+    min-width: 0;
+    padding: .55rem .4rem;
+  }
 
-select option,
-select optgroup {
-  color: #e5edf7;
-  background: #10151c;
-}
+  .mobile-main .risk-summary-grid > * p,
+  .mobile-main .risk-summary-grid > * span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-select[aria-label='Status da execução'],
-select[aria-label='Tipo da agenda'],
-select[aria-label='Projeto da nova ação'],
-select[aria-label='Projeto da ação'] {
-  min-height: 28px;
-  border: 1px solid hsl(var(--primary) / .28);
-  border-radius: .55rem;
-  background: #0d1218;
-  color: hsl(var(--foreground));
-  padding: 0 .5rem;
-  font-size: 10px;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .16);
-  transition: border-color .18s ease, box-shadow .18s ease;
-  outline: none !important;
-  -webkit-appearance: auto;
-}
+  .mobile-main .risk-summary-grid > * p {
+    font-size: .48rem;
+  }
 
-select[aria-label='Status da execução']:hover,
-select[aria-label='Status da execução']:focus,
-select[aria-label='Tipo da agenda']:hover,
-select[aria-label='Tipo da agenda']:focus {
-  border-color: hsl(var(--primary) / .7);
-  box-shadow: 0 0 0 3px hsl(var(--primary) / .1);
-  outline: none;
-}
+  .mobile-main .alert-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100%;
+    gap: .4rem;
+  }
 
-select[aria-label='Projeto da nova ação'],
-select[aria-label='Projeto da ação'] {
-  border-color: rgba(245, 158, 11, .34);
-  background: linear-gradient(135deg, #17130d, #0d1218);
-  color: #fbbf24;
-}
+  .mobile-main .alert-summary-grid > * {
+    min-width: 0;
+    padding: .55rem .4rem;
+  }
 
-select[aria-label='Projeto da nova ação']:hover,
-select[aria-label='Projeto da nova ação']:focus,
-select[aria-label='Projeto da ação']:hover,
-select[aria-label='Projeto da ação']:focus {
-  border-color: rgba(245, 158, 11, .78);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, .1);
-}
+  .mobile-main .alert-summary-grid > * p:first-child,
+  .mobile-main .alert-summary-grid > * p:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-select[aria-label='Status da execução'] option:checked,
-select[aria-label='Tipo da agenda'] option:checked {
-  background: #183044;
-  color: #f8fbff;
-}
+  .mobile-main .alert-summary-grid > * p:first-child {
+    font-size: .47rem;
+    line-height: 1.15;
+  }
 
-input[type='date']::-webkit-calendar-picker-indicator,
-input[type='time']::-webkit-calendar-picker-indicator {
-  filter: invert(1) sepia(1) saturate(2) hue-rotate(155deg);
-  opacity: .82;
+  .mobile-main .alert-summary-grid > * p:last-child {
+    font-size: .82rem;
+  }
 }
 
 /* Seletores compactos no padrão neon do Founder OS */
@@ -467,7 +450,7 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
   }
 
   body {
-    @apply font-mono antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground;
   }
 }
 
@@ -1136,65 +1119,9 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
 @media (max-width: 767px) {
   .mobile-nav-only-menu {
     display: flex !important;
-    align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     min-height: 0;
     padding: .5rem .65rem;
-  }
-
-  .mobile-brand {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: .55rem;
-    margin-right: auto;
-  }
-
-  .mobile-brand-avatar {
-    display: flex;
-    height: 2.45rem;
-    width: 2.45rem;
-    flex: 0 0 2.45rem;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 1.5px solid hsl(var(--primary));
-    border-radius: 999px;
-    background: hsl(var(--primary) / .1);
-    color: hsl(var(--primary));
-    font-size: .8rem;
-    font-weight: 700;
-  }
-
-  .mobile-brand-avatar img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-  }
-
-  .mobile-brand-copy {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    line-height: 1;
-  }
-
-  .mobile-brand-copy > span {
-    overflow: hidden;
-    color: hsl(var(--foreground));
-    font-family: "Orbitron", "Rajdhani", "Share Tech Mono", sans-serif;
-    font-size: .82rem;
-    font-weight: 400;
-    letter-spacing: .2em;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .mobile-brand-copy small {
-    margin-top: .25rem;
-    color: hsl(var(--muted-foreground));
-    font-size: .48rem;
-    letter-spacing: .28em;
   }
 
   .mobile-nav-only-menu .mobile-menu-trigger {
