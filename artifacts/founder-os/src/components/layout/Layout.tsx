@@ -39,19 +39,16 @@ export function Layout({ children }: LayoutProps) {
   const sidebarWidth = useAppStore(s => s.sidebarWidth);
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profilePhoto] = useState(() => localStorage.getItem('founder-os-profile-photo') || '');
+  const profilePhoto = typeof window !== 'undefined' ? localStorage.getItem('founder-os-profile-photo') || '' : '';
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
       <nav className="mobile-nav mobile-nav-only-menu" aria-label="Navegação mobile">
-        <div className="mobile-brand" aria-label="NEURON Dashboard">
+        <div className="mobile-brand-header">
           <div className="mobile-brand-avatar">
-            {profilePhoto ? <img src={profilePhoto} alt="Foto do perfil" /> : <span>H</span>}
+            {profilePhoto ? <img src={profilePhoto} alt="Foto do perfil" /> : <span>✦</span>}
           </div>
-          <div className="mobile-brand-copy">
-            <span>NEURON</span>
-            <small>DASHBOARD</small>
-          </div>
+          <div className="mobile-brand-copy"><span>NEURON</span><small>DASHBOARD</small></div>
         </div>
         <button type="button" className="mobile-nav-item mobile-menu-trigger" onClick={() => setMenuOpen(true)} aria-label="Abrir menu completo">
           <Menu className="h-5 w-5" /><small>Menu</small>
