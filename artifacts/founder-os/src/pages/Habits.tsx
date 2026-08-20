@@ -32,6 +32,7 @@ import { FutureVisionBlock } from "@/components/overview/FutureVisionBlock";
 import { NextActionsBlock } from "@/components/overview/NextActionsBlock";
 import { AgendaBlock } from "@/components/overview/AgendaBlock";
 import { TagManager } from "@/components/overview/TagManager";
+import { Link } from "wouter";
 
 type Period = "day" | "week" | "fortnight" | "month" | "previousMonth";
 const keyOf = (date: Date) => date.toISOString().slice(0, 10);
