@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -145,6 +145,7 @@ export default function Habits({ mode = "habits" }: any) {
   const [newCategoryColor, setNewCategoryColor] = useState("#22d3ee");
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitTitle, setEditingHabitTitle] = useState("");
+  const skipHabitBlurRef = useRef(false);
   const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
@@ -284,16 +285,18 @@ export default function Habits({ mode = "habits" }: any) {
     }
   };
   const startEditingHabit = (habit: HabitEntry) => {
+    skipHabitBlurRef.current = false;
     setEditingHabitId(habit.id);
     setEditingHabitTitle(habit.title);
   };
-  const saveEditingHabit = (habit: HabitEntry) => {
-    const name = editingHabitTitle.trim();
+  const saveEditingHabit = (habit: HabitEntry, value = editingHabitTitle) => {
+    const name = value.trim();
     if (name) updateHabitEntry(habit.id, { title: name });
     setEditingHabitId(null);
     setEditingHabitTitle("");
   };
   const cancelEditingHabit = () => {
+    skipHabitBlurRef.current = true;
     setEditingHabitId(null);
     setEditingHabitTitle("");
   };
@@ -781,9 +784,19 @@ export default function Habits({ mode = "habits" }: any) {
                                     autoFocus
                                     value={editingHabitTitle}
                                     onChange={(e) => setEditingHabitTitle(e.target.value)}
-                                    onBlur={() => saveEditingHabit(habit)}
+                                    onBlur={(e) => {
+                                      if (skipHabitBlurRef.current) {
+                                        skipHabitBlurRef.current = false;
+                                        return;
+                                      }
+                                      saveEditingHabit(habit, e.currentTarget.value);
+                                    }}
                                     onKeyDown={(e) => {
-                                      if (e.key === "Enter") saveEditingHabit(habit);
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        skipHabitBlurRef.current = true;
+                                        saveEditingHabit(habit, e.currentTarget.value);
+                                      }
                                       if (e.key === "Escape") cancelEditingHabit();
                                     }}
                                     className="h-8 w-full max-w-[260px] rounded-md border border-cyan-400/60 bg-background px-2 text-sm text-foreground outline-none"

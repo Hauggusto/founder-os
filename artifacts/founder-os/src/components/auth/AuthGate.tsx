@@ -74,15 +74,16 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!session) return;
     let active = true;
-    const modulesBeforeLoad = useAppStore.getState().modules;
+    const stateBeforeLoad = JSON.stringify(useAppStore.getState());
     void loadCloudAppData().then((cloudData) => {
       if (!active) return;
       if (cloudData) {
-        applyLocalPreferences(cloudData.localPreferences);
-        const currentModules = useAppStore.getState().modules;
-        const modulesChangedWhileLoading = JSON.stringify(currentModules) !== JSON.stringify(modulesBeforeLoad);
-        useAppStore.setState(modulesChangedWhileLoading ? { ...cloudData, modules: currentModules } : cloudData);
-        if (modulesChangedWhileLoading) useAppStore.getState().saveToStorage();
+        const localChangedWhileLoading = JSON.stringify(useAppStore.getState()) !== stateBeforeLoad;
+        if (localChangedWhileLoading) useAppStore.getState().saveToStorage();
+        else {
+          applyLocalPreferences(cloudData.localPreferences);
+          useAppStore.setState(cloudData);
+        }
       }
       else useAppStore.getState().saveToStorage();
     });
@@ -93,15 +94,16 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (!session) return;
     let active = true;
     const sync = async () => {
-      const modulesBeforeLoad = useAppStore.getState().modules;
+      const stateBeforeLoad = JSON.stringify(useAppStore.getState());
       const cloudData = await loadCloudAppData();
       if (!active) return;
       if (cloudData) {
-        applyLocalPreferences(cloudData.localPreferences);
-        const currentModules = useAppStore.getState().modules;
-        const modulesChangedWhileLoading = JSON.stringify(currentModules) !== JSON.stringify(modulesBeforeLoad);
-        useAppStore.setState(modulesChangedWhileLoading ? { ...cloudData, modules: currentModules } : cloudData);
-        if (modulesChangedWhileLoading) useAppStore.getState().saveToStorage();
+        const localChangedWhileLoading = JSON.stringify(useAppStore.getState()) !== stateBeforeLoad;
+        if (localChangedWhileLoading) useAppStore.getState().saveToStorage();
+        else {
+          applyLocalPreferences(cloudData.localPreferences);
+          useAppStore.setState(cloudData);
+        }
       }
       // Also captures legacy local-only fields and sends them to the cloud.
       useAppStore.getState().saveToStorage();
