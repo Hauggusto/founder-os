@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Layers3,
   Tag,
+  Trash2,
 } from "lucide-react";
 
 const ecosystemColors = ["#00C9FF", "#10B981", "#FACC15", "#EF4444", "#A855F7", "#F97316", "#38BDF8"];
@@ -26,7 +27,7 @@ import {
 
 export default function Projects() {
   const [location, setLocation] = useLocation();
-  const { modules, ecosystems, tags, habits, productivityHabits, nextActions, addModule, updateModule, addEcosystem, deleteEcosystem, duplicateModule, deleteModule } =
+  const { modules, ecosystems, tags, habits, productivityHabits, nextActions, addModule, updateModule, addEcosystem, deleteEcosystem, duplicateModule, deleteModule, addProductivityHabitEntry, updateProductivityHabitEntry, deleteProductivityHabitEntry } =
     useAppStore();
   const [newEcosystem, setNewEcosystem] = useState("");
   const [newEcosystemColor, setNewEcosystemColor] = useState("#00C9FF");
@@ -43,6 +44,7 @@ export default function Projects() {
   const [projectEditor, setProjectEditor] = useState<ReturnType<
     typeof emptyProjectForm
   > | null>(null);
+  const [newProjectTask, setNewProjectTask] = useState("");
   const { reorderModules } = useAppStore();
 
   const openProjectEditor = (project?: (typeof modules)[number]) =>
@@ -113,8 +115,10 @@ export default function Projects() {
   const pausedCount = allProjects.filter((project) => project.status === "paused").length;
   const completedCount = allProjects.filter((project) => project.status === "done").length;
   const averageProgress = allProjects.length ? Math.round(allProjects.reduce((total, project) => total + (project.progress || 0), 0) / allProjects.length) : 0;
+  const isHabitLinkedToProject = (habit: (typeof productivityHabits)[number], project: (typeof allProjects)[number]) =>
+    (habit.project || habit.category || "").trim().toLowerCase() === project.title.trim().toLowerCase();
   const projectProgress = (project: (typeof allProjects)[number]) => {
-    const linkedHabits = productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === project.title.trim().toLowerCase());
+    const linkedHabits = productivityHabits.filter((habit) => isHabitLinkedToProject(habit, project));
     const linkedActions = nextActions.filter((action) => (action.project || '').trim().toLowerCase() === project.title.trim().toLowerCase());
     const total = linkedHabits.length + linkedActions.length;
     if (!total) return project.progress || 0;
@@ -126,6 +130,18 @@ export default function Projects() {
   const tagLabel = (tagIdOrName: string) => tags.find((tag) => tag.id === tagIdOrName)?.name || tagIdOrName;
   const openTag = (name: string) => setLocation(`/projetos?tag=${encodeURIComponent(name)}`);
   const clearTag = () => setLocation('/projetos');
+  const addTaskToProject = () => {
+    if (!selectedProjectRecord || !newProjectTask.trim()) return;
+    addProductivityHabitEntry({
+      title: newProjectTask.trim(),
+      done: false,
+      streak: 0,
+      category: selectedProjectRecord.title,
+      project: selectedProjectRecord.title,
+      order: productivityHabits.length,
+    });
+    setNewProjectTask("");
+  };
   const selectedTagRecord = tags.find((tag) => tag.name.trim().toLowerCase() === selectedTag?.trim().toLowerCase());
   const relatedActions = selectedTag ? nextActions.filter((action) => (action.tags || []).some((tag) => tag === selectedTag || tagLabel(tag).toLowerCase() === selectedTag.toLowerCase())) : [];
   const relatedHabits = selectedTag ? [...habits, ...productivityHabits].filter((habit) => (habit.tags || []).some((tag) => tag === selectedTag || tagLabel(tag).toLowerCase() === selectedTag.toLowerCase())) : [];
@@ -224,8 +240,12 @@ export default function Projects() {
             <div className="rounded-xl border border-amber-400/15 bg-amber-400/[.035] p-3">
               <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-amber-300">Rotinas vinculadas</p><span className="text-[10px] text-muted-foreground">{productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).length}</span></div>
               <div className="space-y-1.5">
-                {productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).map((habit) => <div key={habit.id} className="flex items-center gap-2 text-xs text-foreground/85"><CheckCircle2 className={`h-3.5 w-3.5 ${habit.done || Object.values(habit.checks || {}).some((status) => status === 'done') ? 'text-emerald-400' : 'text-muted-foreground'}`} /><span>{habit.title}</span></div>)}
-                {!productivityHabits.some((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()) && <p className="text-[11px] text-muted-foreground">Nenhuma rotina vinculada ainda.</p>}
+                {productivityHabits.filter((habit) => isHabitLinkedToProject(habit, selectedProjectRecord)).map((habit) => <div key={habit.id} className="group flex items-center gap-2 text-xs text-foreground/85"><CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${habit.done || Object.values(habit.checks || {}).some((status) => status === 'done') ? 'text-emerald-400' : 'text-muted-foreground'}`} /><input value={habit.title} onChange={(event) => updateProductivityHabitEntry(habit.id, { title: event.target.value })} className="min-w-0 flex-1 bg-transparent outline-none ring-0 focus:text-primary" aria-label={`Editar tarefa ${habit.title}`} /><button type="button" onClick={() => deleteProductivityHabitEntry(habit.id)} className="opacity-0 transition group-hover:opacity-100 text-muted-foreground hover:text-red-400" title="Excluir tarefa" aria-label={`Excluir tarefa ${habit.title}`}><Trash2 className="h-3.5 w-3.5" /></button></div>)}
+                {!productivityHabits.some((habit) => isHabitLinkedToProject(habit, selectedProjectRecord)) && <p className="text-[11px] text-muted-foreground">Nenhuma tarefa vinculada ainda.</p>}
+                <div className="mt-3 flex gap-2 border-t border-amber-400/10 pt-3">
+                  <input value={newProjectTask} onChange={(event) => setNewProjectTask(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addTaskToProject(); if (event.key === "Escape") setNewProjectTask(""); }} placeholder="Adicionar tarefa ao projeto" className="min-w-0 flex-1 rounded-md border-0 bg-background/60 px-2.5 py-1.5 text-[11px] outline-none ring-1 ring-amber-400/20 focus:ring-amber-300/60" />
+                  <button type="button" onClick={addTaskToProject} className="rounded-md bg-amber-300 px-2.5 py-1.5 text-[11px] font-semibold text-slate-950">+ Tarefa</button>
+                </div>
               </div>
             </div>
             <div className="rounded-xl border border-cyan-400/15 bg-cyan-400/[.035] p-3">
@@ -306,7 +326,7 @@ export default function Projects() {
               <div className="p-3">
                 {(() => {
                   const linkedTasks = productivityHabits.filter((habit) =>
-                    (habit.category || "").trim().toLowerCase() === project.title.trim().toLowerCase(),
+                    isHabitLinkedToProject(habit, project),
                   );
                   return linkedTasks.length > 0 ? (
                     <div className="mb-3 rounded-lg border border-amber-400/20 bg-amber-400/[.04] p-2.5">
@@ -375,24 +395,12 @@ export default function Projects() {
                   )}
                 </div>
                 <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2">
-                  {project.url ? (
-                    <a
-                      href={project.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"
-                    >
-                      <Link2 className="h-3.5 w-3.5" /> Abrir canal{" "}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  ) : (
-                    <button
-                      onClick={() => openProjectEditor(project)}
-                      className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"
-                    >
-                      <Link2 className="h-3.5 w-3.5" /> Adicionar link
-                    </button>
-                  )}
+                  <Link
+                    href={`/projetos?project=${encodeURIComponent(project.title)}`}
+                    className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"
+                  >
+                    Entrar <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
