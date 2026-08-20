@@ -528,7 +528,7 @@ export default function Habits({ mode = "habits" }: any) {
             margin={{ top: 8, right: 12, left: 0, bottom: 4 }}
           >
             <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+            <XAxis dataKey="name" padding={{ left: 14, right: 14 }} tick={{ fill: "#94a3b8", fontSize: 10 }} />
             <YAxis
               domain={[0, 100]}
               tickFormatter={(value) => `${value}%`}
