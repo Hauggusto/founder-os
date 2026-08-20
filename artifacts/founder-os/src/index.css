@@ -1266,3 +1266,29 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     font-size: 1.05rem;
   }
 }
+
+
+@media (max-width: 767px) {
+  .mobile-main .productivity-performance-stats {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .5rem !important;
+    width: 100% !important;
+  }
+
+  .mobile-main .productivity-performance-stats > * {
+    min-width: 0 !important;
+    padding: .65rem .55rem !important;
+  }
+
+  .mobile-main .productivity-performance-stats strong {
+    font-size: 1.2rem !important;
+  }
+
+  .mobile-main .productivity-performance-stats p {
+    overflow: hidden;
+    font-size: .55rem !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
