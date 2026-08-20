@@ -1134,6 +1134,61 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
 /* Correção final dos resumos da aba Alertas no mobile.
    Fica no fim do arquivo para vencer a regra geral que empilha todos os grids. */
 @media (max-width: 767px) {
+  .mobile-brand-header {
+    display: flex !important;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: .65rem;
+    overflow: hidden;
+  }
+
+  .mobile-brand-avatar {
+    display: flex;
+    width: 2.8rem !important;
+    height: 2.8rem !important;
+    min-width: 2.8rem !important;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 2px solid #00c9ff;
+    border-radius: 999px !important;
+    background: #07101a;
+    color: #00c9ff;
+  }
+
+  .mobile-brand-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+  }
+
+  .mobile-brand-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .mobile-brand-copy > span {
+    overflow: hidden;
+    color: hsl(var(--foreground));
+    font-family: "Orbitron", "Rajdhani", "Share Tech Mono", sans-serif;
+    font-size: .82rem;
+    font-weight: 400;
+    letter-spacing: .2em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-brand-copy small {
+    margin-top: .25rem;
+    color: hsl(var(--muted-foreground));
+    font-size: .48rem;
+    letter-spacing: .28em;
+  }
+
   .mobile-profile-mark {
     width: 2.5rem !important;
     height: 2.5rem !important;
