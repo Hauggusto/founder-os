@@ -1136,9 +1136,65 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
 @media (max-width: 767px) {
   .mobile-nav-only-menu {
     display: flex !important;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
     min-height: 0;
     padding: .5rem .65rem;
+  }
+
+  .mobile-brand {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: .55rem;
+    margin-right: auto;
+  }
+
+  .mobile-brand-avatar {
+    display: flex;
+    height: 2.45rem;
+    width: 2.45rem;
+    flex: 0 0 2.45rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1.5px solid hsl(var(--primary));
+    border-radius: 999px;
+    background: hsl(var(--primary) / .1);
+    color: hsl(var(--primary));
+    font-size: .8rem;
+    font-weight: 700;
+  }
+
+  .mobile-brand-avatar img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .mobile-brand-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .mobile-brand-copy > span {
+    overflow: hidden;
+    color: hsl(var(--foreground));
+    font-family: "Orbitron", "Rajdhani", "Share Tech Mono", sans-serif;
+    font-size: .82rem;
+    font-weight: 400;
+    letter-spacing: .2em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-brand-copy small {
+    margin-top: .25rem;
+    color: hsl(var(--muted-foreground));
+    font-size: .48rem;
+    letter-spacing: .28em;
   }
 
   .mobile-nav-only-menu .mobile-menu-trigger {
