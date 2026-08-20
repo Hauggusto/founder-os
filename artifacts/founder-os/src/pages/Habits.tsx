@@ -714,6 +714,7 @@ export default function Habits({ mode = "habits" }: any) {
           {Object.entries(grouped).map(([category, entries], categoryIndex) => {
             const categoryScore = categoryData.find((item) => item.name === category)?.execução ?? 0;
             const color = categoryColors[category] || ["#22D3EE", "#A78BFA", "#34D399", "#FB923C", "#F472B6"][categoryIndex % 5];
+            const linkedProject = entries.find((entry) => entry.project)?.project || productivityProjects.find((project) => project.title.trim().toLowerCase() === category.trim().toLowerCase())?.title;
             return (
               <article
                 key={category}
@@ -751,7 +752,7 @@ export default function Habits({ mode = "habits" }: any) {
                   <div className="flex items-center gap-3">
                     {isProductivity && (
                       <select
-                        value={entries.find((entry) => entry.project)?.project || ""}
+                        value={linkedProject || ""}
                         onChange={(event) => {
                           const project = event.target.value || undefined;
                           habits
@@ -770,6 +771,16 @@ export default function Habits({ mode = "habits" }: any) {
                     <button type="button" onClick={() => setAddingCategory(addingCategory === category ? null : category)} className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/25 px-2.5 py-1.5 text-[11px] text-cyan-300 hover:bg-cyan-400/10">
                       <Plus className="h-3 w-3" /> {isProductivity ? "Tarefa" : "Adicionar hábito"}
                     </button>
+                    {isProductivity && linkedProject && (
+                      <Link
+                        href={`/projetos?project=${encodeURIComponent(linkedProject)}`}
+                        className="rounded-lg border border-orange-400/25 p-1.5 text-orange-300/70 transition hover:bg-orange-400/10 hover:text-orange-200"
+                        title={`Abrir projeto ${linkedProject}`}
+                        aria-label={`Abrir projeto ${linkedProject}`}
+                      >
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    )}
                     <button type="button" onClick={() => removeCategory(category)} title={`Excluir categoria ${category}`} className="rounded-lg border border-red-400/20 px-2 py-1.5 text-[11px] text-red-300/70 hover:bg-red-400/10">
                       Excluir
                     </button>
@@ -829,16 +840,6 @@ export default function Habits({ mode = "habits" }: any) {
                                 )}
                                 <p className="mt-0.5 text-[10px] text-muted-foreground/60">Sequência: {habit.streak} dias</p>
                               </div>
-                              {isProductivity && (habit.project || productivityProjects.find((project) => project.title.trim().toLowerCase() === (habit.category || "").trim().toLowerCase())?.title) && (
-                                <Link
-                                  href={`/projetos?project=${encodeURIComponent(habit.project || habit.category)}`}
-                                  className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-primary/10 hover:text-primary"
-                                  title={`Abrir projeto ${habit.project || habit.category}`}
-                                  aria-label={`Abrir projeto ${habit.project || habit.category}`}
-                                >
-                                  <ArrowUpRight className="h-3.5 w-3.5" />
-                                </Link>
-                              )}
                               <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
                           </td>
