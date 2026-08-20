@@ -1134,6 +1134,12 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
 /* Correção final dos resumos da aba Alertas no mobile.
    Fica no fim do arquivo para vencer a regra geral que empilha todos os grids. */
 @media (max-width: 767px) {
+  .mobile-profile-mark {
+    width: 4rem !important;
+    height: 4rem !important;
+    transform: none !important;
+  }
+
   .mobile-main .alert-summary-grid.alert-summary-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
