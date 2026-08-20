@@ -149,6 +149,8 @@ export default function Habits({ mode = "habits" }: any) {
   const [editingHabitTitle, setEditingHabitTitle] = useState("");
   const skipHabitBlurRef = useRef(false);
   const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
+  const [subtaskParentId, setSubtaskParentId] = useState<string | null>(null);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [oneOffTitle, setOneOffTitle] = useState("");
@@ -229,6 +231,20 @@ export default function Habits({ mode = "habits" }: any) {
     });
     setCategoryTitle("");
     setAddingCategory(null);
+  };
+  const addSubtask = (parent: HabitEntry) => {
+    if (!subtaskTitle.trim()) return;
+    addHabitEntry({
+      title: subtaskTitle.trim(),
+      done: false,
+      streak: 0,
+      category: parent.category,
+      project: parent.project,
+      parentId: parent.id,
+      order: habits.length,
+    });
+    setSubtaskTitle("");
+    setSubtaskParentId(null);
   };
   const createCategory = (rawName: string) => {
     const name = rawName.trim();
@@ -808,9 +824,17 @@ export default function Habits({ mode = "habits" }: any) {
                     </thead>
                     <tbody>
                       {entries.map((habit) => (
-                        <tr key={habit.id} className="border-b border-white/[.05] last:border-b-0 hover:bg-white/[.025]">
+                        <tr
+                          key={habit.id}
+                          draggable
+                          onDragStart={() => setDraggedHabitId(habit.id)}
+                          onDragOver={(event) => event.preventDefault()}
+                          onDrop={() => reorderWithinCategory(category, habit.id)}
+                          onDragEnd={() => setDraggedHabitId(null)}
+                          className={`border-b border-white/[.05] last:border-b-0 hover:bg-white/[.025] ${draggedHabitId === habit.id ? "opacity-40" : ""}`}
+                        >
                           <td className="px-4 py-3 sm:px-5">
-                            <div className="flex items-center gap-2">
+                            <div className={`flex items-center gap-2 ${habit.parentId ? "pl-7" : ""}`}>
                               <div className="min-w-0 flex-1">
                                 {editingHabitId === habit.id ? (
                                   <input
@@ -838,8 +862,21 @@ export default function Habits({ mode = "habits" }: any) {
                                 ) : (
                                   <button type="button" onClick={() => startEditingHabit(habit)} className="block max-w-[260px] truncate text-left text-sm text-foreground/85 hover:text-cyan-300">{habit.title}</button>
                                 )}
-                                <p className="mt-0.5 text-[10px] text-muted-foreground/60">Sequência: {habit.streak} dias</p>
+                                {subtaskParentId === habit.id && (
+                                  <div className="mt-2 flex gap-1.5">
+                                    <input
+                                      autoFocus
+                                      value={subtaskTitle}
+                                      onChange={(event) => setSubtaskTitle(event.target.value)}
+                                      onKeyDown={(event) => { if (event.key === "Enter") addSubtask(habit); if (event.key === "Escape") { setSubtaskTitle(""); setSubtaskParentId(null); } }}
+                                      placeholder="Nome da subtarefa"
+                                      className="h-7 min-w-0 flex-1 rounded-md border-0 bg-background px-2 text-[11px] outline-none ring-1 ring-cyan-400/40"
+                                    />
+                                    <button type="button" onClick={() => addSubtask(habit)} className="rounded-md bg-cyan-400 px-2 text-[10px] font-semibold text-slate-950">Salvar</button>
+                                  </div>
+                                )}
                               </div>
+                              <button type="button" onClick={() => { setSubtaskParentId(subtaskParentId === habit.id ? null : habit.id); setSubtaskTitle(""); }} className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-cyan-400/10 hover:text-cyan-300" title="Adicionar subtarefa" aria-label={`Adicionar subtarefa em ${habit.title}`}><Plus className="h-3.5 w-3.5" /></button>
                               <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
                           </td>

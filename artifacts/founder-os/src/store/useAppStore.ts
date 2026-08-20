@@ -106,6 +106,7 @@ export interface HabitEntry {
   streak: number;
   category: string;
   project?: string;
+  parentId?: string;
   order: number;
   categoryColor?: string;
   checks?: Record<string, IdentityStatus>;
