@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Check, CircleX, Plus, Trash2 } from "lucide-react";
+import { ArrowUpRight, Check, CircleX, Plus, Trash2 } from "lucide-react";
 
 type Activity = {
   id: string;
@@ -610,6 +610,15 @@ function OneOffTaskList({
                 </small>
               </span>
               <div className="one-off-task-actions flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = "/projetos"; }}
+                  className="text-cyan-400/80 transition hover:text-cyan-300"
+                  title="Ir para projetos"
+                  aria-label="Ir para projetos"
+                >
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
                 <button
                   type="button"
                   onClick={() =>
