@@ -384,7 +384,7 @@ export default function Habits({ mode = "habits" }: any) {
         : 0,
     };
   });
-  const categoryEvolution = categoryEvolutionDays.map((day) => {
+  const categoryEvolutionPoints = categoryEvolutionDays.map((day) => {
     const row: Record<string, string | number> = {
       name: dateLabel(day),
     };
@@ -402,6 +402,13 @@ export default function Habits({ mode = "habits" }: any) {
     });
     return row;
   });
+  const categoryEvolution = [
+    {
+      name: "",
+      ...Object.fromEntries(categories.map((category) => [category, 0])),
+    },
+    ...categoryEvolutionPoints,
+  ];
   const todayKey = keyOf(new Date());
   const todayActions = store.nextActions.filter((action) => !action.date || action.date === todayKey);
   const todayAgenda = store.agenda.filter((item) => !item.date || item.date === todayKey);
@@ -528,7 +535,7 @@ export default function Habits({ mode = "habits" }: any) {
             margin={{ top: 8, right: 12, left: 0, bottom: 4 }}
           >
             <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
-            <XAxis dataKey="name" padding={{ left: 14, right: 14 }} tick={{ fill: "#94a3b8", fontSize: 10 }} />
+            <XAxis dataKey="name" padding={{ left: 0, right: 14 }} tick={{ fill: "#94a3b8", fontSize: 10 }} />
             <YAxis
               domain={[0, 100]}
               tickFormatter={(value) => `${value}%`}
@@ -550,8 +557,8 @@ export default function Habits({ mode = "habits" }: any) {
                   ]
                 }
                 type="monotone"
-                strokeWidth={2.5}
-                dot={{ r: 3, strokeWidth: 1.5 }}
+                strokeWidth={1.5}
+                dot={{ r: 2.5, strokeWidth: 1.5 }}
                 activeDot={{ r: 5 }}
               />
             ))}
