@@ -130,10 +130,6 @@ export default function Projects() {
   const tagLabel = (tagIdOrName: string) => tags.find((tag) => tag.id === tagIdOrName)?.name || tagIdOrName;
   const openTag = (name: string) => setLocation(`/projetos?tag=${encodeURIComponent(name)}`);
   const clearTag = () => setLocation('/projetos');
-  const enterProject = (projectTitle: string) => {
-    setLocation(`/projetos?project=${encodeURIComponent(projectTitle)}`);
-    window.setTimeout(() => document.getElementById("project-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
-  };
   const addTaskToProject = () => {
     if (!selectedProjectRecord || !newProjectTask.trim()) return;
     addProductivityHabitEntry({
@@ -402,10 +398,10 @@ export default function Projects() {
                   <button
                     type="button"
                     onPointerDown={(event) => event.stopPropagation()}
-                    onClick={(event) => { event.stopPropagation(); enterProject(project.title); }}
+                    onClick={(event) => { event.stopPropagation(); openProjectEditor(project); }}
                     className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/10"
                   >
-                    Entrar <ExternalLink className="h-3.5 w-3.5" />
+                    Editar <ExternalLink className="h-3.5 w-3.5" />
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -453,6 +449,10 @@ export default function Projects() {
           form={projectEditor}
           setForm={setProjectEditor}
           ecosystems={ecosystems}
+          productivityHabits={productivityHabits}
+          onAddTask={addProductivityHabitEntry}
+          onUpdateTask={updateProductivityHabitEntry}
+          onDeleteTask={deleteProductivityHabitEntry}
           onClose={() => setProjectEditor(null)}
           onSave={saveProject}
         />
@@ -482,18 +482,35 @@ function ProjectEditor({
   form,
   setForm,
   ecosystems,
+  productivityHabits,
+  onAddTask,
+  onUpdateTask,
+  onDeleteTask,
   onClose,
   onSave,
 }: {
   form: ReturnType<typeof emptyProjectForm>;
   setForm: React.Dispatch<React.SetStateAction<ReturnType<typeof emptyProjectForm>>>;
   ecosystems: { id: string; name: string; color?: string }[];
+  productivityHabits: { id: string; title: string; category: string; project?: string; done: boolean; streak: number; order: number }[];
+  onAddTask: (task: { title: string; done: boolean; streak: number; category: string; project: string; order: number }) => void;
+  onUpdateTask: (id: string, updates: { title?: string }) => void;
+  onDeleteTask: (id: string) => void;
   onClose: () => void;
   onSave: () => void;
 }) {
   const [thumbnailError, setThumbnailError] = useState("");
   const [thumbnailPreview, setThumbnailPreview] = useState(form.thumbnail);
   const [thumbnailProcessing, setThumbnailProcessing] = useState(false);
+  const [newTask, setNewTask] = useState("");
+  const projectTasks = form.id
+    ? productivityHabits.filter((task) => (task.project || task.category || "").trim().toLowerCase() === form.title.trim().toLowerCase())
+    : [];
+  const addTask = () => {
+    if (!newTask.trim() || !form.title.trim()) return;
+    onAddTask({ title: newTask.trim(), done: false, streak: 0, category: form.title.trim(), project: form.title.trim(), order: productivityHabits.length });
+    setNewTask("");
+  };
   const update = (
     key: keyof ReturnType<typeof emptyProjectForm>,
     value: string | number,
@@ -606,6 +623,24 @@ function ProjectEditor({
               ))}
             </select>
           </Field>
+          {form.id && (
+            <div className="md:col-span-2 rounded-xl border border-amber-400/20 bg-amber-400/[.035] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[.14em] text-amber-300">Tarefas do projeto</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">A mesma lista aparece na aba Produtividade.</p>
+                </div>
+                <span className="text-[11px] text-muted-foreground">{projectTasks.length} cadastradas</span>
+              </div>
+              <div className="space-y-2">
+                {projectTasks.map((task) => <div key={task.id} className="group flex items-center gap-2 rounded-lg border border-white/[.06] bg-background/35 px-2.5 py-2"><CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${task.done ? "text-emerald-400" : "text-muted-foreground"}`} /><input value={task.title} onChange={(event) => onUpdateTask(task.id, { title: event.target.value })} className="min-w-0 flex-1 bg-transparent text-xs outline-none focus:text-primary" aria-label={`Editar tarefa ${task.title}`} /><button type="button" onClick={() => onDeleteTask(task.id)} className="text-muted-foreground opacity-60 transition hover:text-red-400 group-hover:opacity-100" title="Excluir tarefa"><Trash2 className="h-3.5 w-3.5" /></button></div>)}
+                <div className="flex gap-2">
+                  <input value={newTask} onChange={(event) => setNewTask(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") addTask(); if (event.key === "Escape") setNewTask(""); }} placeholder="Adicionar tarefa ao projeto" className="min-w-0 flex-1 rounded-lg border-0 bg-background/60 px-3 py-2 text-xs outline-none ring-1 ring-amber-400/20 focus:ring-amber-300/60" />
+                  <button type="button" onClick={addTask} className="rounded-lg bg-amber-300 px-3 py-2 text-xs font-semibold text-slate-950">+ Tarefa</button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="md:col-span-2">
             <label className="block text-xs font-medium text-muted-foreground">
               Status do projeto
