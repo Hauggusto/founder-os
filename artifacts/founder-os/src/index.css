@@ -1239,26 +1239,30 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
 @media (max-width: 767px) {
   .mobile-main .projects-summary-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: .4rem !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: .5rem !important;
     width: 100% !important;
   }
 
   .mobile-main .projects-summary-grid > * {
     min-width: 0 !important;
     width: auto !important;
-    padding: .55rem .4rem !important;
+    padding: .65rem .55rem !important;
+  }
+
+  .mobile-main .projects-summary-grid > *:nth-child(5) {
+    grid-column: 1 / -1;
   }
 
   .mobile-main .projects-summary-grid > * p:first-child {
     overflow: hidden;
-    font-size: .43rem;
+    font-size: .48rem;
     letter-spacing: .08em;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .mobile-main .projects-summary-grid > * p:last-child {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 }
