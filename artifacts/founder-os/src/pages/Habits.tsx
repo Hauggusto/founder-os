@@ -15,6 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import {
+  ArrowUpRight,
   Check,
   ClipboardCheck,
   Minus,
@@ -175,6 +176,9 @@ export default function Habits({ mode = "habits" }: any) {
     [executionPeriod],
   );
   const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
+  const productivityProjects = isProductivity
+    ? store.modules.filter((module) => module.type === "project")
+    : [];
   const categoryColors = Object.fromEntries(
     habits
       .filter((habit) => habit.categoryColor)
@@ -807,6 +811,16 @@ export default function Habits({ mode = "habits" }: any) {
                                 )}
                                 <p className="mt-0.5 text-[10px] text-muted-foreground/60">Sequência: {habit.streak} dias</p>
                               </div>
+                              {isProductivity && productivityProjects.find((project) => project.title.trim().toLowerCase() === (habit.category || "").trim().toLowerCase()) && (
+                                <Link
+                                  href={`/projetos?project=${encodeURIComponent(habit.category)}`}
+                                  className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-primary/10 hover:text-primary"
+                                  title={`Abrir projeto ${habit.category}`}
+                                  aria-label={`Abrir projeto ${habit.category}`}
+                                >
+                                  <ArrowUpRight className="h-3.5 w-3.5" />
+                                </Link>
+                              )}
                               <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
                           </td>

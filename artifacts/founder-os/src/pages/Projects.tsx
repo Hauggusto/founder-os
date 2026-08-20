@@ -106,6 +106,9 @@ export default function Projects() {
     .filter((m) => filterStatus === "all" || m.status === filterStatus)
     .sort((a, b) => a.order - b.order);
   const allProjects = modules.filter((module) => module.type === "project");
+  const selectedProjectRecord = selectedProject
+    ? allProjects.find((project) => project.title.trim().toLowerCase() === selectedProject.trim().toLowerCase())
+    : undefined;
   const activeCount = allProjects.filter((project) => project.status === "active").length;
   const pausedCount = allProjects.filter((project) => project.status === "paused").length;
   const completedCount = allProjects.filter((project) => project.status === "done").length;
@@ -204,6 +207,37 @@ export default function Projects() {
       <div className="mb-6 rounded-xl border border-primary/15 bg-card/50 p-3"><div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-primary"><Tag className="h-3.5 w-3.5" /> Filtrar por tag</div><div className="flex flex-wrap gap-2">{tags.map((tag) => <button key={tag.id} type="button" onClick={() => openTag(tag.name)} className={`inline-flex min-w-[120px] items-center justify-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${selectedTag?.toLowerCase() === tag.name.toLowerCase() ? 'ring-2 ring-white/20' : 'hover:brightness-125'}`} style={{ borderColor: `${tag.color}99`, color: tag.color, backgroundColor: `${tag.color}15` }}><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tag.color }} />{tag.name}<span className="opacity-60">{(modules.filter((module) => (module.tags || []).some((item) => item.toLowerCase() === tag.name.toLowerCase())).length)}</span></button>)}{selectedTag && <button type="button" onClick={clearTag} className="rounded-full border border-white/10 px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">Limpar filtro</button>}</div></div>
       {selectedTag && <section className="mb-6 grid gap-3 lg:grid-cols-2"><article className="rounded-xl border border-primary/20 bg-card/60 p-4"><p className="text-[10px] uppercase tracking-[.16em] text-primary">Tag selecionada</p><h2 className="mt-1 text-lg font-semibold" style={{ color: selectedTagRecord?.color }}>{selectedTag}</h2><p className="mt-1 text-xs text-muted-foreground">Tudo que está relacionado a este assunto aparece nesta visão.</p><div className="mt-3 text-xs text-muted-foreground">{projects.length} projetos · {relatedActions.length} ações · {relatedHabits.length} hábitos</div></article><article className="rounded-xl border border-white/[.08] bg-card/60 p-4"><p className="mb-2 text-[10px] uppercase tracking-[.16em] text-muted-foreground">Atividade relacionada</p>{[...relatedActions.map((item) => ({ id: item.id, title: item.text, type: 'Ação' })), ...relatedHabits.map((item) => ({ id: item.id, title: item.title, type: 'Hábito' }))].slice(0, 6).map((item) => <div key={`${item.type}-${item.id}`} className="flex items-center justify-between border-b border-white/[.06] py-1.5 text-xs"><span>{item.title}</span><span className="text-[9px] uppercase text-muted-foreground">{item.type}</span></div>)}{!relatedActions.length && !relatedHabits.length && <p className="text-xs text-muted-foreground">Nenhuma tarefa ou hábito foi associado a esta tag ainda.</p>}</article></section>}
       {(selectedEcosystem || selectedProject) && <button type="button" onClick={clearProjectFilter} className="mb-4 inline-flex items-center rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition hover:bg-primary/20">← Todos os projetos</button>}
+      {selectedProjectRecord && (
+        <section className="mb-6 rounded-2xl border border-primary/20 bg-card/70 p-4 shadow-[0_12px_30px_rgba(0,0,0,.16)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[.16em] text-primary">Área do projeto</p>
+              <h2 className="mt-1 text-xl font-semibold text-foreground">{selectedProjectRecord.title}</h2>
+              <p className="mt-1 max-w-2xl text-xs text-muted-foreground">{selectedProjectRecord.description || "Detalhes, tarefas e andamento deste projeto."}</p>
+            </div>
+            <div className="flex items-center gap-3 text-right">
+              <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Progresso</p><p className="text-lg font-semibold text-primary">{projectProgress(selectedProjectRecord)}%</p></div>
+              <Button variant="outline" size="sm" onClick={() => openProjectEditor(selectedProjectRecord)}>Editar projeto</Button>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-amber-400/15 bg-amber-400/[.035] p-3">
+              <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-amber-300">Rotinas vinculadas</p><span className="text-[10px] text-muted-foreground">{productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).length}</span></div>
+              <div className="space-y-1.5">
+                {productivityHabits.filter((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).map((habit) => <div key={habit.id} className="flex items-center gap-2 text-xs text-foreground/85"><CheckCircle2 className={`h-3.5 w-3.5 ${habit.done || Object.values(habit.checks || {}).some((status) => status === 'done') ? 'text-emerald-400' : 'text-muted-foreground'}`} /><span>{habit.title}</span></div>)}
+                {!productivityHabits.some((habit) => (habit.category || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()) && <p className="text-[11px] text-muted-foreground">Nenhuma rotina vinculada ainda.</p>}
+              </div>
+            </div>
+            <div className="rounded-xl border border-cyan-400/15 bg-cyan-400/[.035] p-3">
+              <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-cyan-300">Próximas ações</p><span className="text-[10px] text-muted-foreground">{nextActions.filter((action) => (action.project || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).length}</span></div>
+              <div className="space-y-1.5">
+                {nextActions.filter((action) => (action.project || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()).map((action) => <div key={action.id} className="flex items-center gap-2 text-xs text-foreground/85"><span className={`h-1.5 w-1.5 rounded-full ${action.done ? 'bg-emerald-400' : 'bg-cyan-400'}`} /><span className={action.done ? 'text-muted-foreground line-through' : ''}>{action.text}</span></div>)}
+                {!nextActions.some((action) => (action.project || '').trim().toLowerCase() === selectedProjectRecord.title.trim().toLowerCase()) && <p className="text-[11px] text-muted-foreground">Nenhuma ação vinculada ainda.</p>}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
       <p className="mb-4 text-xs text-muted-foreground">
         Arraste qualquer card para reorganizar a ordem dos projetos.
       </p>
