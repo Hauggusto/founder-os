@@ -433,14 +433,14 @@ export default function Habits({ mode = "habits" }: any) {
       <TagManager />
       {isProductivity && (
         <section className="space-y-4 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
             {[
               { label: "Ações abertas", value: todayActions.filter((action) => !action.done).length, tone: "text-orange-300", note: "para executar hoje" },
               { label: "Concluídas hoje", value: todayActions.filter((action) => action.done).length + todayHabitDone, tone: "text-emerald-300", note: "entregas registradas" },
               { label: "Agenda de hoje", value: todayAgenda.length, tone: "text-cyan-300", note: "compromissos" },
               { label: "Foco do dia", value: `${score}%`, tone: "text-amber-300", note: "execução atual" },
             ].map((metric) => (
-              <article key={metric.label} className="rounded-xl border border-amber-300/15 bg-[#0d0b12]/80 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,.16)]">
+              <article key={metric.label} className="rounded-xl border border-amber-300/15 bg-[#0d0b12]/80 px-3 py-2.5 shadow-[0_10px_24px_rgba(0,0,0,.16)]">
                 <p className="text-[10px] uppercase tracking-[.16em] text-muted-foreground">{metric.label}</p>
                 <p className={`mt-1 text-2xl font-semibold ${metric.tone}`}>{metric.value}</p>
                 <p className="mt-1 text-[10px] text-muted-foreground">{metric.note}</p>
