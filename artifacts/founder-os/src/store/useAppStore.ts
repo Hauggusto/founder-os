@@ -105,6 +105,7 @@ export interface HabitEntry {
   done: boolean;
   streak: number;
   category: string;
+  project?: string;
   order: number;
   categoryColor?: string;
   checks?: Record<string, IdentityStatus>;

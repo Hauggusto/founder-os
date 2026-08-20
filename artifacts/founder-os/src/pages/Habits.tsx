@@ -630,7 +630,7 @@ export default function Habits({ mode = "habits" }: any) {
                   {isProductivity ? "Rotinas recorrentes" : "Acompanhamento dos hábitos"}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  {isProductivity ? "Itens que se repetem e precisam de acompanhamento contínuo." : "Clique em cada dia para registrar feito, parcial ou não feito."}
+                  {isProductivity ? "Tarefas que se repetem e precisam de acompanhamento contínuo." : "Clique em cada dia para registrar feito, parcial ou não feito."}
                 </p>
               </div>
             </div>
@@ -689,7 +689,7 @@ export default function Habits({ mode = "habits" }: any) {
                     setShowHabitForm(false);
                   }
                 }}
-                placeholder="Nome do hábito (ex.: Ler 20 minutos)"
+                placeholder={`${isProductivity ? "Nome da tarefa" : "Nome do hábito"} (ex.: ${isProductivity ? "Revisar prioridades" : "Ler 20 minutos"})`}
                 className="h-10 rounded-lg border border-white/[.1] bg-background px-3 text-sm outline-none focus:border-cyan-400"
               />
               <select
@@ -705,7 +705,7 @@ export default function Habits({ mode = "habits" }: any) {
                 onClick={() => add(newHabitCategory)}
                 className="h-10 rounded-lg border border-cyan-400/40 px-4 text-sm font-semibold text-cyan-300 hover:bg-cyan-400/10"
               >
-                Salvar hábito
+                {isProductivity ? "Salvar tarefa" : "Salvar hábito"}
               </button>
             </div>
           )}
@@ -745,10 +745,27 @@ export default function Habits({ mode = "habits" }: any) {
                           {category}
                         </button>
                       )}
-                      <p className="text-[11px] text-muted-foreground">{entries.length} {entries.length === 1 ? "hábito" : "hábitos"} cadastrados</p>
+                      <p className="text-[11px] text-muted-foreground">{entries.length} {entries.length === 1 ? (isProductivity ? "tarefa" : "hábito") : (isProductivity ? "tarefas" : "hábitos")} cadastradas</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
+                    {isProductivity && (
+                      <select
+                        value={entries.find((entry) => entry.project)?.project || ""}
+                        onChange={(event) => {
+                          const project = event.target.value || undefined;
+                          habits
+                            .filter((entry) => (entry.category || "Rotina") === category)
+                            .forEach((entry) => updateHabitEntry(entry.id, { project }));
+                        }}
+                        className="h-8 max-w-40 rounded-full border-0 bg-background/60 px-3 text-[11px] text-muted-foreground outline-none ring-1 ring-orange-400/25 focus:ring-orange-300/70"
+                        aria-label={`Projeto da categoria ${category}`}
+                        title="Projeto vinculado"
+                      >
+                        <option value="">Sem projeto</option>
+                        {productivityProjects.map((project) => <option key={project.id} value={project.title}>{project.title}</option>)}
+                      </select>
+                    )}
                     <span className="text-sm font-semibold text-lime-300">{categoryScore}%</span>
                     <button type="button" onClick={() => setAddingCategory(addingCategory === category ? null : category)} className="inline-flex items-center gap-1 rounded-lg border border-cyan-400/25 px-2.5 py-1.5 text-[11px] text-cyan-300 hover:bg-cyan-400/10">
                       <Plus className="h-3 w-3" /> {isProductivity ? "Tarefa" : "Adicionar hábito"}
@@ -768,7 +785,7 @@ export default function Habits({ mode = "habits" }: any) {
                   <table className="w-full min-w-[760px] border-collapse">
                     <thead>
                       <tr className="border-b border-white/[.06] text-[10px] uppercase tracking-wide text-muted-foreground">
-                        <th className="px-4 py-2.5 text-left font-medium sm:px-5">Hábito</th>
+                      <th className="px-4 py-2.5 text-left font-medium sm:px-5">{isProductivity ? "Lista de tarefas" : "Hábito"}</th>
                         {executionDays.map((date) => (
                           <th key={keyOf(date)} className="px-2 py-2.5 text-center font-medium">
                             <span className="block">{dayLabel(date)}</span>
@@ -812,12 +829,12 @@ export default function Habits({ mode = "habits" }: any) {
                                 )}
                                 <p className="mt-0.5 text-[10px] text-muted-foreground/60">Sequência: {habit.streak} dias</p>
                               </div>
-                              {isProductivity && productivityProjects.find((project) => project.title.trim().toLowerCase() === (habit.category || "").trim().toLowerCase()) && (
+                              {isProductivity && (habit.project || productivityProjects.find((project) => project.title.trim().toLowerCase() === (habit.category || "").trim().toLowerCase())?.title) && (
                                 <Link
-                                  href={`/projetos?project=${encodeURIComponent(habit.category)}`}
+                                  href={`/projetos?project=${encodeURIComponent(habit.project || habit.category)}`}
                                   className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-primary/10 hover:text-primary"
-                                  title={`Abrir projeto ${habit.category}`}
-                                  aria-label={`Abrir projeto ${habit.category}`}
+                                  title={`Abrir projeto ${habit.project || habit.category}`}
+                                  aria-label={`Abrir projeto ${habit.project || habit.category}`}
                                 >
                                   <ArrowUpRight className="h-3.5 w-3.5" />
                                 </Link>
