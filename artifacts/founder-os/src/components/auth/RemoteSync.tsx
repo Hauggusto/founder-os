@@ -43,7 +43,10 @@ export function RemoteSync() {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => void save(), 1500);
     };
-    const onLocalPreferenceUpdated = () => scheduleSave();
+    // Preferences outside Zustand (such as the psychological floor) must be
+    // persisted immediately so a second device can see the change before the
+    // periodic store sync runs.
+    const onLocalPreferenceUpdated = () => { void save(); };
 
     const initialize = async () => {
       const { data: authData } = await supabase.auth.getUser();
