@@ -599,6 +599,28 @@ function OneOffTaskList({
               key={task.id}
               className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-background/35 px-3 py-3"
             >
+              <button
+                type="button"
+                onClick={() =>
+                  save(
+                    tasks.map((item) =>
+                      item.id === task.id
+                        ? {
+                            ...item,
+                            done: !item.done,
+                            completedAt: item.done
+                              ? null
+                              : new Date().toISOString().slice(0, 10),
+                          }
+                        : item,
+                    ),
+                  )
+                }
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${task.done ? "border-orange-400/70 bg-orange-400/20 text-orange-300" : "border-orange-400/45 text-transparent"}`}
+                aria-label={task.done ? "Marcar como pendente" : "Marcar como concluída"}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
               <span
                 className={`min-w-0 flex-1 text-sm ${task.done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
               >
@@ -618,28 +640,6 @@ function OneOffTaskList({
                   aria-label="Ir para projetos"
                 >
                   <ArrowUpRight className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    save(
-                      tasks.map((item) =>
-                        item.id === task.id
-                          ? {
-                              ...item,
-                              done: !item.done,
-                              completedAt: item.done
-                                ? null
-                                : new Date().toISOString().slice(0, 10),
-                            }
-                          : item,
-                      ),
-                    )
-                  }
-                  className={`flex h-5 w-5 items-center justify-center rounded-md border ${task.done ? "border-emerald-400/60 bg-emerald-400/20 text-emerald-300" : "border-emerald-400/30"}`}
-                  aria-label={task.done ? "Marcar como pendente" : "Marcar como concluída"}
-                >
-                  {task.done && <Check className="h-3.5 w-3.5" />}
                 </button>
                 <button
                   type="button"
