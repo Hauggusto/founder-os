@@ -92,26 +92,17 @@ function HabitCell({
   habit,
   date,
   onChange,
-  accent = "cyan",
 }: {
   habit: HabitEntry;
   date: Date;
   onChange: (status: IdentityStatus | null) => void;
-  accent?: "cyan" | "orange";
 }) {
   const status = habit.checks?.[keyOf(date)];
-  const activeTone = accent === "orange"
-    ? status === "done"
-      ? "border-orange-400/80 bg-orange-400/20 text-orange-200"
-      : status === "partial"
-        ? "border-orange-300/70 bg-orange-300/15 text-orange-100"
-        : "border-red-400/70 bg-red-400/15 text-red-200"
-    : tone[status || ""] || "border-cyan-500/25 bg-background/50 text-transparent";
   return (
     <button
       title={status || "Não registrado"}
       onClick={() => onChange(nextStatus(status))}
-      className={`mx-auto flex h-6 w-6 items-center justify-center rounded-sm border transition hover:scale-110 ${status ? activeTone : "border-orange-400/45 bg-background/50 text-transparent"}`}
+      className={`mx-auto flex h-6 w-6 items-center justify-center rounded-sm border transition hover:scale-110 ${status ? tone[status] : "border-cyan-500/25 bg-background/50 text-transparent"}`}
     >
       {status === "done" ? (
         <Check className="h-4 w-4" />
@@ -851,14 +842,6 @@ export default function Habits({ mode = "habits" }: any) {
                         >
                           <td className="px-4 py-3 sm:px-5">
                             <div className={`flex items-center gap-2 ${habit.parentId ? "pl-7" : ""}`}>
-                              {executionDays[0] && (
-                                <HabitCell
-                                  habit={habit}
-                                  date={executionDays[0]}
-                                  accent="orange"
-                                  onChange={(status) => setHabitCheck(habit.id, keyOf(executionDays[0]), status)}
-                                />
-                              )}
                               <div className="min-w-0 flex-1">
                                 {editingHabitId === habit.id ? (
                                   <input
@@ -904,7 +887,7 @@ export default function Habits({ mode = "habits" }: any) {
                               <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
                           </td>
-                          {executionDays.slice(1).map((date) => (
+                          {executionDays.map((date) => (
                             <td key={keyOf(date)} className="px-2 py-3 text-center">
                               <HabitCell habit={habit} date={date} onChange={(status) => setHabitCheck(habit.id, keyOf(date), status)} />
                             </td>
