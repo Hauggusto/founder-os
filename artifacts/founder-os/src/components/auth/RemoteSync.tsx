@@ -25,17 +25,28 @@ export function RemoteSync() {
     let lastSaved = '';
     let ready = false;
     let userId = '';
+    let localDirty = false;
+    let applyingRemote = false;
 
     const applyRemoteData = (remoteData: unknown) => {
       if (disposed || !remoteData || typeof remoteData !== 'object') return;
+      // Never replace an active local edit with an older realtime/polling snapshot.
+      // The pending local snapshot is saved as soon as the debounce completes.
+      if (localDirty && serialize() !== lastSaved) return;
       const payload = remoteData as Record<string, unknown>;
-      if (typeof payload.psychologicalFloor === 'number') {
-        localStorage.setItem(FLOOR_KEY, String(payload.psychologicalFloor));
-        window.dispatchEvent(new Event('founder-os-psychological-floor-updated'));
+      applyingRemote = true;
+      try {
+        if (typeof payload.psychologicalFloor === 'number') {
+          localStorage.setItem(FLOOR_KEY, String(payload.psychologicalFloor));
+          window.dispatchEvent(new Event('founder-os-psychological-floor-updated'));
+        }
+        const { psychologicalFloor: _floor, ...appData } = payload;
+        useAppStore.getState().importData(JSON.stringify(appData));
+        lastSaved = serialize();
+        localDirty = false;
+      } finally {
+        applyingRemote = false;
       }
-      const { psychologicalFloor: _floor, ...appData } = payload;
-      useAppStore.getState().importData(JSON.stringify(appData));
-      lastSaved = serialize();
     };
 
     const readRemote = async () => {
@@ -63,7 +74,17 @@ export function RemoteSync() {
         { user_id: userId, data: JSON.parse(serialized), updated_at: new Date().toISOString() },
         { onConflict: 'user_id' },
       );
-      if (!error) lastSaved = serialized;
+      if (!error) {
+        // A keystroke may have happened while the request was in flight.
+        // Only mark the edit clean when the saved snapshot is still current.
+        if (serialize() === serialized) {
+          lastSaved = serialized;
+          localDirty = false;
+        } else {
+          localDirty = true;
+          scheduleSave();
+        }
+      }
       else console.warn('Founder OS: não foi possível sincronizar os dados.', error.message);
     };
 
@@ -73,9 +94,13 @@ export function RemoteSync() {
       timer = window.setTimeout(() => void save(), 1500);
     };
 
-    const onLocalPreferenceUpdated = () => { void save(); };
-    const onResume = () => { void readRemote(); };
-    const onVisibility = () => { if (document.visibilityState === 'visible') void readRemote(); };
+    const onLocalPreferenceUpdated = () => {
+      if (applyingRemote) return;
+      localDirty = true;
+      void save();
+    };
+    const onResume = () => { if (!localDirty) void readRemote(); };
+    const onVisibility = () => { if (document.visibilityState === 'visible' && !localDirty) void readRemote(); };
 
     const initialize = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -87,7 +112,12 @@ export function RemoteSync() {
 
       ready = true;
       lastSaved = serialize();
-      const unsubscribe = useAppStore.subscribe(scheduleSave);
+      const unsubscribe = useAppStore.subscribe(() => {
+        if (!applyingRemote) {
+          localDirty = true;
+          scheduleSave();
+        }
+      });
       window.addEventListener('founder-os-psychological-floor-updated', onLocalPreferenceUpdated);
       window.addEventListener('focus', onResume);
       window.addEventListener('online', onResume);

@@ -90,28 +90,6 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     return () => { active = false; };
   }, [session]);
 
-  useEffect(() => {
-    if (!session) return;
-    let active = true;
-    const sync = async () => {
-      const stateBeforeLoad = JSON.stringify(useAppStore.getState());
-      const cloudData = await loadCloudAppData();
-      if (!active) return;
-      if (cloudData) {
-        const localChangedWhileLoading = JSON.stringify(useAppStore.getState()) !== stateBeforeLoad;
-        if (localChangedWhileLoading) useAppStore.getState().saveToStorage();
-        else {
-          applyLocalPreferences(cloudData.localPreferences);
-          useAppStore.setState(cloudData);
-        }
-      }
-      // Also captures legacy local-only fields and sends them to the cloud.
-      useAppStore.getState().saveToStorage();
-    };
-    const timer = window.setInterval(() => void sync(), 30_000);
-    return () => { active = false; window.clearInterval(timer); };
-  }, [session]);
-
   if (!isSupabaseConfigured) {
     return <AuthMessage title="Autenticação ainda não configurada" body="Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY nas variáveis da Vercel e no ambiente local." />;
   }
