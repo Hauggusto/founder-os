@@ -43,6 +43,7 @@ export function RemoteSync() {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => void save(), 1500);
     };
+    const onLocalPreferenceUpdated = () => scheduleSave();
 
     const initialize = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -68,6 +69,7 @@ export function RemoteSync() {
       lastSaved = serialize();
       ready = true;
       const unsubscribe = useAppStore.subscribe(scheduleSave);
+      window.addEventListener('founder-os-psychological-floor-updated', onLocalPreferenceUpdated);
       if (!disposed) {
         window.addEventListener('beforeunload', () => { void save(); });
       }
@@ -80,6 +82,7 @@ export function RemoteSync() {
       disposed = true;
       window.clearTimeout(timer);
       unsubscribe?.();
+      window.removeEventListener('founder-os-psychological-floor-updated', onLocalPreferenceUpdated);
     };
   }, []);
 
