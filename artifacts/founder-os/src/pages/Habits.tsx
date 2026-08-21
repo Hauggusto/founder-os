@@ -150,6 +150,7 @@ export default function Habits({ mode = "habits" }: any) {
   const [newCategoryColor, setNewCategoryColor] = useState("#22d3ee");
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitTitle, setEditingHabitTitle] = useState("");
+  const editingHabitTitleRef = useRef("");
   const skipHabitBlurRef = useRef(false);
   const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
   const [subtaskParentId, setSubtaskParentId] = useState<string | null>(null);
@@ -309,17 +310,20 @@ export default function Habits({ mode = "habits" }: any) {
   };
   const startEditingHabit = (habit: HabitEntry) => {
     skipHabitBlurRef.current = false;
+    editingHabitTitleRef.current = habit.title;
     setEditingHabitId(habit.id);
     setEditingHabitTitle(habit.title);
   };
   const saveEditingHabit = (habit: HabitEntry, value = editingHabitTitle) => {
     const name = value.trim();
     if (name) updateHabitEntry(habit.id, { title: name });
+    editingHabitTitleRef.current = "";
     setEditingHabitId(null);
     setEditingHabitTitle("");
   };
   const cancelEditingHabit = () => {
     skipHabitBlurRef.current = true;
+    editingHabitTitleRef.current = "";
     setEditingHabitId(null);
     setEditingHabitTitle("");
   };
@@ -849,19 +853,22 @@ export default function Habits({ mode = "habits" }: any) {
                                   <input
                                     autoFocus
                                     value={editingHabitTitle}
-                                    onChange={(e) => setEditingHabitTitle(e.target.value)}
+                                    onChange={(e) => {
+                                      editingHabitTitleRef.current = e.target.value;
+                                      setEditingHabitTitle(e.target.value);
+                                    }}
                                     onBlur={(e) => {
                                       if (skipHabitBlurRef.current) {
                                         skipHabitBlurRef.current = false;
                                         return;
                                       }
-                                      saveEditingHabit(habit, e.currentTarget.value);
+                                      saveEditingHabit(habit, editingHabitTitleRef.current || e.currentTarget.value);
                                     }}
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter") {
                                         e.preventDefault();
                                         skipHabitBlurRef.current = true;
-                                        saveEditingHabit(habit, e.currentTarget.value);
+                                        saveEditingHabit(habit, editingHabitTitleRef.current || e.currentTarget.value);
                                       }
                                       if (e.key === "Escape") cancelEditingHabit();
                                     }}
