@@ -33,6 +33,7 @@ export default function Projects() {
   const [newEcosystemColor, setNewEcosystemColor] = useState("#00C9FF");
   const [selectedEcosystemId, setSelectedEcosystemId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | "all">("all");
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const query = new URLSearchParams(location.split("?")[1] || "");
   const selectedProject = query.get("project");
   const selectedTag = query.get("tag");
@@ -183,6 +184,12 @@ export default function Projects() {
     };
     return labels[status] || status;
   };
+  const kanbanColumns: { status: ModuleStatus; label: string; color: string }[] = [
+    { status: "active", label: "Ativos", color: "#10B981" },
+    { status: "paused", label: "Pausados", color: "#F97316" },
+    { status: "done", label: "Concluídos", color: "#00C9FF" },
+    { status: "archived", label: "Arquivados", color: "#64748B" },
+  ];
 
   return (
     <div className="max-w-[1600px]">
@@ -219,6 +226,10 @@ export default function Projects() {
             </Button>
           ),
         )}
+        <div className="ml-auto flex items-center gap-1 rounded-lg border border-primary/20 bg-card/60 p-1" aria-label="Visualização dos projetos">
+          <button type="button" onClick={() => setViewMode("list")} className={`rounded-md px-3 py-1.5 text-xs transition ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Lista</button>
+          <button type="button" onClick={() => setViewMode("kanban")} className={`rounded-md px-3 py-1.5 text-xs transition ${viewMode === "kanban" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Kanban</button>
+        </div>
       </div>
       <div className="mb-6 rounded-xl border border-primary/15 bg-card/50 p-3"><div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-primary"><Tag className="h-3.5 w-3.5" /> Filtrar por tag</div><div className="flex flex-wrap gap-2">{tags.map((tag) => <button key={tag.id} type="button" onClick={() => openTag(tag.name)} className={`inline-flex min-w-[120px] items-center justify-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${selectedTag?.toLowerCase() === tag.name.toLowerCase() ? 'ring-2 ring-white/20' : 'hover:brightness-125'}`} style={{ borderColor: `${tag.color}99`, color: tag.color, backgroundColor: `${tag.color}15` }}><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tag.color }} />{tag.name}<span className="opacity-60">{(modules.filter((module) => (module.tags || []).some((item) => item.toLowerCase() === tag.name.toLowerCase())).length)}</span></button>)}{selectedTag && <button type="button" onClick={clearTag} className="rounded-full border border-white/10 px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">Limpar filtro</button>}</div></div>
       {selectedTag && <section className="mb-6 grid gap-3 lg:grid-cols-2"><article className="rounded-xl border border-primary/20 bg-card/60 p-4"><p className="text-[10px] uppercase tracking-[.16em] text-primary">Tag selecionada</p><h2 className="mt-1 text-lg font-semibold" style={{ color: selectedTagRecord?.color }}>{selectedTag}</h2><p className="mt-1 text-xs text-muted-foreground">Tudo que está relacionado a este assunto aparece nesta visão.</p><div className="mt-3 text-xs text-muted-foreground">{projects.length} projetos · {relatedActions.length} ações · {relatedHabits.length} hábitos</div></article><article className="rounded-xl border border-white/[.08] bg-card/60 p-4"><p className="mb-2 text-[10px] uppercase tracking-[.16em] text-muted-foreground">Atividade relacionada</p>{[...relatedActions.map((item) => ({ id: item.id, title: item.text, type: 'Ação' })), ...relatedHabits.map((item) => ({ id: item.id, title: item.title, type: 'Hábito' }))].slice(0, 6).map((item) => <div key={`${item.type}-${item.id}`} className="flex items-center justify-between border-b border-white/[.06] py-1.5 text-xs"><span>{item.title}</span><span className="text-[9px] uppercase text-muted-foreground">{item.type}</span></div>)}{!relatedActions.length && !relatedHabits.length && <p className="text-xs text-muted-foreground">Nenhuma tarefa ou hábito foi associado a esta tag ainda.</p>}</article></section>}
@@ -280,6 +291,23 @@ export default function Projects() {
             <Plus className="w-4 h-4 mr-2" />
             Criar Primeiro Projeto
           </Button>
+        </div>
+      ) : viewMode === "kanban" ? (
+        <div className="grid gap-3 overflow-x-auto pb-2 md:grid-cols-2 xl:grid-cols-4">
+          {kanbanColumns.map((column) => {
+            const columnProjects = projects.filter((project) => project.status === column.status);
+            return <section key={column.status} className="min-w-[260px] rounded-2xl border bg-card/45 p-3" style={{ borderColor: `${column.color}55`, boxShadow: `inset 0 1px 0 ${column.color}22` }} onDragOver={(event) => event.preventDefault()} onDrop={() => { if (draggedProjectId) { updateModule(draggedProjectId, { status: column.status }); setDraggedProjectId(null); setDragOverProjectId(null); } }}>
+              <div className="mb-3 flex items-center justify-between border-b border-white/[.06] pb-3"><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: column.color, boxShadow: `0 0 8px ${column.color}` }} /><h2 className="text-sm font-semibold">{column.label}</h2></div><span className="rounded-full px-2 py-0.5 text-[10px]" style={{ color: column.color, backgroundColor: `${column.color}18` }}>{columnProjects.length}</span></div>
+              <div className="space-y-2">
+                {columnProjects.map((project) => <article key={project.id} draggable onDragStart={(event) => { setDraggedProjectId(project.id); event.dataTransfer.setData("project-id", project.id); }} onDragEnd={() => setDraggedProjectId(null)} onClick={() => openProjectEditor(project)} className="group cursor-grab rounded-xl border border-white/[.08] bg-background/70 p-3 transition hover:-translate-y-0.5 hover:border-primary/40 active:cursor-grabbing">
+                  <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="truncate text-sm font-semibold">{project.title}</h3><p className="mt-1 truncate text-[10px] uppercase tracking-wider text-muted-foreground">{project.category || "Sem grupo"}</p></div><button type="button" onClick={(event) => { event.stopPropagation(); openProjectEditor(project); }} className="rounded-md px-2 py-1 text-[10px] text-primary opacity-0 transition group-hover:opacity-100 hover:bg-primary/10">Editar</button></div>
+                  <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground"><span>Progresso</span><span className="font-semibold" style={{ color: column.color }}>{projectProgress(project)}%</span></div><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/[.08]"><div className="h-full rounded-full transition-all" style={{ width: `${projectProgress(project)}%`, backgroundColor: column.color }} /></div>
+                  <div className="mt-3 flex items-center justify-between text-[10px] text-muted-foreground"><span>{productivityHabits.filter((habit) => isHabitLinkedToProject(habit, project)).length} tarefas vinculadas</span>{project.tags?.length ? <span className="truncate pl-2">{project.tags[0]}</span> : null}</div>
+                </article>)}
+                {!columnProjects.length && <div className="rounded-xl border border-dashed border-white/[.10] px-3 py-8 text-center text-[11px] text-muted-foreground">Arraste um projeto para cá</div>}
+              </div>
+            </section>;
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
