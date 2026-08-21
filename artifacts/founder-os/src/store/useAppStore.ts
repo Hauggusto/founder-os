@@ -198,6 +198,8 @@ export interface AppData {
   
   habits: HabitEntry[];
   productivityHabits: HabitEntry[];
+  habitCategories: string[];
+  productivityCategories: string[];
   agenda: AgendaItem[];
   lifeAreas: LifeArea[];
   risks: RiskItem[];
@@ -266,6 +268,10 @@ interface AppStore extends AppData {
   setProductivityHabitCheck: (id: string, date: string, status: IdentityStatus | null) => void;
   addHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
   addProductivityHabitEntry: (habit: Omit<HabitEntry, 'id'>) => void;
+  renameHabitCategory: (from: string, to: string) => void;
+  renameProductivityCategory: (from: string, to: string) => void;
+  deleteHabitCategory: (name: string) => void;
+  deleteProductivityCategory: (name: string) => void;
   updateHabitEntry: (id: string, updates: Partial<HabitEntry>) => void;
   updateProductivityHabitEntry: (id: string, updates: Partial<HabitEntry>) => void;
   deleteHabitEntry: (id: string) => void;
@@ -343,6 +349,8 @@ const loadInitialData = (): AppData => {
         financialSummary: parsed.financialSummary || seedData.financialSummary,
         habits: parsed.habits || seedData.habits,
         productivityHabits: parsed.productivityHabits || parsed.habits || seedData.habits,
+        habitCategories: parsed.habitCategories || [...new Set((parsed.habits || seedData.habits).map((habit: HabitEntry) => habit.category || 'Rotina'))],
+        productivityCategories: parsed.productivityCategories || [...new Set((parsed.productivityHabits || parsed.habits || seedData.habits).map((habit: HabitEntry) => habit.category || 'Rotina'))],
         agenda: parsed.agenda || seedData.agenda,
         lifeAreas: parsed.lifeAreas || seedData.lifeAreas,
         risks: parsed.risks || seedData.risks,
@@ -366,7 +374,7 @@ const loadInitialData = (): AppData => {
   } catch (err) {
     console.error('Failed to load from localStorage:', err);
   }
-  return { ...seedData, productivityHabits: seedData.habits, learningCards: defaultLearningCards, futureGoals: defaultFutureGoals } as AppData;
+  return { ...seedData, productivityHabits: seedData.habits, habitCategories: [...new Set(seedData.habits.map((habit) => habit.category || 'Rotina'))], productivityCategories: [...new Set(seedData.habits.map((habit) => habit.category || 'Rotina'))], learningCards: defaultLearningCards, futureGoals: defaultFutureGoals } as AppData;
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -395,6 +403,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       
       habits: state.habits,
       productivityHabits: state.productivityHabits,
+      habitCategories: state.habitCategories,
+      productivityCategories: state.productivityCategories,
       agenda: state.agenda,
       lifeAreas: state.lifeAreas,
       risks: state.risks,
@@ -686,13 +696,39 @@ export const useAppStore = create<AppStore>((set, get) => ({
       ...habit,
       id: `h-${Date.now()}`
     };
-    set({ habits: [...get().habits, newHabit] });
+    const category = habit.category || 'Rotina';
+    set({ habits: [...get().habits, newHabit], habitCategories: get().habitCategories.includes(category) ? get().habitCategories : [...get().habitCategories, category] });
     get().saveToStorage();
   },
 
   addProductivityHabitEntry: (habit) => {
     const newHabit = { ...habit, id: `ph-${Date.now()}` };
-    set({ productivityHabits: [...get().productivityHabits, newHabit] });
+    const category = habit.category || 'Rotina';
+    set({ productivityHabits: [...get().productivityHabits, newHabit], productivityCategories: get().productivityCategories.includes(category) ? get().productivityCategories : [...get().productivityCategories, category] });
+    get().saveToStorage();
+  },
+
+  renameHabitCategory: (from, to) => {
+    const name = to.trim();
+    if (!name || from === name) return;
+    set({ habitCategories: get().habitCategories.map((category) => category === from ? name : category), habits: get().habits.map((habit) => (habit.category || 'Rotina') === from ? { ...habit, category: name } : habit) });
+    get().saveToStorage();
+  },
+
+  renameProductivityCategory: (from, to) => {
+    const name = to.trim();
+    if (!name || from === name) return;
+    set({ productivityCategories: get().productivityCategories.map((category) => category === from ? name : category), productivityHabits: get().productivityHabits.map((habit) => (habit.category || 'Rotina') === from ? { ...habit, category: name } : habit) });
+    get().saveToStorage();
+  },
+
+  deleteHabitCategory: (name) => {
+    set({ habitCategories: get().habitCategories.filter((category) => category !== name) });
+    get().saveToStorage();
+  },
+
+  deleteProductivityCategory: (name) => {
+    set({ productivityCategories: get().productivityCategories.filter((category) => category !== name) });
     get().saveToStorage();
   },
 
@@ -862,6 +898,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       priorities: state.priorities,
       habits: state.habits,
       productivityHabits: state.productivityHabits,
+      habitCategories: state.habitCategories,
+      productivityCategories: state.productivityCategories,
       agenda: state.agenda,
       lifeAreas: state.lifeAreas,
       risks: state.risks,
@@ -896,6 +934,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
         priorities: parsed.priorities || [],
         habits: parsed.habits || [],
         productivityHabits: parsed.productivityHabits || parsed.habits || [],
+        habitCategories: parsed.habitCategories || [...new Set((parsed.habits || []).map((habit: HabitEntry) => habit.category || 'Rotina'))],
+        productivityCategories: parsed.productivityCategories || [...new Set((parsed.productivityHabits || parsed.habits || []).map((habit: HabitEntry) => habit.category || 'Rotina'))],
         agenda: parsed.agenda || [],
         lifeAreas: parsed.lifeAreas || [],
         risks: parsed.risks || [],

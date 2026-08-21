@@ -124,6 +124,9 @@ export default function Habits({ mode = "habits" }: any) {
   const addHabitEntry = isProductivity ? store.addProductivityHabitEntry : store.addHabitEntry;
   const updateHabitEntry = isProductivity ? store.updateProductivityHabitEntry : store.updateHabitEntry;
   const deleteHabitEntry = isProductivity ? store.deleteProductivityHabitEntry : store.deleteHabitEntry;
+  const habitCategories = isProductivity ? store.productivityCategories : store.habitCategories;
+  const renameCategory = isProductivity ? store.renameProductivityCategory : store.renameHabitCategory;
+  const deleteCategory = isProductivity ? store.deleteProductivityCategory : store.deleteHabitCategory;
   const setHabitCheck = isProductivity ? store.setProductivityHabitCheck : store.setHabitCheck;
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState<Period>("week");
@@ -178,7 +181,7 @@ export default function Habits({ mode = "habits" }: any) {
     () => periodDays(executionPeriod),
     [executionPeriod],
   );
-  const categories = [...new Set(habits.map((h) => h.category || "Rotina"))];
+  const categories = [...new Set([...habitCategories, ...habits.map((h) => h.category || "Rotina")])];
   const productivityProjects = isProductivity
     ? store.modules.filter((module) => module.type === "project")
     : [];
@@ -279,9 +282,7 @@ export default function Habits({ mode = "habits" }: any) {
   const saveEditingCategory = (category: string) => {
     const name = editingCategoryName.trim();
     if (name && name !== category) {
-      habits
-        .filter((h) => (h.category || "Rotina") === category)
-        .forEach((h) => updateHabitEntry(h.id, { category: name }));
+      renameCategory(category, name);
       if (categoryFilter === category) setCategoryFilter(name);
     }
     setEditingCategory(null);
@@ -302,6 +303,7 @@ export default function Habits({ mode = "habits" }: any) {
       )
     ) {
       entries.forEach((habit) => deleteHabitEntry(habit.id));
+      deleteCategory(category);
       if (categoryFilter === category) setCategoryFilter("all");
     }
   };
