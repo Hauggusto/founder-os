@@ -851,7 +851,7 @@ export default function Habits({ mode = "habits" }: any) {
                         >
                           <td className="px-4 py-3 sm:px-5">
                             <div className={`flex items-center gap-2 ${habit.parentId ? "pl-7" : ""}`}>
-                              {isProductivity && executionDays[0] && (
+                              {executionDays[0] && (
                                 <HabitCell
                                   habit={habit}
                                   date={executionDays[0]}
@@ -904,7 +904,7 @@ export default function Habits({ mode = "habits" }: any) {
                               <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
                           </td>
-                          {executionDays.slice(isProductivity ? 1 : 0).map((date) => (
+                          {executionDays.slice(1).map((date) => (
                             <td key={keyOf(date)} className="px-2 py-3 text-center">
                               <HabitCell habit={habit} date={date} onChange={(status) => setHabitCheck(habit.id, keyOf(date), status)} />
                             </td>
