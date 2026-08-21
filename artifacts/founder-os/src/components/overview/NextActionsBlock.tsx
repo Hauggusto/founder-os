@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { ArrowUpRight, Flag, Flame, Plus, Tag, X } from 'lucide-react';
-import { Link } from 'wouter';
+import { Flag, Flame, Plus, Tag, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 function ProjectPicker({
@@ -75,7 +74,6 @@ export function NextActionsBlock() {
             <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
             <div className="flex shrink-0 items-center gap-1.5">
               <ProjectPicker value={action.project || ''} projects={projects} onChange={(value) => updateNextAction(action.id, { project: value || undefined })} ariaLabel="Projeto da ação" />
-              {action.project && <Link href={`/projetos?project=${encodeURIComponent(action.project)}`} className="rounded-full p-1.5 text-primary/70 transition hover:bg-primary/10 hover:text-primary" aria-label={`Ir para o projeto ${action.project}`} title={`Ir para o projeto ${action.project}`}><ArrowUpRight className="h-3.5 w-3.5" /></Link>}
               <button type="button" onClick={(event) => { event.stopPropagation(); deleteNextAction(action.id); }} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação" title="Excluir tarefa"><X className="h-3.5 w-3.5" /></button>
             </div>
           </div>)) : <p className="rounded-lg border border-dashed border-white/10 p-3 text-center text-[11px] text-muted-foreground">Nenhuma ação nesta prioridade.</p>}</div>;
