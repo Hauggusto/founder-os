@@ -196,7 +196,8 @@ input[type='checkbox'].accent-orange-400:checked {
   --chart-4: 326 78% 60%;
   --chart-5: 262 52% 47%;
 
-  --app-font-sans: 'Manrope', sans-serif;
+  /* A tipografia monoespaçada é a linguagem visual compartilhada pelo dashboard. */
+  --app-font-sans: var(--app-font-mono);
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.625rem; /* 10px */
