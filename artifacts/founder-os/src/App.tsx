@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -24,6 +25,7 @@ import Learning from '@/pages/Learning';
 import Opportunities from '@/pages/Opportunities';
 import { AuthGate } from '@/components/auth/AuthGate';
 import { RemoteSync } from '@/components/auth/RemoteSync';
+import { useAppStore } from '@/store/useAppStore';
 
 const queryClient = new QueryClient();
 
@@ -82,6 +84,18 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    const handleUndo = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'z' || event.shiftKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      event.preventDefault();
+      useAppStore.getState().undoLastAction();
+    };
+    window.addEventListener('keydown', handleUndo);
+    return () => window.removeEventListener('keydown', handleUndo);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

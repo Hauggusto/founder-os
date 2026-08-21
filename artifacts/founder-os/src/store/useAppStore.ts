@@ -302,6 +302,7 @@ interface AppStore extends AppData {
   // Data management
   exportData: () => string;
   importData: (json: string) => boolean;
+  undoLastAction: () => boolean;
   saveToStorage: () => void;
 }
 
@@ -329,6 +330,9 @@ function applyFinancialCategoryRule<T extends { description: string; category: s
   const matched = rules.find((rule) => description.includes(normalizeFinancialRuleText(rule.keyword)));
   return matched ? { ...transaction, category: matched.category } : transaction;
 }
+
+let undoSnapshot = '';
+let undoRestoring = false;
 
 // Load from localStorage or use seed
 const loadInitialData = (): AppData => {
@@ -957,4 +961,28 @@ export const useAppStore = create<AppStore>((set, get) => ({
       return false;
     }
   },
+
+  undoLastAction: () => {
+    if (!undoSnapshot) return false;
+    const snapshot = undoSnapshot;
+    undoSnapshot = '';
+    undoRestoring = true;
+    const restored = get().importData(snapshot);
+    undoRestoring = false;
+    lastUndoSnapshot = get().exportData();
+    return restored;
+  },
 }));
+
+// Keep a single previous application snapshot for the global Ctrl/Cmd+Z action.
+// Text fields are excluded by the keyboard handler in App.tsx, so their native
+// editing history remains intact.
+let lastUndoSnapshot = useAppStore.getState().exportData();
+useAppStore.subscribe((state) => {
+  if (undoRestoring) return;
+  const nextSnapshot = state.exportData();
+  if (nextSnapshot !== lastUndoSnapshot) {
+    undoSnapshot = lastUndoSnapshot;
+    lastUndoSnapshot = nextSnapshot;
+  }
+});
