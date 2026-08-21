@@ -66,16 +66,15 @@ export function NextActionsBlock() {
   const save = () => { if (!text.trim()) return; addNextAction(text.trim(), project.trim() || undefined, priority, undefined, undefined, selectedTags); setText(''); setProject(''); setSelectedTags([]); setAdding(false); };
   const renderActions = (items: typeof sortedActions) => <div className="space-y-2">{items.length ? items.map((action) => (
           <div key={action.id} className="next-action-row flex items-start gap-3 rounded-lg border border-white/[.06] bg-background/25 p-2.5 transition-colors hover:border-primary/20 hover:bg-[#ffffff05] group">
-            {action.priority === 'urgent' ? <Flame className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" /> : <Flag className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />}
+            <Checkbox
+              checked={action.done}
+              onCheckedChange={() => toggleNextAction(action.id)}
+              className={`mt-0.5 shrink-0 ${action.priority === 'urgent' ? 'border-orange-400/70 data-[state=checked]:border-orange-400 data-[state=checked]:bg-orange-400' : 'border-emerald-400/70 data-[state=checked]:border-emerald-400 data-[state=checked]:bg-emerald-400'}`}
+              aria-label={`Marcar ${action.text} como concluída`}
+            />
             <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
             <div className="flex shrink-0 items-center gap-1.5">
               <ProjectPicker value={action.project || ''} projects={projects} onChange={(value) => updateNextAction(action.id, { project: value || undefined })} ariaLabel="Projeto da ação" />
-              <Checkbox
-                checked={action.done}
-                onCheckedChange={() => toggleNextAction(action.id)}
-                className="shrink-0"
-                aria-label={`Marcar ${action.text} como concluída`}
-              />
               {action.project && <Link href={`/projetos?project=${encodeURIComponent(action.project)}`} className="rounded-full p-1.5 text-primary/70 transition hover:bg-primary/10 hover:text-primary" aria-label={`Ir para o projeto ${action.project}`} title={`Ir para o projeto ${action.project}`}><ArrowUpRight className="h-3.5 w-3.5" /></Link>}
               <button type="button" onClick={(event) => { event.stopPropagation(); deleteNextAction(action.id); }} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação" title="Excluir tarefa"><X className="h-3.5 w-3.5" /></button>
             </div>
