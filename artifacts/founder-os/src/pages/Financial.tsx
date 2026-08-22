@@ -123,7 +123,9 @@ export default function Financial() {
       </div>
 
       <UpcomingFinanceCards
-        transactions={filteredTransactions.filter((transaction) => transaction.status === 'pending' && transaction.date >= new Date().toISOString().slice(0, 10))}
+        // Keep every pending commitment visible, including overdue receipts/payments,
+        // so nothing disappears from the user's financial control.
+        transactions={filteredTransactions.filter((transaction) => transaction.status === 'pending')}
         accounts={accounts.map((account) => account.title).filter(Boolean)}
         onAdd={addTransaction}
         onUpdate={updateTransaction}
