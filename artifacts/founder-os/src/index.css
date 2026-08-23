@@ -1355,3 +1355,11 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     order: 3;
   }
 }
+
+/* Oportunidades: manter os cards lado a lado também no mobile. */
+@media (max-width: 767px) {
+  .mobile-main .opportunity-source-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
