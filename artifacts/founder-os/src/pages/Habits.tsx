@@ -18,6 +18,8 @@ import {
   ArrowUpRight,
   Check,
   ClipboardCheck,
+  Flag,
+  Flame,
   Minus,
   Plus,
   Trash2,
@@ -893,6 +895,28 @@ export default function Habits({ mode = "habits" }: any) {
                                 )}
                               </div>
                               <button type="button" onClick={() => { setSubtaskParentId(subtaskParentId === habit.id ? null : habit.id); setSubtaskTitle(""); }} className="rounded-md p-1 text-muted-foreground/50 transition hover:bg-cyan-400/10 hover:text-cyan-300" title="Adicionar subtarefa" aria-label={`Adicionar subtarefa em ${habit.title}`}><Plus className="h-3.5 w-3.5" /></button>
+                              {isProductivity && (
+                                <div className="flex items-center gap-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => updateHabitEntry(habit.id, { priority: habit.priority === "urgent" ? undefined : "urgent" })}
+                                    className={`rounded-md p-1 transition ${habit.priority === "urgent" ? "bg-orange-400/15 text-orange-300" : "text-muted-foreground/40 hover:bg-orange-400/10 hover:text-orange-300"}`}
+                                    title={habit.priority === "urgent" ? "Remover prioridade urgente" : "Marcar como urgente"}
+                                    aria-label={habit.priority === "urgent" ? "Remover prioridade urgente" : "Marcar como urgente"}
+                                  >
+                                    <Flame className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateHabitEntry(habit.id, { priority: habit.priority === "important" ? undefined : "important" })}
+                                    className={`rounded-md p-1 transition ${habit.priority === "important" ? "bg-emerald-400/15 text-emerald-300" : "text-muted-foreground/40 hover:bg-emerald-400/10 hover:text-emerald-300"}`}
+                                    title={habit.priority === "important" ? "Remover prioridade importante" : "Marcar como importante"}
+                                    aria-label={habit.priority === "important" ? "Remover prioridade importante" : "Marcar como importante"}
+                                  >
+                                    <Flag className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              )}
                               <button type="button" onClick={() => removeHabit(habit)} className="text-muted-foreground/40 hover:text-red-400" title="Excluir"><Trash2 className="h-3.5 w-3.5" /></button>
                             </div>
                           </td>

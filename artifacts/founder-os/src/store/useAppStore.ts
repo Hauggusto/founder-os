@@ -111,6 +111,8 @@ export interface HabitEntry {
   categoryColor?: string;
   checks?: Record<string, IdentityStatus>;
   tags?: string[];
+  /** Priority used to surface recurring productivity tasks in one-off deliveries. */
+  priority?: 'important' | 'urgent';
 }
 
 export interface AgendaItem {

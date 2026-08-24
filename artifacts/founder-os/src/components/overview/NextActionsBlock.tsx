@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore, type HabitEntry } from '@/store/useAppStore';
 import { Flag, Flame, Plus, Tag, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -48,7 +48,7 @@ function ProjectPicker({
 }
 
 export function NextActionsBlock() {
-  const { nextActions, tags, modules, toggleNextAction, addNextAction, updateNextAction, deleteNextAction } = useAppStore();
+  const { nextActions, productivityHabits, tags, modules, toggleNextAction, updateProductivityHabitEntry, setProductivityHabitCheck, addNextAction, updateNextAction, deleteNextAction } = useAppStore();
   const projects = modules.filter((module) => module.type === 'project').sort((a, b) => a.title.localeCompare(b.title));
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState('');
@@ -57,24 +57,70 @@ export function NextActionsBlock() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showCompleted, setShowCompleted] = useState(false);
   
-  const sortedActions = [...nextActions].sort((a, b) => Number(a.done) - Number(b.done));
   const today = new Date().toISOString().slice(0, 10);
+  type DisplayAction = {
+    id: string;
+    text: string;
+    done: boolean;
+    priority?: 'important' | 'urgent';
+    project?: string;
+    completedAt?: string;
+    source: 'one-off' | 'recurring';
+    habit?: HabitEntry;
+  };
+  const recurringActions: DisplayAction[] = productivityHabits
+    .filter((habit) => habit.priority)
+    .map((habit) => ({
+      id: `recurring:${habit.id}`,
+      text: habit.title,
+      done: habit.checks?.[today] === 'done',
+      priority: habit.priority,
+      project: habit.project,
+      completedAt: habit.checks?.[today] === 'done' ? today : undefined,
+      source: 'recurring' as const,
+      habit,
+    }));
+  const sortedActions: DisplayAction[] = [
+    ...nextActions.map((action) => ({ ...action, source: 'one-off' as const })),
+    ...recurringActions,
+  ].sort((a, b) => Number(a.done) - Number(b.done));
   const pendingActions = sortedActions.filter((action) => !action.done);
   const completedToday = sortedActions.filter((action) => action.done && action.completedAt === today).length;
   const completedActions = sortedActions.filter((action) => action.done);
+  const toggleDisplayAction = (action: DisplayAction) => {
+    if (action.source === 'recurring' && action.habit) {
+      setProductivityHabitCheck(action.habit.id, today, action.done ? null : 'done');
+      return;
+    }
+    toggleNextAction(action.id);
+  };
+  const updateDisplayAction = (action: DisplayAction, updates: { text?: string; project?: string }) => {
+    if (action.source === 'recurring' && action.habit) {
+      updateProductivityHabitEntry(action.habit.id, updates);
+      return;
+    }
+    updateNextAction(action.id, updates);
+  };
+  const deleteDisplayAction = (action: DisplayAction) => {
+    if (action.source === 'recurring' && action.habit) {
+      updateProductivityHabitEntry(action.habit.id, { priority: undefined });
+      return;
+    }
+    deleteNextAction(action.id);
+  };
   const save = () => { if (!text.trim()) return; addNextAction(text.trim(), project.trim() || undefined, priority, undefined, undefined, selectedTags); setText(''); setProject(''); setSelectedTags([]); setAdding(false); };
-  const renderActions = (items: typeof sortedActions) => <div className="space-y-2">{items.length ? items.map((action) => (
+  const renderActions = (items: DisplayAction[]) => <div className="space-y-2">{items.length ? items.map((action) => (
           <div key={action.id} className="next-action-row flex items-start gap-3 rounded-lg border border-white/[.06] bg-background/25 p-2.5 transition-colors hover:border-primary/20 hover:bg-[#ffffff05] group">
             <Checkbox
               checked={action.done}
-              onCheckedChange={() => toggleNextAction(action.id)}
+              onCheckedChange={() => toggleDisplayAction(action)}
               className={`mt-0.5 shrink-0 ${action.priority === 'urgent' ? 'border-orange-400/70 data-[state=checked]:border-orange-400 data-[state=checked]:bg-orange-400' : 'border-emerald-400/70 data-[state=checked]:border-emerald-400 data-[state=checked]:bg-emerald-400'}`}
               aria-label={`Marcar ${action.text} como concluída`}
             />
-            <input value={action.text} onChange={(e) => updateNextAction(action.id, { text: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label="Editar próxima ação" />
+            <input value={action.text} onChange={(e) => updateDisplayAction(action, { text: e.target.value })} className={`min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 text-sm leading-snug outline-none focus:border-primary ${action.done ? 'line-through text-muted-foreground' : 'text-foreground'}`} aria-label={action.source === 'recurring' ? 'Editar tarefa recorrente' : 'Editar próxima ação'} />
             <div className="flex shrink-0 items-center gap-1.5">
-              <ProjectPicker value={action.project || ''} projects={projects} onChange={(value) => updateNextAction(action.id, { project: value || undefined })} ariaLabel="Projeto da ação" />
-              <button type="button" onClick={(event) => { event.stopPropagation(); deleteNextAction(action.id); }} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label="Excluir próxima ação" title="Excluir tarefa"><X className="h-3.5 w-3.5" /></button>
+              <ProjectPicker value={action.project || ''} projects={projects} onChange={(value) => updateDisplayAction(action, { project: value || undefined })} ariaLabel="Projeto da ação" />
+              <button type="button" onClick={(event) => { event.stopPropagation(); deleteDisplayAction(action); }} className="rounded p-1 text-muted-foreground opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100" aria-label={action.source === 'recurring' ? 'Remover prioridade da tarefa' : 'Excluir próxima ação'} title={action.source === 'recurring' ? 'Remover da lista de entregas' : 'Excluir tarefa'}><X className="h-3.5 w-3.5" /></button>
             </div>
           </div>)) : <p className="rounded-lg border border-dashed border-white/10 p-3 text-center text-[11px] text-muted-foreground">Nenhuma ação nesta prioridade.</p>}</div>;
 
