@@ -5,7 +5,8 @@ import { readLocalPreferences } from '@/lib/cloudSync';
 
 const TABLE = 'user_app_data';
 const FLOOR_KEY = 'founder-os-psychological-floor';
-const REFRESH_GUARD_MS = 1500;
+// Avoid repeated full-snapshot reads when the dashboard regains focus.
+const REFRESH_GUARD_MS = 60_000;
 
 function serialize() {
   const data = JSON.parse(useAppStore.getState().exportData());
@@ -133,7 +134,6 @@ export function RemoteSync() {
       window.addEventListener('founder-os-psychological-floor-updated', onLocalPreferenceUpdated);
       window.addEventListener('focus', onResume);
       window.addEventListener('online', onResume);
-      const preferencePoll = window.setInterval(checkLocalPreferences, 1000);
       window.addEventListener('pagehide', onLocalPreferenceUpdated);
       document.addEventListener('visibilitychange', onVisibility);
 
@@ -150,7 +150,6 @@ export function RemoteSync() {
 
       return () => {
         unsubscribe();
-        window.clearInterval(preferencePoll);
         void supabase.removeChannel(channel);
       };
     };
