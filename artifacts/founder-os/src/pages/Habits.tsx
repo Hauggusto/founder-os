@@ -470,19 +470,16 @@ export default function Habits({ mode = "habits" }: any) {
               </div>
               <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-200">{todayHabitDone + todayActions.filter((action) => action.done).length} concluídas</span>
             </div>
-            <input
-              value={dailyRecord}
-              onChange={(event) => setDailyRecord(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setDailyRecord("");
-                if (event.key === "Enter" && dailyRecord.trim()) {
-                  store.addNextAction(dailyRecord.trim(), undefined, undefined, todayKey);
-                  setDailyRecord("");
-                }
-              }}
-              placeholder="Digite o que você fez hoje e pressione Enter"
-              className="mb-3 h-9 w-full rounded-xl border border-emerald-400/20 bg-black/20 px-3 text-xs text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-emerald-400/60"
-            />
+            <form className="mb-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); if (!dailyRecord.trim()) return; store.addNextAction(dailyRecord.trim(), undefined, undefined, todayKey); setDailyRecord(""); }}>
+              <input
+                value={dailyRecord}
+                onChange={(event) => setDailyRecord(event.target.value)}
+                onKeyDown={(event) => { if (event.key === "Escape") setDailyRecord(""); }}
+                placeholder="O que você fez hoje?"
+                className="h-9 min-w-0 flex-1 rounded-xl border border-emerald-400/20 bg-black/20 px-3 text-xs text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-emerald-400/60"
+              />
+              <button type="submit" className="h-9 rounded-xl bg-emerald-400 px-3 text-xs font-semibold text-slate-950 transition hover:bg-emerald-300">Registrar</button>
+            </form>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 ...habits.map((habit) => ({ id: habit.id, label: habit.name, source: habit.category || "Hábito", done: habit.checks?.[todayKey] === "done", kind: "habit" as const })),
