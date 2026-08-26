@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/useAppStore';
+import { readLocalPreferences } from '@/lib/cloudSync';
 
 const TABLE = 'user_app_data';
 const FLOOR_KEY = 'founder-os-psychological-floor';
@@ -11,6 +12,7 @@ function serialize() {
   const floor = Number(localStorage.getItem(FLOOR_KEY));
   return JSON.stringify({
     ...data,
+    localPreferences: readLocalPreferences(),
     ...(Number.isFinite(floor) ? { psychologicalFloor: floor } : {}),
   });
 }
@@ -27,6 +29,7 @@ export function RemoteSync() {
     let userId = '';
     let localDirty = false;
     let applyingRemote = false;
+    let lastLocalPreferences = '';
 
     const applyRemoteData = (remoteData: unknown) => {
       if (disposed || !remoteData || typeof remoteData !== 'object') return;
@@ -99,6 +102,14 @@ export function RemoteSync() {
       localDirty = true;
       void save();
     };
+    const checkLocalPreferences = () => {
+      if (!ready || applyingRemote) return;
+      const current = JSON.stringify(readLocalPreferences());
+      if (current === lastLocalPreferences) return;
+      lastLocalPreferences = current;
+      localDirty = true;
+      void save();
+    };
     const onResume = () => { if (!localDirty) void readRemote(); };
     const onVisibility = () => { if (document.visibilityState === 'visible' && !localDirty) void readRemote(); };
 
@@ -112,6 +123,7 @@ export function RemoteSync() {
 
       ready = true;
       lastSaved = serialize();
+      lastLocalPreferences = JSON.stringify(readLocalPreferences());
       const unsubscribe = useAppStore.subscribe(() => {
         if (!applyingRemote) {
           localDirty = true;
@@ -121,6 +133,8 @@ export function RemoteSync() {
       window.addEventListener('founder-os-psychological-floor-updated', onLocalPreferenceUpdated);
       window.addEventListener('focus', onResume);
       window.addEventListener('online', onResume);
+      const preferencePoll = window.setInterval(checkLocalPreferences, 1000);
+      window.addEventListener('pagehide', onLocalPreferenceUpdated);
       document.addEventListener('visibilitychange', onVisibility);
 
       const channel = supabase
@@ -136,6 +150,7 @@ export function RemoteSync() {
 
       return () => {
         unsubscribe();
+        window.clearInterval(preferencePoll);
         void supabase.removeChannel(channel);
       };
     };
@@ -150,6 +165,7 @@ export function RemoteSync() {
       window.removeEventListener('founder-os-psychological-floor-updated', onLocalPreferenceUpdated);
       window.removeEventListener('focus', onResume);
       window.removeEventListener('online', onResume);
+      window.removeEventListener('pagehide', onLocalPreferenceUpdated);
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
