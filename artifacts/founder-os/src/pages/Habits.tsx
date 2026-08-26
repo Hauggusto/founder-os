@@ -484,8 +484,8 @@ export default function Habits({ mode = "habits" }: any) {
             </div>
           </section>
           <NextActionsBlock />
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
-            <div className="[&>div>section:first-child]:hidden [&>div>section:last-child]:lg:col-span-2"><FutureVisionBlock /></div>
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
+            <div className="[&>div>section:first-child]:hidden [&>div>section:last-child]:xl:col-span-2"><FutureVisionBlock /></div>
             <AgendaBlock />
           </div>
         </section>
