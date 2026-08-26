@@ -166,15 +166,15 @@ export function ProductivityPanel() {
   const removeActivity = (id: string) => setActivities((current) => current.filter((item) => item.id !== id));
   return (
     <section className="rounded-2xl border border-[#10B98144] bg-[#061510]/70 p-5 shadow-[0_0_24px_#10b9810b]">
-      <ProductivityTimeline
-        rows={timelineRows}
-        period={timelinePeriod}
-        setPeriod={setTimelinePeriod}
-      />
       <DailyActivitySummary
         activities={activities.filter((item) => item.date === today)}
         onCycleStatus={cycleStatus}
         onRemove={removeActivity}
+      />
+      <ProductivityTimeline
+        rows={timelineRows}
+        period={timelinePeriod}
+        setPeriod={setTimelinePeriod}
       />
       {false && (
         <OneOffTaskList
