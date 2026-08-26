@@ -1376,3 +1376,18 @@ section:not(.floor-editor):has(input[type='number']) span.text-primary::after {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 }
+
+/* Oportunidades: os conteúdos dos cards de Categorias e Gmail ficam em três colunas. */
+@media (min-width: 768px) {
+  .max-w-\[1500px\] > section:first-of-type > div.grid,
+  .max-w-\[1500px\] > section:nth-of-type(3) > div.grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-main .max-w-\[1500px\] > section:first-of-type > div.grid,
+  .mobile-main .max-w-\[1500px\] > section:nth-of-type(3) > div.grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
