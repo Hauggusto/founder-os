@@ -469,7 +469,7 @@ export default function Habits({ mode = "habits" }: any) {
         </section>
       )}
       <section className="grid gap-6 xl:grid-cols-2">
-          <Chart title={isProductivity ? "Ritmo de entregas" : "Evolução dos hábitos"} period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
+          <Chart className="xl:col-span-2" title={isProductivity ? "Ritmo de entregas" : "Evolução dos hábitos"} period={dailyChartPeriod} setPeriod={setDailyChartPeriod}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData}>
               <CartesianGrid stroke="rgba(148,163,184,.09)" vertical={false} />
@@ -530,7 +530,6 @@ export default function Habits({ mode = "habits" }: any) {
             </BarChart>
           </ResponsiveContainer>
         </Chart>
-      </section>
       <Chart
         title={isProductivity ? "Evolução por frente de trabalho" : "Evolução de cada categoria"}
         period={categoryEvolutionPeriod}
@@ -572,6 +571,7 @@ export default function Habits({ mode = "habits" }: any) {
           </LineChart>
         </ResponsiveContainer>
       </Chart>
+      </section>
       <section className="rounded-2xl border border-cyan-400/15 bg-card/45 p-4 shadow-[0_14px_40px_rgba(0,0,0,.12)]">
         <div className="mb-4 flex items-end justify-between gap-3 border-b border-white/[.07] pb-3">
           <div>
