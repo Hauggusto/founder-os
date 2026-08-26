@@ -271,10 +271,10 @@ function FinancialQuickAdd({ onAdd }: { onAdd: (transaction: Omit<FinancialTrans
 }
 
 function UpcomingFinanceCards({ transactions, accounts, onAdd, onUpdate, onDelete }: { transactions: FinancialTransaction[]; accounts: string[]; onAdd: (transaction: Omit<FinancialTransaction, 'id'>) => void; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
-  return <section className="mb-8 grid gap-4 xl:grid-cols-2">
-    <UpcomingFinanceCard kind="income" title="A receber" subtitle="Entradas previstas e recebimentos futuros" accent="#10B981" transactions={transactions.filter((transaction) => transaction.type === 'income')} accounts={accounts} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} />
-    <UpcomingFinanceCard kind="expense" title="A pagar" subtitle="Contas, compromissos e pagamentos futuros" accent="#F97316" transactions={transactions.filter((transaction) => transaction.type === 'expense')} accounts={accounts} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} />
-  </section>;
+  return <section className="mb-8"><div className="mb-3 flex items-end justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Operações futuras</p><h2 className="mt-1 text-lg font-semibold text-foreground">Planejamento financeiro</h2></div><span className="text-[10px] text-muted-foreground">Recebimentos e pagamentos previstos</span></div><div className="grid gap-4 xl:grid-cols-2">
+    <UpcomingFinanceCard kind="income" title="A receber futuro" subtitle="Entradas previstas e recebimentos futuros" accent="#10B981" transactions={transactions.filter((transaction) => transaction.type === 'income')} accounts={accounts} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} />
+    <UpcomingFinanceCard kind="expense" title="A pagar futuro" subtitle="Contas, compromissos e pagamentos futuros" accent="#F97316" transactions={transactions.filter((transaction) => transaction.type === 'expense')} accounts={accounts} onAdd={onAdd} onUpdate={onUpdate} onDelete={onDelete} />
+  </div></section>;
 }
 
 function UpcomingFinanceCard({ kind, title, subtitle, accent, transactions, accounts, onAdd, onUpdate, onDelete }: { kind: FinancialTransaction['type']; title: string; subtitle: string; accent: string; transactions: FinancialTransaction[]; accounts: string[]; onAdd: (transaction: Omit<FinancialTransaction, 'id'>) => void; onUpdate: (id: string, updates: Partial<FinancialTransaction>) => void; onDelete: (id: string) => void }) {
