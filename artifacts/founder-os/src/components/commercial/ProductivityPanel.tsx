@@ -163,12 +163,18 @@ export function ProductivityPanel() {
           : item,
       ),
     );
+  const removeActivity = (id: string) => setActivities((current) => current.filter((item) => item.id !== id));
   return (
     <section className="rounded-2xl border border-[#10B98144] bg-[#061510]/70 p-5 shadow-[0_0_24px_#10b9810b]">
       <ProductivityTimeline
         rows={timelineRows}
         period={timelinePeriod}
         setPeriod={setTimelinePeriod}
+      />
+      <DailyActivitySummary
+        activities={activities.filter((item) => item.date === today)}
+        onCycleStatus={cycleStatus}
+        onRemove={removeActivity}
       />
       {false && (
         <OneOffTaskList
@@ -348,6 +354,52 @@ export function ProductivityPanel() {
           </div>
         </div>
       )}
+    </section>
+  );
+}
+
+function DailyActivitySummary({
+  activities,
+  onCycleStatus,
+  onRemove,
+}: {
+  activities: Activity[];
+  onCycleStatus: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const executed = activities.filter((item) => item.status === "executed").reduce((sum, item) => sum + item.quantity, 0);
+  const failed = activities.filter((item) => item.status === "failed").reduce((sum, item) => sum + item.quantity, 0);
+  const pending = activities.filter((item) => item.status === "pending").reduce((sum, item) => sum + item.quantity, 0);
+  const total = executed + failed + pending;
+  const score = executed + failed ? Math.round((executed / (executed + failed)) * 100) : 0;
+  return (
+    <section className="mb-6 rounded-2xl border border-cyan-400/15 bg-[#081219]/80 p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-cyan-300">PRODUTIVIDADE DIÁRIA</p>
+          <h2 className="mt-1 text-xl font-semibold">O que eu fiz hoje?</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Veja o que foi executado hoje e acompanhe a evolução dia a dia.</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <Metric label="Execução" value={`${score}%`} color="#10B981" />
+          <Metric label="Feitas" value={executed} color="#00C9FF" />
+          <Metric label="Pendentes" value={pending} color="#F59E0B" />
+        </div>
+      </div>
+      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-white/[.07]">
+        <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all" style={{ width: `${total ? Math.round((executed / total) * 100) : 0}%` }} />
+      </div>
+      {activities.length ? (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {activities.map((activity) => (
+            <div key={activity.id} className="flex items-center gap-3 rounded-xl border border-white/[.07] bg-black/20 px-3 py-2.5">
+              <button type="button" onClick={() => onCycleStatus(activity.id)} className={`h-3 w-3 shrink-0 rounded-full border ${activity.status === "executed" ? "border-emerald-400 bg-emerald-400" : activity.status === "failed" ? "border-red-400 bg-red-400" : "border-amber-400"}`} aria-label="Alterar status" />
+              <span className={`min-w-0 flex-1 truncate text-xs ${activity.status === "executed" ? "text-emerald-200" : activity.status === "failed" ? "text-red-200" : "text-foreground/80"}`}>{activity.text}<small className="ml-2 text-[10px] text-muted-foreground">{activity.area} · {activity.quantity}x</small></span>
+              <button type="button" onClick={() => onRemove(activity.id)} className="text-muted-foreground/60 transition hover:text-red-400" aria-label={`Excluir ${activity.text}`}><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
+          ))}
+        </div>
+      ) : <p className="rounded-xl border border-dashed border-white/10 px-4 py-5 text-center text-xs text-muted-foreground">Nenhuma execução registrada hoje. Use o formulário abaixo para registrar sua primeira atividade.</p>}
     </section>
   );
 }
