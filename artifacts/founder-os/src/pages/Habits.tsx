@@ -470,7 +470,7 @@ export default function Habits({ mode = "habits" }: any) {
               </div>
               <span className="hidden">{todayHabitDone + todayActions.filter((action) => action.done).length} concluídas</span>
             </div>
-            <form className="mb-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); if (!dailyRecord.trim()) return; store.addNextAction(dailyRecord.trim(), undefined, undefined, todayKey); setDailyRecord(""); }}>
+            <form className="mb-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); if (!dailyRecord.trim()) return; const id = store.addNextAction(dailyRecord.trim(), undefined, undefined, todayKey); store.updateNextAction(id, { done: true, completedAt: new Date().toISOString(), executionStatus: "executed", tags: ["caderno"] }); setDailyRecord(""); }}>
               <input
                 value={dailyRecord}
                 onChange={(event) => setDailyRecord(event.target.value)}
@@ -480,10 +480,11 @@ export default function Habits({ mode = "habits" }: any) {
               />
               <button type="submit" className="h-9 rounded-xl bg-emerald-400 px-3 text-xs font-semibold text-slate-950 transition hover:bg-emerald-300">Registrar</button>
             </form>
-            <div className="hidden">
+            <p className="mb-2 text-[10px] uppercase tracking-[.16em] text-muted-foreground">Caderno de execução · hoje</p>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                ...habits.map((habit) => ({ id: habit.id, label: habit.name, source: habit.category || "Hábito", done: habit.checks?.[todayKey] === "done", kind: "habit" as const })),
-                ...todayActions.map((action) => ({ id: action.id, label: action.text, source: "Entrega", done: action.done, kind: "action" as const })),
+                ...habits.filter((habit) => habit.checks?.[todayKey] === "done").map((habit) => ({ id: habit.id, label: habit.name, source: habit.category || "Hábito", done: true, kind: "habit" as const })),
+                ...todayActions.filter((action) => action.done).map((action) => ({ id: action.id, label: action.text, source: action.tags?.includes("caderno") ? "Registro" : "Entrega", done: true, kind: "action" as const })),
               ].map((item) => (
                 <div key={`${item.kind}-${item.id}`} className="flex min-w-0 items-center gap-2 rounded-xl border border-white/[.07] bg-black/20 px-3 py-2">
                   <button type="button" aria-label={`Registrar ${item.label}`} onClick={() => item.kind === "habit" ? setHabitCheck(item.id, todayKey, item.done ? null : "done") : store.updateNextAction(item.id, { done: !item.done, completedAt: !item.done ? new Date().toISOString() : undefined })} className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${item.done ? "border-emerald-400 bg-emerald-400/20 text-emerald-300" : "border-white/20 text-transparent hover:border-emerald-400/60"}`}><Check className="h-3 w-3" /></button>
@@ -491,7 +492,7 @@ export default function Habits({ mode = "habits" }: any) {
                   <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">{item.source}</span>
                 </div>
               ))}
-              {!habits.length && !todayActions.length && <p className="rounded-xl border border-dashed border-white/10 px-3 py-3 text-xs text-muted-foreground sm:col-span-2 lg:col-span-3">Adicione uma atividade para registrar o que fez hoje.</p>}
+              {!habits.some((habit) => habit.checks?.[todayKey] === "done") && !todayActions.some((action) => action.done) && <p className="rounded-xl border border-dashed border-white/10 px-3 py-3 text-xs text-muted-foreground sm:col-span-2 lg:col-span-3">Nenhuma execução registrada hoje.</p>}
             </div>
           </section>
           <NextActionsBlock />

@@ -282,7 +282,7 @@ interface AppStore extends AppData {
   updateAgendaItem: (id: string, updates: Partial<AgendaItem>) => void;
   toggleAgendaItem: (id: string) => void;
   addRisk: (risk: Omit<RiskItem, 'id'>) => void;
-  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent', date?: string, time?: string, tags?: string[]) => void;
+  addNextAction: (text: string, project?: string, priority?: 'important' | 'urgent', date?: string, time?: string, tags?: string[]) => string;
   updateNextAction: (id: string, updates: Partial<AppData['nextActions'][number]>) => void;
   deleteNextAction: (id: string) => void;
   toggleNextAction: (id: string) => void;
@@ -803,6 +803,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     };
     set({ nextActions: [...get().nextActions, newAction] });
     get().saveToStorage();
+    return newAction.id;
   },
 
   updateNextAction: (id, updates) => {
