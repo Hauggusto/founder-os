@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { FINANCIAL_CATEGORIES, useAppStore, type FinancialTransaction } from '@/store/useAppStore';
 import { FinancialChart } from '@/components/charts/FinancialChart';
 import { FinancialInsightsCharts } from '@/components/charts/FinancialInsightsCharts';
-import { PortfolioPanel } from '@/components/financial/PortfolioPanel';
 import { BankStatementImporter } from '@/components/financial/BankStatementImporter';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -181,8 +180,6 @@ export default function Financial() {
       </section>
 
       <FinancialChart />
-
-      <PortfolioPanel />
 
       <div className="bg-card border border-card-border rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
