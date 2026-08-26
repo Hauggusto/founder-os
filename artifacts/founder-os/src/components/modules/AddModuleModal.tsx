@@ -73,7 +73,7 @@ export function AddModuleModal() {
       setSubcategory(editingModule.subcategory || '');
       setColor(editingModule.color || COLORS[0]);
       setStatus(editingModule.status);
-      setValue(editingModule.value?.toString() || '');
+      setValue((editingModule.type === 'financial_account' ? editingModule.balance : editingModule.value)?.toString() || '');
       setDescription(editingModule.description || '');
       setProgress(editingModule.progress || 0);
       setThumbnail(editingModule.thumbnail || '');
@@ -158,7 +158,8 @@ export function AddModuleModal() {
     }
 
     if (type === 'financial_account') {
-      moduleData.balance = parseFloat(value) || 0;
+      const normalizedValue = value.trim().replace(/\./g, '').replace(',', '.');
+      moduleData.balance = Number.parseFloat(normalizedValue) || 0;
       moduleData.currency = 'BRL';
       moduleData.accountType = accountType;
     }
@@ -207,7 +208,9 @@ export function AddModuleModal() {
       <DialogContent className="bg-card border-card-border max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-foreground">
-            {editingModule ? 'Editar Módulo' : 'Novo Módulo'}
+            {editingModule
+              ? editingModule.type === 'financial_account' ? 'Editar dados da conta' : 'Editar Módulo'
+              : type === 'financial_account' ? 'Nova conta financeira' : 'Novo Módulo'}
           </DialogTitle>
         </DialogHeader>
 
@@ -373,9 +376,10 @@ export function AddModuleModal() {
           {(type === 'metric' || type === 'financial_account') && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Valor</Label>
+            <Label>{type === 'financial_account' ? 'Saldo inicial' : 'Valor'}</Label>
                 <Input
-                  type="number"
+                  type={type === 'financial_account' ? 'text' : 'number'}
+                  inputMode="decimal"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
                   className="bg-background border-input"
