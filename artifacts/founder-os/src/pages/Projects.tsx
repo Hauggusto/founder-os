@@ -33,7 +33,7 @@ export default function Projects() {
   const [newEcosystemColor, setNewEcosystemColor] = useState("#00C9FF");
   const [selectedEcosystemId, setSelectedEcosystemId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<ModuleStatus | "all">("all");
-  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+  const [viewMode, setViewMode] = useState<"list" | "kanban" | "summary">("list");
   const query = new URLSearchParams(location.split("?")[1] || "");
   const selectedProject = query.get("project");
   const selectedTag = query.get("tag");
@@ -229,6 +229,7 @@ export default function Projects() {
         <div className="ml-auto flex items-center gap-1 rounded-lg border border-primary/20 bg-card/60 p-1" aria-label="Visualização dos projetos">
           <button type="button" onClick={() => setViewMode("list")} className={`rounded-md px-3 py-1.5 text-xs transition ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Lista</button>
           <button type="button" onClick={() => setViewMode("kanban")} className={`rounded-md px-3 py-1.5 text-xs transition ${viewMode === "kanban" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Kanban</button>
+          <button type="button" onClick={() => setViewMode("summary")} className={`rounded-md px-3 py-1.5 text-xs transition ${viewMode === "summary" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>Resumo</button>
         </div>
       </div>
       <div className="mb-6 rounded-xl border border-primary/15 bg-card/50 p-3"><div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.16em] text-primary"><Tag className="h-3.5 w-3.5" /> Filtrar por tag</div><div className="flex flex-wrap gap-2">{tags.map((tag) => <button key={tag.id} type="button" onClick={() => openTag(tag.name)} className={`inline-flex min-w-[120px] items-center justify-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-semibold transition ${selectedTag?.toLowerCase() === tag.name.toLowerCase() ? 'ring-2 ring-white/20' : 'hover:brightness-125'}`} style={{ borderColor: `${tag.color}99`, color: tag.color, backgroundColor: `${tag.color}15` }}><span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: tag.color }} />{tag.name}<span className="opacity-60">{(modules.filter((module) => (module.tags || []).some((item) => item.toLowerCase() === tag.name.toLowerCase())).length)}</span></button>)}{selectedTag && <button type="button" onClick={clearTag} className="rounded-full border border-white/10 px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">Limpar filtro</button>}</div></div>
@@ -291,6 +292,24 @@ export default function Projects() {
             <Plus className="w-4 h-4 mr-2" />
             Criar Primeiro Projeto
           </Button>
+        </div>
+      ) : viewMode === "summary" ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {projects.map((project) => {
+            const color = project.status === "active" ? "#10B981" : project.status === "paused" ? "#F97316" : project.status === "done" ? "#00C9FF" : "#64748B";
+            return (
+              <article key={project.id} onClick={() => openProjectEditor(project)} className="group relative cursor-pointer overflow-hidden rounded-2xl border bg-card/70 shadow-[0_12px_30px_rgba(0,0,0,.18)] transition hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(0,0,0,.28)]" style={{ borderColor: `${color}66` }}>
+                <div className="relative aspect-[16/9] overflow-hidden">
+                  {project.thumbnail ? <img src={project.thumbnail} alt={`Imagem do projeto ${project.title}`} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div className="h-full w-full bg-gradient-to-br from-primary/20 via-card to-background" />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
+                    <h3 className="min-w-0 truncate text-lg font-semibold text-white drop-shadow">{project.title}</h3>
+                    <span className="shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold" style={{ color, borderColor: `${color}99`, backgroundColor: "rgba(5,7,10,.78)" }}>{getStatusLabel(project.status)}</span>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       ) : viewMode === "kanban" ? (
         <div className="grid gap-3 overflow-x-auto pb-2 md:grid-cols-2 xl:grid-cols-4">
