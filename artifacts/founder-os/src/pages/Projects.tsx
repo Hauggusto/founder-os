@@ -209,7 +209,7 @@ export default function Projects() {
           Novo Projeto
         </Button>
       </div>
-      <section className="projects-summary-grid mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <section className="projects-summary-grid mb-6 grid grid-cols-2 gap-3 xl:grid-cols-5">
         {[['Ativos', activeCount, 'text-emerald-300'], ['Pausados', pausedCount, 'text-orange-300'], ['Concluídos', completedCount, 'text-cyan-300'], ['Projetos', allProjects.length, 'text-primary'], ['Progresso médio', `${averageProgress}%`, 'text-violet-300']].map(([label, value, tone]) => <article key={String(label)} className="rounded-xl border border-white/[.08] bg-card/70 px-4 py-3 shadow-[0_10px_28px_rgba(0,0,0,.12)]"><p className="text-[10px] uppercase tracking-[.14em] text-muted-foreground">{label}</p><p className={`mt-1 text-2xl font-semibold ${tone}`}>{value}</p></article>)}
       </section>
       <div className="flex gap-2 mb-6">
