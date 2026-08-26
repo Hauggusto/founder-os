@@ -445,7 +445,6 @@ export default function Habits({ mode = "habits" }: any) {
           </div>
         </div>
       </header>
-      <TagManager />
       {isProductivity && (
         <section className="space-y-4 [&>div]:!rounded-2xl [&>div]:!border-amber-400/20 [&>div]:!bg-[#120f18]/80">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -1024,6 +1023,9 @@ export default function Habits({ mode = "habits" }: any) {
           </div>
         </section>
       )}
+      <div className="mt-2">
+        <TagManager />
+      </div>
     </div>
   );
 }
