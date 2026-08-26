@@ -160,6 +160,7 @@ export default function Habits({ mode = "habits" }: any) {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState("");
   const [oneOffTitle, setOneOffTitle] = useState("");
+  const [dailyRecord, setDailyRecord] = useState("");
   const [oneOffTasks, setOneOffTasks] = useState<
     { id: string; title: string; done: boolean; completedAt?: string | null }[]
   >([]);
@@ -469,6 +470,19 @@ export default function Habits({ mode = "habits" }: any) {
               </div>
               <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-200">{todayHabitDone + todayActions.filter((action) => action.done).length} concluídas</span>
             </div>
+            <input
+              value={dailyRecord}
+              onChange={(event) => setDailyRecord(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setDailyRecord("");
+                if (event.key === "Enter" && dailyRecord.trim()) {
+                  store.addNextAction(dailyRecord.trim(), undefined, undefined, todayKey);
+                  setDailyRecord("");
+                }
+              }}
+              placeholder="Digite o que você fez hoje e pressione Enter"
+              className="mb-3 h-9 w-full rounded-xl border border-emerald-400/20 bg-black/20 px-3 text-xs text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-emerald-400/60"
+            />
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 ...habits.map((habit) => ({ id: habit.id, label: habit.name, source: habit.category || "Hábito", done: habit.checks?.[todayKey] === "done", kind: "habit" as const })),
