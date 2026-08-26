@@ -468,7 +468,7 @@ export default function Habits({ mode = "habits" }: any) {
                 <p className="text-[10px] font-semibold uppercase tracking-[.18em] text-emerald-300">REGISTRO DO DIA</p>
                 <h2 className="mt-1 text-lg font-semibold">O que eu fiz hoje?</h2>
               </div>
-              <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-200">{todayHabitDone + todayActions.filter((action) => action.done).length} concluídas</span>
+              <span className="hidden">{todayHabitDone + todayActions.filter((action) => action.done).length} concluídas</span>
             </div>
             <form className="mb-3 flex gap-2" onSubmit={(event) => { event.preventDefault(); if (!dailyRecord.trim()) return; store.addNextAction(dailyRecord.trim(), undefined, undefined, todayKey); setDailyRecord(""); }}>
               <input
@@ -480,7 +480,7 @@ export default function Habits({ mode = "habits" }: any) {
               />
               <button type="submit" className="h-9 rounded-xl bg-emerald-400 px-3 text-xs font-semibold text-slate-950 transition hover:bg-emerald-300">Registrar</button>
             </form>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="hidden">
               {[
                 ...habits.map((habit) => ({ id: habit.id, label: habit.name, source: habit.category || "Hábito", done: habit.checks?.[todayKey] === "done", kind: "habit" as const })),
                 ...todayActions.map((action) => ({ id: action.id, label: action.text, source: "Entrega", done: action.done, kind: "action" as const })),
