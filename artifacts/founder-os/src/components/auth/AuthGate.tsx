@@ -115,7 +115,11 @@ function LoginScreen() {
   }
   async function signUp() {
     setError('');
-    const { error: authError } = await supabase!.auth.signUp({ email, password });
+    const { error: authError } = await supabase!.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: 'https://founder-os-seven-rouge.vercel.app/' },
+    });
     if (authError) setError(authError.message);
     else setError('Conta criada. Verifique seu e-mail se a confirmação for solicitada.');
   }
