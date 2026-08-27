@@ -50,8 +50,10 @@ export function RemoteSync() {
 
     const markDirty = () => scheduleSave();
     const initialize = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      userId = authData.user?.id || '';
+      // The session is persisted locally by Supabase; avoid a network request
+      // just to identify the already authenticated user on every page load.
+      const { data: authData } = await supabase.auth.getSession();
+      userId = authData.session?.user?.id || '';
       if (!userId || disposed) return;
       ready = true;
       lastSaved = serialize();

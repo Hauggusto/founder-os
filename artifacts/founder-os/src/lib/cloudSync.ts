@@ -34,8 +34,8 @@ export function applyLocalPreferences(preferences?: CloudLocalPreferences) {
 
 export async function loadCloudAppData(): Promise<AppData | null> {
   if (!supabase) return null;
-  const { data: userData } = await supabase.auth.getUser();
-  const user = userData.user;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData.session?.user;
   if (!user) return null;
   const { data, error } = await supabase
     .from("user_app_data")
@@ -48,8 +48,8 @@ export async function loadCloudAppData(): Promise<AppData | null> {
 
 export async function saveCloudAppData(appData: AppData) {
   if (!supabase) return;
-  const { data: userData } = await supabase.auth.getUser();
-  const user = userData.user;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const user = sessionData.session?.user;
   if (!user) return;
   cloudWriteQueue = cloudWriteQueue.then(async () => {
     const { error } = await supabase!.from("user_app_data").upsert({
