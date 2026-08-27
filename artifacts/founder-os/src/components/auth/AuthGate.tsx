@@ -105,10 +105,19 @@ function AuthMessage({ title, body }: { title: string; body: string }) {
 
 function LoginScreen() {
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [creating, setCreating] = useState(false);
   async function login() {
     setError('');
-    const { error: authError } = await supabase!.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+    const { error: authError } = await supabase!.auth.signInWithPassword({ email, password });
     if (authError) setError(authError.message);
   }
-  return <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"><section className="w-full max-w-md rounded-2xl border border-cyan-400/25 bg-card p-8 text-center shadow-2xl"><div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/35 bg-cyan-400/10"><ShieldCheck className="h-8 w-8 text-cyan-400" /></div><p className="text-xs font-semibold uppercase tracking-[.25em] text-cyan-400">NEURON</p><h1 className="mt-2 text-3xl font-semibold">Founder OS</h1><p className="mt-3 text-sm text-muted-foreground">Entre com sua conta Google para acessar seu dashboard.</p><button onClick={login} className="mt-7 flex w-full items-center justify-center gap-3 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"><LogIn className="h-5 w-5" />Entrar com Google</button>{error && <p className="mt-4 text-sm text-red-400">{error}</p>}</section></main>;
+  async function signUp() {
+    setError('');
+    const { error: authError } = await supabase!.auth.signUp({ email, password });
+    if (authError) setError(authError.message);
+    else setError('Conta criada. Verifique seu e-mail se a confirmação for solicitada.');
+  }
+  return <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"><section className="w-full max-w-md rounded-2xl border border-cyan-400/25 bg-card p-8 text-center shadow-2xl"><div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/35 bg-cyan-400/10"><ShieldCheck className="h-8 w-8 text-cyan-400" /></div><p className="text-xs font-semibold uppercase tracking-[.25em] text-cyan-400">NEURON</p><h1 className="mt-2 text-3xl font-semibold">Founder OS</h1><p className="mt-3 text-sm text-muted-foreground">Entre com e-mail e senha para acessar seu dashboard.</p><input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Seu e-mail" className="mt-6 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" /><input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Senha (mínimo 6 caracteres)" className="mt-3 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" /><button onClick={creating ? signUp : login} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"><LogIn className="h-5 w-5" />{creating ? 'Criar conta' : 'Entrar'}</button><button onClick={() => setCreating(!creating)} className="mt-3 text-sm text-cyan-400 hover:underline">{creating ? 'Já tenho uma conta' : 'Criar uma nova conta'}</button>{error && <p className="mt-4 text-sm text-red-400">{error}</p>}</section></main>;
 }
