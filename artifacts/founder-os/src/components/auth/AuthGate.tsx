@@ -9,6 +9,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [callbackError, setCallbackError] = useState('');
+  const [recoveryMode, setRecoveryMode] = useState(false);
 
   useEffect(() => {
     if (window.location.hostname === 'founder-os-up-go-on.vercel.app') {
@@ -24,13 +25,17 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
     let mounted = true;
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, next) => {
-      if (mounted) setSession(next);
+      if (mounted) {
+        if (_event === 'PASSWORD_RECOVERY') setRecoveryMode(true);
+        setSession(next);
+      }
     });
 
     async function initializeSession() {
       const query = new URLSearchParams(window.location.search);
       const authorizationCode = query.get('code');
       const hash = new URLSearchParams(window.location.hash.slice(1));
+      const hashType = hash.get('type');
       const accessToken = hash.get('access_token');
       const refreshToken = hash.get('refresh_token');
       let callbackHandled = false;
@@ -60,6 +65,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       const { data } = await supabase!.auth.getSession();
       if (mounted) {
         setSession(data.session);
+        if (hashType === 'recovery') setRecoveryMode(true);
         setLoading(false);
       }
     }
@@ -96,6 +102,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading) return <AuthMessage title="Verificando sua sessão" body="Aguarde um instante..." />;
   if (callbackError) return <AuthMessage title="Não foi possível concluir o login" body={callbackError} />;
   if (!session) return <LoginScreen />;
+  if (recoveryMode) return <PasswordRecoveryScreen onDone={() => setRecoveryMode(false)} />;
   return <>{children}</>;
 }
 
@@ -108,6 +115,7 @@ function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [creating, setCreating] = useState(false);
+  const [recovering, setRecovering] = useState(false);
   async function login() {
     setError('');
     const { error: authError } = await supabase!.auth.signInWithPassword({ email, password });
@@ -123,5 +131,25 @@ function LoginScreen() {
     if (authError) setError(authError.message);
     else setError('Conta criada. Verifique seu e-mail se a confirmação for solicitada.');
   }
-  return <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"><section className="w-full max-w-md rounded-2xl border border-cyan-400/25 bg-card p-8 text-center shadow-2xl"><div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/35 bg-cyan-400/10"><ShieldCheck className="h-8 w-8 text-cyan-400" /></div><p className="text-xs font-semibold uppercase tracking-[.25em] text-cyan-400">NEURON</p><h1 className="mt-2 text-3xl font-semibold">Founder OS</h1><p className="mt-3 text-sm text-muted-foreground">Entre com e-mail e senha para acessar seu dashboard.</p><input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Seu e-mail" className="mt-6 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" /><input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Senha (mínimo 6 caracteres)" className="mt-3 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" /><button onClick={creating ? signUp : login} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"><LogIn className="h-5 w-5" />{creating ? 'Criar conta' : 'Entrar'}</button><button onClick={() => setCreating(!creating)} className="mt-3 text-sm text-cyan-400 hover:underline">{creating ? 'Já tenho uma conta' : 'Criar uma nova conta'}</button>{error && <p className="mt-4 text-sm text-red-400">{error}</p>}</section></main>;
+  async function sendRecovery() {
+    setError('');
+    if (!email.trim()) { setError('Digite seu e-mail primeiro.'); return; }
+    const { error: authError } = await supabase!.auth.resetPasswordForEmail(email.trim(), { redirectTo: 'https://founder-os-seven-rouge.vercel.app/' });
+    if (authError) setError(authError.message);
+    else setError('Enviamos um link para redefinir sua senha. Verifique seu e-mail.');
+  }
+  return <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"><section className="w-full max-w-md rounded-2xl border border-cyan-400/25 bg-card p-8 text-center shadow-2xl"><div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/35 bg-cyan-400/10"><ShieldCheck className="h-8 w-8 text-cyan-400" /></div><p className="text-xs font-semibold uppercase tracking-[.25em] text-cyan-400">NEURON</p><h1 className="mt-2 text-3xl font-semibold">Founder OS</h1><p className="mt-3 text-sm text-muted-foreground">Entre com e-mail e senha para acessar seu dashboard.</p><input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Seu e-mail" className="mt-6 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" />{!recovering && <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Senha (mínimo 6 caracteres)" className="mt-3 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" />}{recovering ? <button onClick={sendRecovery} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300">Enviar link de recuperação</button> : <button onClick={creating ? signUp : login} className="mt-5 flex w-full items-center justify-center gap-3 rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"><LogIn className="h-5 w-5" />{creating ? 'Criar conta' : 'Entrar'}</button>}<div className="mt-3 flex justify-center gap-4 text-sm"><button onClick={() => { setCreating(!creating); setRecovering(false); }} className="text-cyan-400 hover:underline">{creating ? 'Já tenho uma conta' : 'Criar uma nova conta'}</button><button onClick={() => { setRecovering(!recovering); setCreating(false); setError(''); }} className="text-cyan-400 hover:underline">{recovering ? 'Voltar para entrar' : 'Esqueci minha senha'}</button></div>{error && <p className="mt-4 text-sm text-cyan-300">{error}</p>}</section></main>;
+}
+
+function PasswordRecoveryScreen({ onDone }: { onDone: () => void }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  async function updatePassword() {
+    setError('');
+    if (password.length < 6) { setError('A senha precisa ter pelo menos 6 caracteres.'); return; }
+    const { error: authError } = await supabase!.auth.updateUser({ password });
+    if (authError) setError(authError.message);
+    else onDone();
+  }
+  return <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"><section className="w-full max-w-md rounded-2xl border border-cyan-400/25 bg-card p-8 text-center shadow-2xl"><ShieldCheck className="mx-auto mb-5 h-10 w-10 text-cyan-400" /><h1 className="text-xl font-semibold">Criar nova senha</h1><p className="mt-3 text-sm text-muted-foreground">Defina uma senha nova para acessar o Neuron.</p><input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Nova senha (mínimo 6 caracteres)" className="mt-6 w-full rounded-xl border border-cyan-400/20 bg-background px-4 py-3 text-sm outline-none focus:border-cyan-400" /><button onClick={updatePassword} className="mt-5 w-full rounded-xl bg-cyan-400 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300">Salvar nova senha</button>{error && <p className="mt-4 text-sm text-red-400">{error}</p>}</section></main>;
 }
